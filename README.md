@@ -17,7 +17,7 @@ git clone https://github.com/yehuda-lev/Get_Chat_ID_Bot.git
 ```
 pip3 install -r requirements.txt
 ```
-- Edit [Client](https://github.com/yehuda-lev/Get_Chat_ID_Bot/blob/f6589fd92d89621b93bd2c4f2494fdc71f6b2343/Get_Chat_ID.py#L7)
+- Edit congif.json
 
 The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.telegram.org). ``bot_token`` you can get by create new bot on [BotFather](https://t.me/BotFather).
 
