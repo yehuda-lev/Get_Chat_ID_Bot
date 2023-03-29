@@ -1,2 +1,5 @@
 *.session
 *.session-journal
+venv
+.idea
+pycache
