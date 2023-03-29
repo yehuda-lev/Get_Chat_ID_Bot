@@ -2,14 +2,23 @@ from pyrogram import Client, filters, types
 from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
                                 KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat, RequestPeerTypeBroadcast)
 from pyrogram.raw.functions.messages import SendMessage
+import json
+
+configFile = open("config.json")
+config = json.load(configFile)
 
 
-app = Client("my_bot", api_id="", api_hash="", bot_token="")
+app = Client(config["clientName"], api_id=config["apiId"], api_hash=config["apiHash"],
+             bot_token=config["botToken"],)
+
+configFile.close()
+print(f"Bot {app.name} is up and running!")
 
 
 @app.on_message(filters.text | filters.command("start") & filters.private)
 async def start(_, msg: types.Message):
-    name = msg.from_user.first_name + (" " + last if (last := msg.from_user.last_name) else "")
+    name = msg.from_user.first_name + \
+        (" " + last if (last := msg.from_user.last_name) else "")
     text2 = "בבוט זה תוכל לקבל id של קבוצה ערוץ או משתמש"
     text = f"ברוך הבא {name}\n\n{text2}\n\n"\
            f"בשביל להשתמש בבוט אנא לחצו על הכפתורים למטה ושתפו את הערוץ הקבוצה או המשתמש."
