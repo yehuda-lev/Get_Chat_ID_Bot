@@ -23,6 +23,6 @@ The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.tele
 
 - Run the bot:
 ```
-py Get_Chat_ID.py
+python3 Get_Chat_ID.py
 ```
 ---
