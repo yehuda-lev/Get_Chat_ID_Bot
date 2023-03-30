@@ -6,7 +6,7 @@
 
 A bot to receive the id of every Telegram chat
 
-_You can check our bot [here](https://t.me/GetChatID_ILBOT) (in Hebrew)._
+_You can check our bot [here](https://t.me/GetChatID_IL_BOT) (in Hebrew)._
 
 ## configuration:
 - Clone this reposetory:
