@@ -9,7 +9,7 @@ A bot to receive the id of every Telegram chat
 _You can check our bot [here](https://t.me/GetChatID_IL_BOT) (in Hebrew)._
 
 ## configuration:
-- Clone this reposetory:
+- Clone this repository:
 ```
 git clone https://github.com/yehuda-lev/Get_Chat_ID_Bot.git
 ```
@@ -17,7 +17,7 @@ git clone https://github.com/yehuda-lev/Get_Chat_ID_Bot.git
 ```
 pip3 install -r requirements.txt
 ```
-- Edit congif.json
+- Edit config.json
 
 The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.telegram.org). ``bot_token`` you can get by create new bot on [BotFather](https://t.me/BotFather).
 
