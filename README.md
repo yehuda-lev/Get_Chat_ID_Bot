@@ -19,10 +19,11 @@ pip3 install -r requirements.txt
 ```
 - Edit config.json
 
-The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.telegram.org). ``bot_token`` you can get by create new bot on [BotFather](https://t.me/BotFather).
+The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.telegram.org). ``bot_token`` you can get by create new bot on [BotFather](https://t.me/BotFather). ``admins`` you must put an administrator ID.
+
 
 - Run the bot:
 ```
-python3 Get_Chat_ID.py
+python3 main.py
 ```
 ---
