@@ -23,6 +23,13 @@ def is_admin(tg_id: int) -> bool:
 
 
 @db_session
+def change_admin(tg_id: int, admin: bool):
+    user = Users.get(tg_id=str(tg_id))
+    role = 'admin' if admin else 'user'
+    user.role = role
+
+
+@db_session
 def get_users() -> list[Users]:
     return select(i.tg_id for i in Users)[:]
 
