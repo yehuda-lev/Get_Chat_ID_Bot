@@ -45,13 +45,13 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
             button_id = update.message.action.button_id
             chat = update.message.action.peer
             if button_id == 1:
-                print("user")
+                # print("user")
                 text = f"ה ID הוא: `{chat.user_id}`"
             elif button_id == 2:
-                print("group")
+                # print("group")
                 text = f"ה ID הוא: `-100{chat.channel_id}`"
             else:
-                print("channel")
+                # print("channel")
                 text = f"ה ID הוא: `-100{chat.channel_id}`"
         else:
             return
