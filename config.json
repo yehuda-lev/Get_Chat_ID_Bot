@@ -1,6 +1,8 @@
+
 {
     "clientName": "your-client-name",
     "apiId": "your-api-id",
     "apiHash": "your-api-hash",
-    "botToken": "your-bot-token"
+    "botToken": "your-bot-token",
+    "admins": ["your-ids-admins"]
 }
