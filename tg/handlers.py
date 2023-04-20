@@ -4,6 +4,7 @@ from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, 
 from pyrogram.raw.functions.messages import SendMessage
 
 from tg import filters as tg_filters
+from db import filters as db_filters
 
 
 async def start(c: Client, msg: types.Message):
@@ -34,6 +35,10 @@ async def start(c: Client, msg: types.Message):
     )
 
 
+def get_stats(c: Client, msg: types.Message):
+    msg.reply(f'כמות המשתמשים בבוט היא: {db_filters.get_tg_count()}')
+
+
 async def raw(c: Client, update: UpdateNewMessage, users, chats):
     try:
         if update.message.action.button_id:
@@ -60,5 +65,8 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
 HANDLERS = [
     handlers.MessageHandler(start, filters.text & filters.command("start")
                             & filters.private & filters.create(tg_filters.create_user)),
+    handlers.MessageHandler(get_stats, filters.text & filters.command("stats")
+                            & filters.private & filters.create(tg_filters.create_user)
+                            & filters.create(tg_filters.is_admin)),
     handlers.RawUpdateHandler(raw)
 ]
