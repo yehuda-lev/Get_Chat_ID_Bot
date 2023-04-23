@@ -13,8 +13,9 @@ async def start(c: Client, msg: types.Message):
     name = msg.from_user.first_name + \
            (" " + last if (last := msg.from_user.last_name) else "")
     text2 = "בבוט זה תוכל לקבל id של קבוצה ערוץ או משתמש"
-    text = f"ברוך הבא {name}\n\n{text2}\n\n" \
-           f"בשביל להשתמש בבוט אנא לחצו על הכפתורים למטה ושתפו את הערוץ הקבוצה או המשתמש."
+    text3 = "בשביל להשתמש בבוט אנא לחצו על הכפתורים למטה ושתפו את הערוץ הקבוצה או המשתמש. - בתגובה הבוט יחזיר לכם את ה ID של הצאט אותו שיתפתם"
+    text4 = "ניתן גם להעביר הודעה לבוט (עם קרדיט) והבוט יחזיר לכם מאיפה ההודעה הועברה."
+    text = f"ברוך הבא {name}\n\n{text2}\n\n{text3}\n\n{text4}"
     peer = await c.resolve_peer(msg.chat.id)
     await c.invoke(
         SendMessage(peer=peer, message=text, random_id=c.rnd_id(),
