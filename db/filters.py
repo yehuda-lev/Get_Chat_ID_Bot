@@ -9,14 +9,22 @@ def is_user_exists(tg_id: int) -> bool:
 
 
 @db_session
+def get_user(tg_id: int) -> Users:
+    return Users.get(tg_id=str(tg_id))
+
+
+def is_active(tg_id: int) -> bool:
+    return get_user(tg_id).active
+
+
+@db_session
 def create_user(tg_id: int, name: str, admin=False):
     role = 'user' if not admin else 'admin'
     Users(tg_id=str(tg_id), name=name, role=role)
 
 
-@db_session
 def is_admin(tg_id: int) -> bool:
-    user = Users.get(tg_id=str(tg_id))
+    user = get_user(tg_id)
     if user.role == 'admin':
         return True
     return False
@@ -24,9 +32,15 @@ def is_admin(tg_id: int) -> bool:
 
 @db_session
 def change_admin(tg_id: int, admin: bool):
-    user = Users.get(tg_id=str(tg_id))
+    user = get_user(tg_id)
     role = 'admin' if admin else 'user'
     user.role = role
+
+
+@db_session
+def change_active(tg_id: int, active: bool):
+    user = get_user(tg_id)
+    user.active = active
 
 
 @db_session
