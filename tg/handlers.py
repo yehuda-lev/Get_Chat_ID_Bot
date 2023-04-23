@@ -1,6 +1,8 @@
+import pyrogram
 from pyrogram import Client, filters, types, client, handlers
 from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
-                                KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat, RequestPeerTypeBroadcast)
+                                KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat,
+                                RequestPeerTypeBroadcast, PeerChat, PeerChannel)
 from pyrogram.raw.functions.messages import SendMessage
 
 from tg import filters as tg_filters
@@ -48,11 +50,17 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
                 # print("user")
                 text = f"ה ID הוא: `{chat.user_id}`"
             elif button_id == 2:
-                # print("group")
-                text = f"ה ID הוא: `-100{chat.channel_id}`"
+                if isinstance(chat, PeerChat):
+                    # print('group')
+                    text = f"ה ID הוא: `{chat.chat_id}`"
+                elif isinstance(chat, PeerChannel):
+                    # print('super group')
+                    text = f"ה ID הוא: `\u200e-100{chat.channel_id}`"
+                else:
+                    return
             else:
                 # print("channel")
-                text = f"ה ID הוא: `-100{chat.channel_id}`"
+                text = f"ה ID הוא: `\u200e-100{chat.channel_id}`"
         else:
             return
         await c.send_message(chat_id=update.message.peer_id.user_id,
