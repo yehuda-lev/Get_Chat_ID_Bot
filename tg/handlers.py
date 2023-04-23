@@ -1,9 +1,9 @@
-import pyrogram
-from pyrogram import Client, filters, types, client, handlers
+from pyrogram import Client, filters, types, handlers
 from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
                                 KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat,
                                 RequestPeerTypeBroadcast, PeerChat, PeerChannel)
 from pyrogram.raw.functions.messages import SendMessage
+from pyrogram.types import User, Chat
 
 from tg import filters as tg_filters
 from db import filters as db_filters
@@ -41,6 +41,21 @@ def get_stats(c: Client, msg: types.Message):
     msg.reply(f'כמות המשתמשים בבוט היא: {db_filters.get_tg_count()}')
 
 
+def forward(_, msg: types.Message):
+    if isinstance(msg.forward_from, User):
+        # user
+        text = f"ה ID הוא: `{msg.forward_from.id}`"
+    elif isinstance(msg.forward_from_chat, Chat):
+        # channel
+        text = f"ה ID הוא: \u200e`{msg.forward_from_chat.id}`"
+    elif msg.forward_sender_name:
+        # The user hides the forwarding of a message from him or Deleted Account
+        text = f'ה ID מוסתר\n{msg.forward_sender_name}'
+    else:
+        return
+    msg.reply(text=text)
+
+
 async def raw(c: Client, update: UpdateNewMessage, users, chats):
     try:
         if update.message.action.button_id:
@@ -73,6 +88,8 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
 HANDLERS = [
     handlers.MessageHandler(start, filters.text & filters.command("start")
                             & filters.private & filters.create(tg_filters.create_user)),
+    handlers.MessageHandler(forward, filters.forwarded & filters.private
+                            & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(get_stats, filters.text & filters.command("stats")
                             & filters.private & filters.create(tg_filters.create_user)
                             & filters.create(tg_filters.is_admin)),
