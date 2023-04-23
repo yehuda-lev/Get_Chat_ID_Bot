@@ -38,7 +38,9 @@ async def start(c: Client, msg: types.Message):
 
 
 def get_stats(c: Client, msg: types.Message):
-    msg.reply(f'כמות המשתמשים בבוט היא: {db_filters.get_tg_count()}')
+    text = f'כמות המשתמשים בבוט היא: {db_filters.get_tg_count()} ' \
+           f'\nכמות המנויים הפעילים היא: {db_filters.get_tg_active_count()}'
+    msg.reply(text)
 
 
 def forward(_, msg: types.Message):
