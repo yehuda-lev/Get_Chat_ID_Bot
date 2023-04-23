@@ -13,6 +13,7 @@ def create_user(_, __, msg: types.Message) -> bool:
         return True
 
     if not db_filters.is_active(tg_id):
+        db_filters.change_active(tg_id, active=True)
 
     return True
 
