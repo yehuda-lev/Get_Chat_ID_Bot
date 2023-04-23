@@ -28,9 +28,4 @@ class Users(db.Entity):
 
 
 db.bind(provider='sqlite', filename='get_chat_id.sqlite', create_db=True)
-# db.generate_mapping(create_tables=True)
-
-
-with db_session:
-    db.execute('ALTER TABLE users ADD COLUMN active bool DEFAULT True')
-
+db.generate_mapping(create_tables=True)
