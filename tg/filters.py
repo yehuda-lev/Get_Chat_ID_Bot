@@ -1,4 +1,4 @@
-from pyrogram import filters, types
+from pyrogram import types
 
 from db import filters as db_filters
 
@@ -16,6 +16,20 @@ def create_user(_, __, msg: types.Message) -> bool:
         db_filters.change_active(tg_id, active=True)
 
     return True
+
+
+def is_not_raw(_, __, msg: types.Message) -> bool:
+    if msg.text or msg.game or msg.command or msg.photo or msg.document or msg.voice \
+            or msg.service or msg.media or msg.audio or msg.video or msg.contact \
+            or msg.location or msg.sticker or msg.poll or msg.animation:
+        return True
+    return False
+
+
+def is_force_reply(_, __, msg: types.Message) -> bool:
+    if isinstance(msg.reply_to_message.reply_markup, types.ForceReply):
+        return True
+    return False
 
 
 def is_admin(_, __, msg: types.Message) -> bool:
