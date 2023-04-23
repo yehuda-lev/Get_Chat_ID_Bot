@@ -54,8 +54,9 @@ def get_tg_count() -> int:
 
 @db_session
 def get_users_active() -> list[Users]:
-    return select(i.tg_id for i in Users if i.active)
+    return select(i.tg_id for i in Users if i.active)[:]
 
 
+# @db_session
 def get_tg_active_count() -> int:
     return len(get_users_active())
