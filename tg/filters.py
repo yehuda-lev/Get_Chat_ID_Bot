@@ -10,6 +10,10 @@ def create_user(_, __, msg: types.Message) -> bool:
 
     if not db_filters.is_user_exists(tg_id):
         db_filters.create_user(tg_id=tg_id, name=name, admin=False)
+        return True
+
+    if not db_filters.is_active(tg_id):
+
     return True
 
 
