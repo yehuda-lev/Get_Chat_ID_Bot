@@ -4,4 +4,3 @@ venv
 .idea
 *pycache*
 .env
-config.json
