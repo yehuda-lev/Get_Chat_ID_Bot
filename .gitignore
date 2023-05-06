@@ -2,4 +2,4 @@
 *.session-journal
 venv
 .idea
-pycache
+*pycache*
