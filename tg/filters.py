@@ -39,3 +39,8 @@ def is_admin(_, __, msg: types.Message) -> bool:
         return True
     return False
 
+
+def query_lang(_, __, query: types.CallbackQuery) -> bool:
+    if query.data == 'he' or query.data == 'en':
+        return True
+    return False
