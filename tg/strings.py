@@ -48,13 +48,13 @@ TEXT = {
         'en': 'The ID is hidden. \n{name}',
         'he': 'ה ID מוסתר \n{name}'
     },
-    'GROUP11': {
-        'en': 'Group',
-        'he': 'קבוצה'
+    'CHOICE_LANG': {
+        'en': 'Please select your language.',
+        'he': 'אנא בחר את השפה שלך.'
     },
-    'GROUP3123': {
-        'en': 'Group',
-        'he': 'קבוצה'
+    'DONE': {
+        'en': 'The selected language is {}',
+        'he': 'השפה שנבחרה היא {}'
     }
 }
 
