@@ -7,9 +7,10 @@ def create_user(_, __, msg: types.Message) -> bool:
     tg_id = msg.from_user.id
     name = msg.from_user.first_name + \
         (" " + last if (last := msg.from_user.last_name) else "")
+    lang = l if (l := msg.from_user.language_code) == 'he' else 'en'
 
     if not db_filters.is_user_exists(tg_id):
-        db_filters.create_user(tg_id=tg_id, name=name, admin=False)
+        db_filters.create_user(tg_id=tg_id, name=name, admin=False, lang=lang)
         return True
 
     if not db_filters.is_active(tg_id):
