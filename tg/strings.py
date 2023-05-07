@@ -19,7 +19,7 @@ TEXT = {
               ' - בתגובה הבוט יחזיר לכם את ה ID של הצאט אותו שיתפתם'
     },
     'INFO3': {
-        'en': 'You can also send a message to the bot (with credit) '
+        'en': 'You can also send a message to the bot (Forward with quotes) '
               'and the bot will return the ID of the chat from which the message was sent.',
         'he': 'ניתן גם להעביר הודעה לבוט (עם קרדיט)'
               ' והבוט יחזיר לכם את ה ID של הצאט ממנו ההודעה הועברה.'
