@@ -89,12 +89,12 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
                     text = f"ה ID הוא: `{chat.chat_id}`"
                 elif isinstance(chat, PeerChannel):
                     # print('super group')
-                    text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{chat.channel_id}`')
+                    text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
                 else:
                     return
             else:
                 # print("channel")
-                text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{chat.channel_id}`')
+                text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
         else:
             return
         await c.send_message(chat_id=update.message.peer_id.user_id,
