@@ -48,6 +48,12 @@ def change_active(tg_id: int, active: bool):
 
 
 @db_session
+def change_lang(tg_id: int, lang: str):
+    user = get_user(tg_id)
+    user.lang = lang
+
+
+@db_session
 def get_users() -> list[Users]:
     return select(i.tg_id for i in Users)[:]
 
