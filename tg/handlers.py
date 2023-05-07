@@ -82,11 +82,11 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
             chat = update.message.action.peer
             if button_id == 1:
                 # print("user")
-                text = f"ה ID הוא: `{chat.user_id}`"
+                text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
             elif button_id == 2:
                 if isinstance(chat, PeerChat):
                     # print('group')
-                    text = f"ה ID הוא: `{chat.chat_id}`"
+                    text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
                 elif isinstance(chat, PeerChannel):
                     # print('super group')
                     text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
