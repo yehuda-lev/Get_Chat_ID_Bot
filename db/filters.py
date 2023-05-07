@@ -17,14 +17,10 @@ def is_active(tg_id: int) -> bool:
     return get_user(tg_id).active
 
 
-def get_lang_by_user(tg_id: int) -> str:
-    return get_user(tg_id=tg_id).lang
-
-
 @db_session
-def create_user(tg_id: int, name: str, admin=False, lang='he'):
+def create_user(tg_id: int, name: str, admin=False):
     role = 'user' if not admin else 'admin'
-    Users(tg_id=str(tg_id), name=name, role=role, lang=lang)
+    Users(tg_id=str(tg_id), name=name, role=role)
 
 
 def is_admin(tg_id: int) -> bool:
