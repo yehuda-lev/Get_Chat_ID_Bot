@@ -68,7 +68,7 @@ def forward(_, msg: types.Message):
         text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{msg.forward_from_chat.id}`')
     elif msg.forward_sender_name:
         # The user hides the forwarding of a message from him or Deleted Account
-        text = get_text('', tg_id).format(name=msg.forward_sender_name)
+        text = get_text('ID_HIDDEN', tg_id).format(name=msg.forward_sender_name)
     else:
         return
     msg.reply(text=text)
