@@ -1,7 +1,8 @@
+import os
 import time
 
 from pyrogram import Client, types
-from pyrogram.errors import PeerIdInvalid, FloodWait, UserIsBlocked, BadRequest
+from pyrogram.errors import PeerIdInvalid, FloodWait, UserIsBlocked, BadRequest, InputUserDeactivated
 
 from db import filters as db_filters
 
@@ -35,25 +36,81 @@ def send_message(c: Client, query: types.CallbackQuery):
     if query.data == 'no':
         c.send_message(chat_id=tg_id, text='ההודעה לא תישלח למנויים')
         c.delete_messages(chat_id=tg_id, message_ids=msg_id)
+
     elif query.data == 'yes':
-        count = 0
-        for chat in db_filters.get_users_active():
-            print(chat)
-            sleep_count(count)
+
+        log_file = open('logger.txt', 'a+')
+        users = db_filters.get_users_active()
+        sent = 0
+        failed = 0
+
+        c.send_message(chat_id=tg_id, text=f"**📣 starting broadcast to:** "
+                                           f"`{len(users)} users`\nPlease Wait...")
+        progress = c.send_message(chat_id=tg_id, text=f'**Message Sent To:** `{sent} users`')
+
+        for chat in users:
+            # print(chat)
+            # sleep_count(count)
             try:
                 c.copy_message(chat_id=int(chat), from_chat_id=tg_id,
                                message_id=reply_msg_id)
-                count += 1
+                sent += 1
+
+                c.edit_message_text(chat_id=tg_id, message_id=progress.id,
+                                    text=f'**Message Sent To:** `{sent}` users')
+
+                log_file.write(f"sent to {chat} \n")
+                # count += 1
+                time.sleep(.05)  # 20 messages per second (Limit: 30 messages per second)
+
             except FloodWait as e:
                 print(e)
                 time.sleep(e.value)
-            except (UserIsBlocked, BadRequest, PeerIdInvalid):
+
+            except InputUserDeactivated:
                 db_filters.change_active(tg_id=chat, active=False)
+                log_file.write(f"user {chat} is Deactivated\n")
+                failed += 1
+                continue
+
+            except UserIsBlocked:
+                db_filters.change_active(tg_id=chat, active=False)
+                log_file.write(f"user {chat} Blocked your bot\n")
+                failed += 1
+                continue
+
+            except PeerIdInvalid:
+                db_filters.change_active(tg_id=chat, active=False)
+                log_file.write(f"user {chat} IdInvalid\n")
+                failed += 1
+                continue
+
+            except BadRequest as e:
+                db_filters.change_active(tg_id=chat, active=False)
+                log_file.write(f"BadRequest: {e} :{chat}")
+                failed += 1
+                continue
+
         c.delete_messages(chat_id=tg_id, message_ids=msg_id)
-        c.send_message(chat_id=tg_id, text='ההודעה נשלחה למנויים')
+
+        text_done = f"📣 Broadcast Completed\n\n🔸 **Total Users in db:** " \
+                    f"{len(users)}\n\n🔹 Message sent to: {sent} users\n" \
+                    f"🔹 Failed to sent: {failed} users"
+
+        log_file.write('\n\n' + text_done + '\n')
+
+        c.send_message(chat_id=tg_id, text=text_done)
+
+        log_file.close()
+        try:
+            c.send_document(chat_id=tg_id, document='logger.txt')
+        except Exception as e:
+            c.send_message(chat_id=tg_id, text=str(e))
+        finally:
+            os.remove('logger.txt')
 
 
-def sleep_count(count):
+def sleep_count(count):  # delete?
     if count > 20:
         count = 0
         time.sleep(5)
