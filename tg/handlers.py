@@ -15,11 +15,12 @@ async def start(c: Client, msg: types.Message):
     tg_id = msg.from_user.id
     name = msg.from_user.first_name + (
         " " + last if (last := msg.from_user.last_name) else "")
-    text2 = get_text('INFO1', tg_id)
-    text3 = get_text('INFO2', tg_id)
-    text4 = get_text('INFO3', tg_id)
-    text = get_text(text='WELCOME', tg_id=tg_id).format(name=name, start2=text2,
-                                                        start3=text3, start4=text4)
+    text1 = get_text('INFO1', tg_id)
+    text2 = get_text('INFO2', tg_id)
+    text3 = get_text('INFO3', tg_id)
+    text4 = get_text('INFO4', tg_id)
+    text = get_text(text='WELCOME', tg_id=tg_id).format(name=name, start1=text1,
+                                                        start2=text2, start3=text3, start4=text4)
     peer = await c.resolve_peer(msg.chat.id)
     await c.invoke(
         SendMessage(peer=peer, message=text, random_id=c.rnd_id(),
@@ -28,12 +29,18 @@ async def start(c: Client, msg: types.Message):
                             buttons=[
                                 KeyboardButtonRequestPeer(text=get_text('USER', tg_id),
                                                           button_id=1,
-                                                          peer_type=RequestPeerTypeUser()),
-                                KeyboardButtonRequestPeer(text=get_text('GROUP', tg_id),
+                                                          peer_type=RequestPeerTypeUser(bot=False)),
+                                KeyboardButtonRequestPeer(text=get_text('BOT', tg_id),
                                                           button_id=2,
+                                                          peer_type=RequestPeerTypeUser(bot=True))]),
+                        KeyboardButtonRow(
+                            buttons=[
+
+                                KeyboardButtonRequestPeer(text=get_text('GROUP', tg_id),
+                                                          button_id=3,
                                                           peer_type=RequestPeerTypeChat()),
                                 KeyboardButtonRequestPeer(text=get_text('CHANNEL', tg_id),
-                                                          button_id=3,
+                                                          button_id=4,
                                                           peer_type=RequestPeerTypeBroadcast())
                             ]
                         )
@@ -84,6 +91,9 @@ async def raw(c: Client, update: UpdateNewMessage, users, chats):
                 # print("user")
                 text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
             elif button_id == 2:
+                # print("user")
+                text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
+            elif button_id == 3:
                 if isinstance(chat, PeerChat):
                     # print('group')
                     text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
