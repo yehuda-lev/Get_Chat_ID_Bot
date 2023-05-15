@@ -5,8 +5,8 @@ default_lang = None
 
 TEXT = {
     'WELCOME': {
-        'en': 'Welcome {name}. \n\n{start2} \n\n{start3} \n\n{start4}',
-        'he': 'ברוך הבא {name}. \n\n{start2} \n\n{start3} \n\n{start4}',
+        'en': 'Welcome {name}. \n\n{start1} \n\n{start2} \n\n{start3} \n\n{start4}',
+        'he': 'ברוך הבא {name}. \n\n{start1} \n\n{start2} \n\n{start3} \n\n{start4}',
     },
     'INFO1': {
         'en': 'In this bot you can get the id of any group, channel, user or bot',
@@ -24,9 +24,17 @@ TEXT = {
         'he': 'ניתן גם להעביר הודעה לבוט (עם קרדיט)'
               ' והבוט יחזיר לכם את ה ID של הצאט ממנו ההודעה הועברה.'
     },
+    'INFO4': {
+        'en': 'To change the language please send the /lang command',
+        'he': 'לשינוי השפה אנא שלחו את הפקודה /lang'
+    },
     'USER': {
         'en': 'User',
         'he': 'משתמש'
+    },
+    'BOT': {
+        'en': 'Bot',
+        'he': 'בוט'
     },
     'CHANNEL': {
         'en': 'Channel',
