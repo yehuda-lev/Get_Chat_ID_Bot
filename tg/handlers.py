@@ -1,7 +1,8 @@
 from pyrogram import Client, filters, types, handlers
 from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
                                 KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat,
-                                RequestPeerTypeBroadcast, PeerChat, PeerChannel)
+                                RequestPeerTypeBroadcast, PeerChat, PeerChannel, MessageService,
+                                MessageActionRequestedPeer, PeerUser)
 from pyrogram.raw.functions.messages import SendMessage
 from pyrogram.types import User, Chat, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -81,37 +82,31 @@ def forward(_, msg: types.Message):
     msg.reply(text=text)
 
 
-async def raw(c: Client, update: UpdateNewMessage, users, chats):
-    try:
-        if update.message.action.button_id:
-            tg_id = update.message.peer_id.user_id
-            button_id = update.message.action.button_id
-            chat = update.message.action.peer
-            if button_id == 1:
-                # print("user")
-                text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
-            elif button_id == 2:
-                # print("user")
-                text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
-            elif button_id == 3:
-                if isinstance(chat, PeerChat):
-                    # print('group')
-                    text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
-                elif isinstance(chat, PeerChannel):
-                    # print('super group')
-                    text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
-                else:
-                    return
-            else:
-                # print("channel")
-                text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
-        else:
-            return
-        await c.send_message(chat_id=update.message.peer_id.user_id,
-                             reply_to_message_id=update.message.id, text=text)
-        return
-    except AttributeError:
-        return
+async def raw_message(c: Client, update: UpdateNewMessage, _, __):
+    if isinstance(update, UpdateNewMessage):
+        if update.message:
+            if isinstance(update.message, MessageService):
+                if update.message.action:
+                    if isinstance(update.message.action, MessageActionRequestedPeer):
+                        tg_id = update.message.peer_id.user_id
+                        chat = update.message.action.peer
+
+                        match chat:
+                            case PeerUser():
+                                # user or bot
+                                text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
+                            case PeerChat():
+                                # group
+                                text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
+                            case PeerChannel():
+                                # channel or super group
+                                text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
+                            case _:
+                                return
+                    else:
+                        return
+                    await c.send_message(chat_id=update.message.peer_id.user_id,
+                                         reply_to_message_id=update.message.id, text=text)
 
 
 HANDLERS = [
@@ -135,5 +130,5 @@ HANDLERS = [
                                   & filters.create(tg_filters.query_lang)),
     handlers.CallbackQueryHandler(send_message, filters.create(tg_filters.create_user)
                                   & filters.create(tg_filters.is_admin)),
-    handlers.RawUpdateHandler(raw)
+    handlers.RawUpdateHandler(raw_message)
 ]
