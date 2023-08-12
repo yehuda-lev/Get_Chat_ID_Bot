@@ -13,6 +13,7 @@ TEXT = {
 
               "You can also send a message to the bot (Forward with quotes) "
               "and the bot will return the ID of the chat from which the message was sent.\n\n"
+              "New 🆕 You can transfer a story from a user and get his ID\n\n"
 
               "To change the language please send the /lang command\n\n"
 
@@ -21,12 +22,20 @@ TEXT = {
               "For updates on the bot subscribe to @GetChatID_Updates",
 
         'he': "ברוך הבא {name} 🤠\n\n"
+              
               "בבוט זה תוכל לקבל id של כל קבוצה, ערוץ, משתמש או בוט\n\n"
+              
               "בשביל להשתמש בבוט אנא לחץ על הכפתורים למטה ושתף את הצאט שברצונך לדעת מה ה ID שלו. "
               "- בתגובה הבוט יחזיר לך את ה ID של הצאט אותו שיתפת\n\n"
+              
               "ניתן גם להעביר הודעה לבוט (עם קרדיט) והבוט יחזיר לך את ה ID של הצאט ממנו ההודעה הועברה.\n\n"
+              
+              "חדש 🆕 ניתן להעביר סטורי ממשתמש ולקבל את ה-ID שלו\n\n"
+              
               "לשינוי השפה אנא שלח את הפקודה /lang\n\n"
+              
               "הבוט בקוד פתוח בגיטהאב 🖤\n"
+              
               "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
               "לעדונים על הבוט הירשמו ל-@GetChatID_Updates"
 
