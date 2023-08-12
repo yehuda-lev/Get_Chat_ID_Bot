@@ -2,7 +2,7 @@ from pyrogram import Client, filters, types, handlers
 from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
                                 KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat,
                                 RequestPeerTypeBroadcast, PeerChat, PeerChannel, MessageService,
-                                MessageActionRequestedPeer, PeerUser)
+                                MessageActionRequestedPeer, PeerUser, Message, MessageMediaStory)
 from pyrogram.raw.functions.messages import SendMessage
 from pyrogram.types import User, Chat, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -78,30 +78,45 @@ def forward(_, msg: types.Message):
 
 
 async def raw_message(c: Client, update: UpdateNewMessage, _, __):
+    print(update)
     if isinstance(update, UpdateNewMessage):
         if update.message:
-            if isinstance(update.message, MessageService):
-                if update.message.action:
-                    if isinstance(update.message.action, MessageActionRequestedPeer):
-                        tg_id = update.message.peer_id.user_id
-                        chat = update.message.action.peer
+            match update.message:
+                case MessageService():
+                    print('aaaa')
+                    if update.message.action:
+                        if isinstance(update.message.action, MessageActionRequestedPeer):
+                            tg_id = update.message.peer_id.user_id
+                            chat = update.message.action.peer
 
-                        match chat:
-                            case PeerUser():
-                                # user or bot
-                                text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
-                            case PeerChat():
-                                # group
-                                text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
-                            case PeerChannel():
-                                # channel or super group
-                                text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
-                            case _:
-                                return
-                    else:
-                        return
-                    await c.send_message(chat_id=update.message.peer_id.user_id,
-                                         reply_to_message_id=update.message.id, text=text)
+                            match chat:
+                                case PeerUser():
+                                    # user or bot
+                                    text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
+                                case PeerChat():
+                                    # group
+                                    text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
+                                case PeerChannel():
+                                    # channel or super group
+                                    text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
+                                case _:
+                                    return
+                        else:
+                            return
+                        await c.send_message(chat_id=update.message.peer_id.user_id,
+                                             reply_to_message_id=update.message.id, text=text)
+                case Message():
+                    if update.message.media:
+                        if isinstance(update.message.media, MessageMediaStory):
+                            tg_id = update.message.peer_id.user_id
+                            story = update.message.media
+                            text = get_text('ID_USER', tg_id).format(f'`{story.user_id}`')
+                        else:
+                            return
+                        await c.send_message(chat_id=update.message.peer_id.user_id,
+                                             reply_to_message_id=update.message.id, text=text)
+                case _:
+                    return
 
 
 HANDLERS = [
