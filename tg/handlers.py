@@ -16,15 +16,10 @@ async def start(c: Client, msg: types.Message):
     tg_id = msg.from_user.id
     name = msg.from_user.first_name + (
         " " + last if (last := msg.from_user.last_name) else "")
-    text1 = get_text('INFO1', tg_id)
-    text2 = get_text('INFO2', tg_id)
-    text3 = get_text('INFO3', tg_id)
-    text4 = get_text('INFO4', tg_id)
-    text = get_text(text='WELCOME', tg_id=tg_id).format(name=name, start1=text1,
-                                                        start2=text2, start3=text3, start4=text4)
+    text = get_text(text='WELCOME', tg_id=tg_id).format(name=name)
     peer = await c.resolve_peer(msg.chat.id)
     await c.invoke(
-        SendMessage(peer=peer, message=text, random_id=c.rnd_id(),
+        SendMessage(peer=peer, message=text, random_id=c.rnd_id(), no_webpage=True,
                     reply_markup=ReplyKeyboardMarkup(rows=[
                         KeyboardButtonRow(
                             buttons=[

@@ -1,32 +1,35 @@
-
 import db.filters
 
 default_lang = None
 
 TEXT = {
     'WELCOME': {
-        'en': 'Welcome {name}. \n\n{start1} \n\n{start2} \n\n{start3} \n\n{start4}',
-        'he': 'ברוך הבא {name}. \n\n{start1} \n\n{start2} \n\n{start3} \n\n{start4}',
-    },
-    'INFO1': {
-        'en': 'In this bot you can get the id of any group, channel, user or bot',
-        'he': 'בבוט זה תוכלו לקבל id של כל קבוצה, ערוץ, משתמש או בוט'
-    },
-    'INFO2': {
-        'en': 'To use the bot, please click on the buttons below and share the chat whose ID you want to know.'
-              ' - In response, the bot will return the ID of the chat you shared',
-        'he': 'בשביל להשתמש בבוט אנא לחצו על הכפתורים למטה ושתפו את הצאט שברצונכם לדעת מה ה ID שלו.'
-              ' - בתגובה הבוט יחזיר לכם את ה ID של הצאט אותו שיתפתם'
-    },
-    'INFO3': {
-        'en': 'You can also send a message to the bot (Forward with quotes) '
-              'and the bot will return the ID of the chat from which the message was sent.',
-        'he': 'ניתן גם להעביר הודעה לבוט (עם קרדיט)'
-              ' והבוט יחזיר לכם את ה ID של הצאט ממנו ההודעה הועברה.'
-    },
-    'INFO4': {
-        'en': 'To change the language please send the /lang command',
-        'he': 'לשינוי השפה אנא שלחו את הפקודה /lang'
+        'en': "Welcome {name} 🤠\n\n"
+
+              "In this bot you can get the id of any group, channel, user or bot\n\n"
+              
+              "To use the bot, please click on the buttons below and share the chat whose ID you want to know."
+              " - In response, the bot will return the ID of the chat you shared\n\n"
+
+              "You can also send a message to the bot (Forward with quotes) "
+              "and the bot will return the ID of the chat from which the message was sent.\n\n"
+
+              "To change the language please send the /lang command\n\n"
+
+              "The bot is open source on GitHub 🖤\n"
+              "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
+              "For updates on the bot subscribe to @GetChatID_Updates",
+
+        'he': "ברוך הבא {name} 🤠\n\n"
+              "בבוט זה תוכל לקבל id של כל קבוצה, ערוץ, משתמש או בוט\n\n"
+              "בשביל להשתמש בבוט אנא לחץ על הכפתורים למטה ושתף את הצאט שברצונך לדעת מה ה ID שלו. "
+              "- בתגובה הבוט יחזיר לך את ה ID של הצאט אותו שיתפת\n\n"
+              "ניתן גם להעביר הודעה לבוט (עם קרדיט) והבוט יחזיר לך את ה ID של הצאט ממנו ההודעה הועברה.\n\n"
+              "לשינוי השפה אנא שלח את הפקודה /lang\n\n"
+              "הבוט בקוד פתוח בגיטהאב 🖤\n"
+              "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
+              "לעדונים על הבוט הירשמו ל-@GetChatID_Updates"
+
     },
     'USER': {
         'en': 'User',
