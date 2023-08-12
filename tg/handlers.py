@@ -78,12 +78,10 @@ def forward(_, msg: types.Message):
 
 
 async def raw_message(c: Client, update: UpdateNewMessage, _, __):
-    print(update)
     if isinstance(update, UpdateNewMessage):
         if update.message:
             match update.message:
                 case MessageService():
-                    print('aaaa')
                     if update.message.action:
                         if isinstance(update.message.action, MessageActionRequestedPeer):
                             tg_id = update.message.peer_id.user_id
