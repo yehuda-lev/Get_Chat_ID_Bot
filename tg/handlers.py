@@ -77,6 +77,16 @@ def forward(_, msg: types.Message):
     msg.reply(text=text)
 
 
+def get_contact(_, msg: types.Message):
+    print(msg.contact)
+    tg_id = msg.from_user.id
+    if msg.contact.user_id:
+        text = get_text('ID_USER', tg_id).format(f'`{msg.contact.user_id}`')
+    else:
+        text = get_text('NOT_HAVE_ID', tg_id)
+    msg.reply(text=text)
+
+
 async def raw_message(c: Client, update: UpdateNewMessage, _, __):
     if isinstance(update, UpdateNewMessage):
         if update.message:
@@ -123,6 +133,8 @@ HANDLERS = [
     handlers.MessageHandler(choice_lang, filters.text & filters.command("lang")
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(forward, filters.forwarded & filters.private
+                            & filters.create(tg_filters.create_user)),
+    handlers.MessageHandler(get_contact, filters.contact & filters.private
                             & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(get_stats, filters.text & filters.command("stats")
                             & filters.private & filters.create(tg_filters.create_user)

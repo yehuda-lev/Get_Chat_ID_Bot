@@ -75,6 +75,10 @@ TEXT = {
     'DONE': {
         'en': 'The selected language is {}',
         'he': 'השפה שנבחרה היא {}'
+    },
+    'NOT_HAVE_ID': {
+        'en': 'The contact you sent has no ID',
+        'he': 'לאיש הקשר ששלחת אין ID'
     }
 }
 
