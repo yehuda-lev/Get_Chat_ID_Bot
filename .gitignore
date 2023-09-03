@@ -5,3 +5,4 @@ venv
 *pycache*
 .env
 config.json
+*.sqlite
