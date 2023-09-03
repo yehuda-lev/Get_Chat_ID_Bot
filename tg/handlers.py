@@ -57,7 +57,7 @@ def choice_lang(_, msg: types.Message):
 def get_lang(_, query: types.CallbackQuery):
     lang = query.data
     tg_id = query.from_user.id
-    db_filters.change_lang(tg_id, lang=lang)
+    db_filters.change_lang(tg_id=tg_id, lang=lang)
     query.answer(text=get_text(text='DONE', tg_id=tg_id).format(lang), show_alert=True)
 
 

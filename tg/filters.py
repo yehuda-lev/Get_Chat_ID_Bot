@@ -9,12 +9,12 @@ def create_user(_, __, msg: types.Message) -> bool:
         (" " + last if (last := msg.from_user.last_name) else "")
     lang = l if (l := msg.from_user.language_code) == 'he' else 'en'
 
-    if not db_filters.is_user_exists(tg_id):
+    if not db_filters.is_user_exists(tg_id=tg_id):
         db_filters.create_user(tg_id=tg_id, name=name, admin=False, lang=lang)
         return True
 
-    if not db_filters.is_active(tg_id):
-        db_filters.change_active(tg_id, active=True)
+    if not db_filters.is_active(tg_id=tg_id):
+        db_filters.change_active(tg_id=tg_id, active=True)
 
     return True
 
@@ -35,7 +35,7 @@ def is_force_reply(_, __, msg: types.Message) -> bool:
 
 def is_admin(_, __, msg: types.Message) -> bool:
     tg_id = msg.from_user.id
-    if db_filters.is_admin(tg_id):
+    if db_filters.is_admin(tg_id=tg_id):
         return True
     return False
 
