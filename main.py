@@ -1,4 +1,5 @@
-from pyrogram import Client
+from pyrogram import Client, __version__
+from pyrogram.raw.all import layer
 
 from tg.handlers import HANDLERS
 from db import filters as db_filters
@@ -10,11 +11,26 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def main():
-    app = Client(name=os.environ['PYROGRAM_NAME_SESSION'], api_id=os.environ['TELEGRAM_API_ID'],
-                 api_hash=os.environ['TELEGRAM_API_HASH'], bot_token=os.environ['TELEGRAM_BOT_TOKEN'])
+class Bot(Client):
+    name = os.environ['PYROGRAM_NAME_SESSION']
 
-    print(f"Bot {app.name} is up and running!")
+    def __init__(self):
+        super().__init__(
+            name=self.name,
+            api_id=os.environ['TELEGRAM_API_ID'],
+            api_hash=os.environ['TELEGRAM_API_HASH'],
+            bot_token=os.environ['TELEGRAM_BOT_TOKEN'],
+        )
+
+    async def start(self):
+        await super().start()
+
+        me = await self.get_me()
+        print(f"{me.first_name} with Pyrogram v{__version__} (Layer {layer}) started on @{me.username}.")
+
+
+def main():
+    app = Bot()
 
     for handler in HANDLERS:
         app.add_handler(handler)
@@ -30,4 +46,3 @@ if __name__ == '__main__':
             db_filters.change_admin(tg_id=int(admin), admin=True)
 
     main()
-
