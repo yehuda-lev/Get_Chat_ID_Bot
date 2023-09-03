@@ -47,11 +47,14 @@ async def start(c: Client, msg: types.Message):
 
 def choice_lang(_, msg: types.Message):
     tg_id = msg.from_user.id
-    msg.reply(text=get_text('CHOICE_LANG', tg_id=tg_id),
-              reply_markup=InlineKeyboardMarkup([
-                  [InlineKeyboardButton(text='עברית 🇮🇱', callback_data='he')],
-                  [InlineKeyboardButton(text='English 🇱🇷', callback_data='en')]
-              ]))
+    msg.reply(
+        text=get_text('CHOICE_LANG', tg_id=tg_id),
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(text='עברית 🇮🇱', callback_data='he')],
+            [InlineKeyboardButton(text='English 🇱🇷', callback_data='en')]
+        ]),
+        reply_to_message_id=msg.id
+    )
 
 
 def get_lang(_, query: types.CallbackQuery):
@@ -74,23 +77,22 @@ def forward(_, msg: types.Message):
         text = get_text('ID_HIDDEN', tg_id).format(name=msg.forward_sender_name)
     else:
         return
-    msg.reply(text=text)
+    msg.reply(text=text, reply_to_message_id=msg.id)
 
 
 def get_me(_, msg: types.Message):
     """Get id the user"""
     tg_id = msg.from_user.id
-    msg.reply(get_text('ID_USER', tg_id).format(f'`{msg.from_user.id}`'))
+    msg.reply(get_text('ID_USER', tg_id).format(f'`{msg.from_user.id}`'), reply_to_message_id=msg.id)
 
 
 def get_contact(_, msg: types.Message):
-    print(msg.contact)
     tg_id = msg.from_user.id
     if msg.contact.user_id:
         text = get_text('ID_USER', tg_id).format(f'`{msg.contact.user_id}`')
     else:
         text = get_text('NOT_HAVE_ID', tg_id)
-    msg.reply(text=text)
+    msg.reply(text=text, reply_to_message_id=msg.id)
 
 
 async def raw_message(c: Client, update: UpdateNewMessage, _, __):
