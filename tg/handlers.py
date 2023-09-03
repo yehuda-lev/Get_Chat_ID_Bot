@@ -77,6 +77,12 @@ def forward(_, msg: types.Message):
     msg.reply(text=text)
 
 
+def get_me(_, msg: types.Message):
+    """Get id the user"""
+    tg_id = msg.from_user.id
+    msg.reply(get_text('ID_USER', tg_id).format(f'`{msg.from_user.id}`'))
+
+
 def get_contact(_, msg: types.Message):
     print(msg.contact)
     tg_id = msg.from_user.id
@@ -132,6 +138,8 @@ HANDLERS = [
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(choice_lang, filters.text & filters.command("lang")
                             & filters.private & filters.create(tg_filters.create_user)),
+    handlers.MessageHandler(get_me, filters.text & filters.command("me")
+                            & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(forward, filters.forwarded & filters.private
                             & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(get_contact, filters.contact & filters.private
@@ -140,8 +148,7 @@ HANDLERS = [
                             & filters.private & filters.create(tg_filters.create_user)
                             & filters.create(tg_filters.is_admin)),
     handlers.MessageHandler(get_message_for_subscribe, filters.private &
-                            (filters.text & filters.command("send") | filters.reply &
-                             ~ filters.command(["send", "stats", "start"])
+                            (filters.text & filters.command("send") | filters.reply
                              & filters.create(tg_filters.is_force_reply))
                             & filters.create(tg_filters.create_user)
                             & filters.create(tg_filters.is_admin)
