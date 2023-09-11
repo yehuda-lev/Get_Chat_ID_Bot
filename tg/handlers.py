@@ -135,12 +135,16 @@ async def raw_message(c: Client, update: UpdateNewMessage, _, __):
                     return
 
 
+def regex_start(arg: str):
+    return filters.regex(rf"^/start ({arg})")
+
+
 HANDLERS = [
+    handlers.MessageHandler(choice_lang, filters.text & (filters.command("lang") | regex_start(arg='lang'))
+                            & filters.private & filters.create(tg_filters.create_user)),
+    handlers.MessageHandler(get_me, filters.text & (filters.command("me") | regex_start(arg='me'))
+                            & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(start, filters.text & filters.command("start")
-                            & filters.private & filters.create(tg_filters.create_user)),
-    handlers.MessageHandler(choice_lang, filters.text & filters.command("lang")
-                            & filters.private & filters.create(tg_filters.create_user)),
-    handlers.MessageHandler(get_me, filters.text & filters.command("me")
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(forward, filters.forwarded & filters.private
                             & filters.create(tg_filters.create_user)),
