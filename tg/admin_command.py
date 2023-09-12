@@ -24,8 +24,8 @@ def get_message_for_subscribe(_, msg: types.Message):
         msg.reply(reply_to_message_id=msg.id, text='לשלוח את ההודעה?',
                   reply_markup=types.InlineKeyboardMarkup(
                       [[
-                          types.InlineKeyboardButton(text="כן", callback_data='yes'),
-                          types.InlineKeyboardButton(text="לא", callback_data='no')
+                          types.InlineKeyboardButton(text="כן", callback_data='send:yes'),
+                          types.InlineKeyboardButton(text="לא", callback_data='send:no')
                       ]]))
 
 
@@ -33,11 +33,11 @@ def send_message(c: Client, query: types.CallbackQuery):
     tg_id = query.from_user.id
     msg_id = query.message.id
     reply_msg_id = query.message.reply_to_message.id
-    if query.data == 'no':
+    if query.data == 'send:no':
         c.send_message(chat_id=tg_id, text='ההודעה לא תישלח למנויים')
         c.delete_messages(chat_id=tg_id, message_ids=msg_id)
 
-    elif query.data == 'yes':
+    elif query.data == 'send:yes':
 
         log_file = open('logger.txt', 'a+')
         users = db_filters.get_users_active()

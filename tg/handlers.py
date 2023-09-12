@@ -161,7 +161,8 @@ HANDLERS = [
                             & filters.create(tg_filters.is_not_raw)),
     handlers.CallbackQueryHandler(get_lang, filters.create(tg_filters.create_user)
                                   & filters.create(tg_filters.query_lang)),
-    handlers.CallbackQueryHandler(send_message, filters.create(tg_filters.create_user)
+    handlers.CallbackQueryHandler(send_message, filters.create(lambda _, __, cbd: cbd.data.startswith('send')) &
+                                  filters.create(tg_filters.create_user)
                                   & filters.create(tg_filters.is_admin)),
     handlers.RawUpdateHandler(raw_message)
 ]
