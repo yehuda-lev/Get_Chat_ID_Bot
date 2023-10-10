@@ -26,5 +26,4 @@ The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.tele
 ```
 python3 main.py
 ```
-
 ---
