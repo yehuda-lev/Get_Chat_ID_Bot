@@ -13,7 +13,11 @@ TEXT = {
 
               "You can also send a message to the bot (Forward with quotes) "
               "and the bot will return the ID of the chat from which the message was sent.\n\n"
-              "New 🆕 You can transfer a story from a user and get his ID\n\n"
+              
+              "You can transfer a story from a user and get his ID\n\n"
+              "To get your ID you can send the command /me\n\n"
+              
+              "New 🆕 send the command /admin to get all the chats you have name management\n\n"
 
               "To change the language please send the /lang command\n\n"
 
@@ -30,14 +34,18 @@ TEXT = {
               
               "ניתן גם להעביר הודעה לבוט (עם קרדיט) והבוט יחזיר לך את ה ID של הצאט ממנו ההודעה הועברה.\n\n"
               
-              "חדש 🆕 ניתן להעביר סטורי ממשתמש ולקבל את ה-ID שלו\n\n"
+              "ניתן להעביר סטורי ממשתמש ולקבל את ה-ID שלו\n\n"
               
-              "לשינוי השפה אנא שלח את הפקודה /lang\n\n"
+              "בשביל לקבל את ה ID שלך ניתן לשלוח את הפקודה /me\n\n"
+              
+              "חדש 🆕 שלחו את הפקודה /admin לקבלת כל הצאטים שיש לכם ניהול שם\n\n"
+              
+              "לשינוי השפה אנא שלחו את הפקודה /lang\n\n"
               
               "הבוט בקוד פתוח בגיטהאב 🖤\n"
               
               "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
-              "לעדונים על הבוט הירשמו ל-@GetChatID_Updates"
+              "לעדכונים על הבוט הירשמו ל-@GetChatID_Updates"
 
     },
     'USER': {
@@ -79,7 +87,11 @@ TEXT = {
     'NOT_HAVE_ID': {
         'en': 'The contact you sent has no ID',
         'he': 'לאיש הקשר ששלחת אין ID'
-    }
+    },
+    'CHAT_MANAGER': {
+        'en': 'By clicking the buttons below you can see all the groups and channels you manage and get their ID',
+        'he': 'בלחיצה על הכפתורים למטה תוכל לראות את כל הקבוצות והערוצים שאתה מנהל בהם ולקבל את המזהה שלהם'
+    },
 }
 
 

@@ -2,7 +2,7 @@ from pyrogram import Client, filters, types, handlers
 from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
                                 KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat,
                                 RequestPeerTypeBroadcast, PeerChat, PeerChannel, MessageService,
-                                MessageActionRequestedPeer, PeerUser, Message, MessageMediaStory)
+                                MessageActionRequestedPeer, PeerUser, Message, MessageMediaStory, ChatAdminRights)
 from pyrogram.raw.functions.messages import SendMessage
 from pyrogram.types import User, Chat, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -23,24 +23,57 @@ async def start(c: Client, msg: types.Message):
                     reply_markup=ReplyKeyboardMarkup(rows=[
                         KeyboardButtonRow(
                             buttons=[
-                                KeyboardButtonRequestPeer(text=get_text('USER', tg_id),
-                                                          button_id=1,
-                                                          peer_type=RequestPeerTypeUser(bot=False)),
-                                KeyboardButtonRequestPeer(text=get_text('BOT', tg_id),
-                                                          button_id=2,
-                                                          peer_type=RequestPeerTypeUser(bot=True))]),
+                                KeyboardButtonRequestPeer(
+                                    text=get_text('USER', tg_id),
+                                    button_id=1,
+                                    peer_type=RequestPeerTypeUser(bot=False)),
+                                KeyboardButtonRequestPeer(
+                                    text=get_text('BOT', tg_id),
+                                    button_id=2,
+                                    peer_type=RequestPeerTypeUser(bot=True))]),
                         KeyboardButtonRow(
                             buttons=[
 
-                                KeyboardButtonRequestPeer(text=get_text('GROUP', tg_id),
-                                                          button_id=3,
-                                                          peer_type=RequestPeerTypeChat()),
-                                KeyboardButtonRequestPeer(text=get_text('CHANNEL', tg_id),
-                                                          button_id=4,
-                                                          peer_type=RequestPeerTypeBroadcast())
+                                KeyboardButtonRequestPeer(
+                                    text=get_text('GROUP', tg_id),
+                                    button_id=3,
+                                    peer_type=RequestPeerTypeChat()),
+                                KeyboardButtonRequestPeer(
+                                    text=get_text('CHANNEL', tg_id),
+                                    button_id=4,
+                                    peer_type=RequestPeerTypeBroadcast())
                             ]
                         )
 
+                    ], resize=True))
+    )
+
+
+async def get_chats_manager(c: Client, msg: types.Message):
+    tg_id = msg.from_user.id
+    text = get_text(text='CHAT_MANAGER', tg_id=tg_id)
+    peer = await c.resolve_peer(msg.chat.id)
+    await c.invoke(
+        SendMessage(peer=peer, message=text, random_id=c.rnd_id(), no_webpage=True,
+                    reply_markup=ReplyKeyboardMarkup(rows=[
+                        KeyboardButtonRow(
+                            buttons=[
+                                KeyboardButtonRequestPeer(
+                                    text=get_text('GROUP', tg_id),
+                                    button_id=1,
+                                    peer_type=RequestPeerTypeChat(
+                                        user_admin_rights=ChatAdminRights(
+                                            other=True
+                                        )
+                                    )),
+                                KeyboardButtonRequestPeer(
+                                    text=get_text('CHANNEL', tg_id),
+                                    button_id=2,
+                                    peer_type=RequestPeerTypeBroadcast(
+                                        user_admin_rights=ChatAdminRights(other=True)
+                                    )),
+                            ]
+                        )
                     ], resize=True))
     )
 
@@ -143,6 +176,8 @@ HANDLERS = [
     handlers.MessageHandler(choice_lang, filters.text & (filters.command("lang") | regex_start(arg='lang'))
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(get_me, filters.text & (filters.command("me") | regex_start(arg='me'))
+                            & filters.private & filters.create(tg_filters.create_user)),
+    handlers.MessageHandler(get_chats_manager, filters.text & (filters.command("admin") | regex_start(arg='admin'))
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(start, filters.text & filters.command("start")
                             & filters.private & filters.create(tg_filters.create_user)),
