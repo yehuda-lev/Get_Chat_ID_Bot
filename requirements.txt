@@ -1,5 +1,5 @@
-Pyrogram @ https://github.com/TelegramPlayGround/pyrogram/archive/refs/heads/L160.zip#sha256=836fff22464b412fb0cc54ac8450217db9b152ed8a4143d58d83039b96e7c7e7
+Pyrogram @ git+https://github.com/KurimuzonAkuma/pyrogram.git@46c73b23dd0d3937f06c98c7308a5d8990a7ab37
 TgCrypto==1.2.5
 pony~=0.7.16
 python-dotenv~=1.0.0
-Pyrogram~=2.0.106
+Pyrogram~=2.1.1

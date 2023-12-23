@@ -1,10 +1,4 @@
-from pyrogram import Client, filters, types, handlers
-from pyrogram.raw.types import (KeyboardButtonRequestPeer, RequestPeerTypeUser, ReplyKeyboardMarkup,
-                                KeyboardButtonRow, UpdateNewMessage, RequestPeerTypeChat,
-                                RequestPeerTypeBroadcast, PeerChat, PeerChannel, MessageService,
-                                MessageActionRequestedPeer, PeerUser, Message, MessageMediaStory, ChatAdminRights)
-from pyrogram.raw.functions.messages import SendMessage
-from pyrogram.types import User, Chat, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram import Client, filters, types, handlers, enums, raw
 
 from tg import filters as tg_filters
 from tg.admin_command import get_stats, send_message, get_message_for_subscribe
@@ -12,40 +6,39 @@ from tg.strings import get_text
 from db import filters as db_filters
 
 
-async def start(c: Client, msg: types.Message):
+async def welcome(_: Client, msg: types.Message):
     tg_id = msg.from_user.id
     name = msg.from_user.first_name + (
         " " + last if (last := msg.from_user.last_name) else "")
-    text = get_text(text='WELCOME', tg_id=tg_id).format(name=name)
-    peer = await c.resolve_peer(msg.chat.id)
-    await c.invoke(
-        SendMessage(peer=peer, message=text, random_id=c.rnd_id(), no_webpage=True,
-                    reply_markup=ReplyKeyboardMarkup(rows=[
-                        KeyboardButtonRow(
-                            buttons=[
-                                KeyboardButtonRequestPeer(
-                                    text=get_text('USER', tg_id),
-                                    button_id=1,
-                                    peer_type=RequestPeerTypeUser(bot=False)),
-                                KeyboardButtonRequestPeer(
-                                    text=get_text('BOT', tg_id),
-                                    button_id=2,
-                                    peer_type=RequestPeerTypeUser(bot=True))]),
-                        KeyboardButtonRow(
-                            buttons=[
 
-                                KeyboardButtonRequestPeer(
-                                    text=get_text('GROUP', tg_id),
-                                    button_id=3,
-                                    peer_type=RequestPeerTypeChat()),
-                                KeyboardButtonRequestPeer(
-                                    text=get_text('CHANNEL', tg_id),
-                                    button_id=4,
-                                    peer_type=RequestPeerTypeBroadcast())
-                            ]
-                        )
-
-                    ], resize=True))
+    await msg.reply_text(
+        text=get_text(text='WELCOME', tg_id=tg_id).format(name=name),
+        disable_web_page_preview=True,
+        reply_markup=types.ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            keyboard=[
+                [
+                    # user
+                    types.KeyboardButton(
+                        text=get_text('USER', tg_id),
+                        request_peer=types.RequestUserInfo(button_id=1, is_bot=False)),
+                    # bot
+                    types.KeyboardButton(
+                        text=get_text('BOT', tg_id),
+                        request_peer=types.RequestUserInfo(button_id=2, is_bot=True))
+                ],
+                [
+                    # group
+                    types.KeyboardButton(
+                        text=get_text('GROUP', tg_id),
+                        request_peer=types.RequestChatInfo(button_id=3)),
+                    # channel
+                    types.KeyboardButton(
+                        text=get_text('CHANNEL', tg_id),
+                        request_peer=types.RequestChannelInfo(button_id=4))
+                ],
+            ],
+        )
     )
 
 
@@ -54,27 +47,26 @@ async def get_chats_manager(c: Client, msg: types.Message):
     text = get_text(text='CHAT_MANAGER', tg_id=tg_id)
     peer = await c.resolve_peer(msg.chat.id)
     await c.invoke(
-        SendMessage(peer=peer, message=text, random_id=c.rnd_id(), no_webpage=True,
-                    reply_markup=ReplyKeyboardMarkup(rows=[
-                        KeyboardButtonRow(
-                            buttons=[
-                                KeyboardButtonRequestPeer(
-                                    text=get_text('GROUP', tg_id),
-                                    button_id=1,
-                                    peer_type=RequestPeerTypeChat(
-                                        user_admin_rights=ChatAdminRights(
-                                            other=True
-                                        )
-                                    )),
-                                KeyboardButtonRequestPeer(
-                                    text=get_text('CHANNEL', tg_id),
-                                    button_id=2,
-                                    peer_type=RequestPeerTypeBroadcast(
-                                        user_admin_rights=ChatAdminRights(other=True)
-                                    )),
-                            ]
-                        )
-                    ], resize=True))
+        raw.functions.messages.SendMessage(
+            peer=peer, message=text, random_id=c.rnd_id(), no_webpage=True,
+            reply_markup=raw.types.ReplyKeyboardMarkup(rows=[
+                raw.types.KeyboardButtonRow(
+                    buttons=[
+                        raw.types.KeyboardButtonRequestPeer(
+                            text=get_text('GROUP', tg_id),
+                            button_id=1,
+                            peer_type=raw.types.RequestPeerTypeChat(
+                                user_admin_rights=raw.types.ChatAdminRights(other=True)
+                            )),
+                        raw.types.KeyboardButtonRequestPeer(
+                            text=get_text('CHANNEL', tg_id),
+                            button_id=2,
+                            peer_type=raw.types.RequestPeerTypeBroadcast(
+                                user_admin_rights=raw.types.ChatAdminRights(other=True)
+                            )),
+                    ]
+                )
+            ], resize=True))
     )
 
 
@@ -82,9 +74,9 @@ def choice_lang(_, msg: types.Message):
     tg_id = msg.from_user.id
     msg.reply(
         text=get_text('CHOICE_LANG', tg_id=tg_id),
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(text='עברית 🇮🇱', callback_data='he')],
-            [InlineKeyboardButton(text='English 🇱🇷', callback_data='en')]
+        reply_markup=types.InlineKeyboardMarkup([
+            [types.InlineKeyboardButton(text='עברית 🇮🇱', callback_data='he')],
+            [types.InlineKeyboardButton(text='English 🇱🇷', callback_data='en')],
         ]),
         reply_to_message_id=msg.id
     )
@@ -99,10 +91,10 @@ def get_lang(_, query: types.CallbackQuery):
 
 def forward(_, msg: types.Message):
     tg_id = msg.from_user.id
-    if isinstance(msg.forward_from, User):
+    if isinstance(msg.forward_from, types.User):
         # user
         text = get_text('ID_USER', tg_id).format(f'`{msg.forward_from.id}`')
-    elif isinstance(msg.forward_from_chat, Chat):
+    elif isinstance(msg.forward_from_chat, types.Chat):
         # channel
         text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{msg.forward_from_chat.id}`')
     elif msg.forward_sender_name:
@@ -128,44 +120,33 @@ def get_contact(_, msg: types.Message):
     msg.reply(text=text, reply_to_message_id=msg.id)
 
 
-async def raw_message(c: Client, update: UpdateNewMessage, _, __):
-    if isinstance(update, UpdateNewMessage):
-        if update.message:
-            match update.message:
-                case MessageService():
-                    if update.message.action:
-                        if isinstance(update.message.action, MessageActionRequestedPeer):
-                            tg_id = update.message.peer_id.user_id
-                            chat = update.message.action.peer
+async def get_request_peer(_: Client, msg: types.Message):
+    tg_id = msg.from_user.id
 
-                            match chat:
-                                case PeerUser():
-                                    # user or bot
-                                    text = get_text('ID_USER', tg_id).format(f'`{chat.user_id}`')
-                                case PeerChat():
-                                    # group
-                                    text = get_text('ID_USER', tg_id).format(f'`{chat.chat_id}`')
-                                case PeerChannel():
-                                    # channel or super group
-                                    text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`-100{chat.channel_id}`')
-                                case _:
-                                    return
-                        else:
-                            return
-                        await c.send_message(chat_id=update.message.peer_id.user_id,
-                                             reply_to_message_id=update.message.id, text=text)
-                case Message():
-                    if update.message.media:
-                        if isinstance(update.message.media, MessageMediaStory):
-                            tg_id = update.message.peer_id.user_id
-                            story = update.message.media
-                            text = get_text('ID_USER', tg_id).format(f'`{story.user_id}`')
-                        else:
-                            return
-                        await c.send_message(chat_id=update.message.peer_id.user_id,
-                                             reply_to_message_id=update.message.id, text=text)
-                case _:
-                    return
+    request_chat = msg.requested_chat
+    match request_chat.type:
+        case enums.ChatType.PRIVATE:
+            text = get_text('ID_USER', tg_id).format(f'`{request_chat.id}`')
+        case enums.ChatType.GROUP:
+            text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{request_chat.id}`')
+        case enums.ChatType.CHANNEL:
+            text = get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{request_chat.id}`')
+        case _:
+            return
+
+    await msg.reply(
+        text=text,
+        quote=True
+    )
+
+
+async def get_story(_: Client, msg: types.Message):
+    tg_id = msg.from_user.id
+
+    await msg.reply(
+        text=get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{msg.story.chat.id}`'),
+        quote=True
+    )
 
 
 def regex_start(arg: str):
@@ -179,7 +160,7 @@ HANDLERS = [
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(get_chats_manager, filters.text & (filters.command("admin") | regex_start(arg='admin'))
                             & filters.private & filters.create(tg_filters.create_user)),
-    handlers.MessageHandler(start, filters.text & filters.command("start")
+    handlers.MessageHandler(welcome, filters.text & filters.command("start")
                             & filters.private & filters.create(tg_filters.create_user)),
     handlers.MessageHandler(forward, filters.forwarded & filters.private
                             & filters.create(tg_filters.create_user)),
@@ -199,5 +180,16 @@ HANDLERS = [
     handlers.CallbackQueryHandler(send_message, filters.create(lambda _, __, cbd: cbd.data.startswith('send')) &
                                   filters.create(tg_filters.create_user)
                                   & filters.create(tg_filters.is_admin)),
-    handlers.RawUpdateHandler(raw_message)
+    handlers.MessageHandler(get_request_peer, filters=(
+            filters.private
+            & filters.create(lambda _, __, msg: msg.requested_chat is not None)  # filter requested_chat
+            & filters.create(tg_filters.create_user)
+        )
+    ),
+    handlers.MessageHandler(get_story, filters=(
+            filters.private
+            & filters.create(lambda _, __, msg: msg.story is not None)  # filter story
+            & filters.create(tg_filters.create_user)
+        )
+    ),
 ]
