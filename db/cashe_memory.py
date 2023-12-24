@@ -26,7 +26,7 @@ class MemoryCache:
     """
 
     def __init__(self):
-        logger.debug('memory cache initialized')
+        logger.debug("memory cache initialized")
         self._cache = {}
 
     @staticmethod
@@ -35,17 +35,27 @@ class MemoryCache:
         return args, tuple(kwargs.items())
 
     @staticmethod
-    def _get_cache_id(params: Optional[Union[Iterable[str], str]], *args, **kwargs) -> Tuple[Tuple[Any, ...], ...]:
+    def _get_cache_id(
+        params: Optional[Union[Iterable[str], str]], *args, **kwargs
+    ) -> Tuple[Tuple[Any, ...], ...]:
         """Get cache id"""
-        _kwargs = {k: kwargs[k] for k in (params if not isinstance(params, str) else (params,))} \
-            if params is not None else kwargs
-        return MemoryCache.build_cache_id(*args if params is not None else (), **_kwargs)
+        _kwargs = (
+            {
+                k: kwargs[k]
+                for k in (params if not isinstance(params, str) else (params,))
+            }
+            if params is not None
+            else kwargs
+        )
+        return MemoryCache.build_cache_id(
+            *args if params is not None else (), **_kwargs
+        )
 
     def cachable(
-            self,
-            cache_name: Optional[Hashable] = None,
-            params: Optional[Union[Iterable[str], str]] = None,
-            always_execute: bool = False
+        self,
+        cache_name: Optional[Hashable] = None,
+        params: Optional[Union[Iterable[str], str]] = None,
+        always_execute: bool = False,
     ) -> Callable:
         """
         Cache decorator
@@ -62,6 +72,7 @@ class MemoryCache:
         :param params: The parameters to use as cache id, if None, all parameters will be used (*args, **kwargs)
         :param always_execute: If True, the function will be executed even if the cache is valid. The result will be cached
         """
+
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -71,12 +82,16 @@ class MemoryCache:
                     cache_name = func.__name__
                 if always_execute:
                     cache_data = func(*args, **kwargs)
-                    self.set(cache_name=cache_name, cache_id=cache_id, cache_data=cache_data)
+                    self.set(
+                        cache_name=cache_name, cache_id=cache_id, cache_data=cache_data
+                    )
                     return cache_data
                 cache_data = self.get(cache_name=cache_name, cache_id=cache_id)
                 if cache_data is None:
                     cache_data = func(*args, **kwargs)
-                    self.set(cache_name=cache_name, cache_id=cache_id, cache_data=cache_data)
+                    self.set(
+                        cache_name=cache_name, cache_id=cache_id, cache_data=cache_data
+                    )
                 return cache_data
 
             return wrapper
@@ -84,10 +99,10 @@ class MemoryCache:
         return decorator
 
     def invalidate(
-            self,
-            cache_name: Optional[Hashable] = None,
-            params: Optional[Union[Iterable[str], str]] = None,
-            before: bool = False
+        self,
+        cache_name: Optional[Hashable] = None,
+        params: Optional[Union[Iterable[str], str]] = None,
+        before: bool = False,
     ) -> Callable:
         """
         Cache invalidate decorator
@@ -101,6 +116,7 @@ class MemoryCache:
         :param params: The parameters to use as cache id, if None, all parameters will be used (*args, **kwargs)
         :param before: If True, the cache will be invalidated before the function is executed. Default is after
         """
+
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
