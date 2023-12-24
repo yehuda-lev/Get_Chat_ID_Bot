@@ -3,7 +3,6 @@
 
 # Get_Chat_ID_Bot
 
-
 A bot to receive the id of every Telegram chat
 
 _You can check our bot [here](https://t.me/GetChatID_IL_BOT) (in Hebrew)._
