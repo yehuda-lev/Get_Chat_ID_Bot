@@ -149,6 +149,15 @@ async def get_story(_: Client, msg: types.Message):
     )
 
 
+async def get_reply_to_another_chat(_: Client, msg: types.Message):
+    tg_id = msg.from_user.id
+
+    await msg.reply(
+        text=get_text('ID_CHANNEL_OR_GROUP', tg_id).format(f'`{msg.reply_to_message.sender_chat.id}`'),
+        quote=True
+    )
+
+
 def regex_start(arg: str):
     return filters.regex(rf"^/start ({arg})")
 
@@ -189,6 +198,14 @@ HANDLERS = [
     handlers.MessageHandler(get_story, filters=(
             filters.private
             & filters.create(lambda _, __, msg: msg.story is not None)  # filter story
+            & filters.create(tg_filters.create_user)
+        )
+    ),
+    handlers.MessageHandler(get_reply_to_another_chat, filters=(
+            filters.private
+            & filters.reply
+            #  filter reply to another chat
+            & filters.create(lambda _, __, msg: msg.reply_to_message.sender_chat is not None)
             & filters.create(tg_filters.create_user)
         )
     ),
