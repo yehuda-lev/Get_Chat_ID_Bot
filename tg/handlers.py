@@ -1,4 +1,4 @@
-from pyrogram import Client, filters, types, handlers, enums, raw
+from pyrogram import Client, filters, types, handlers, enums
 
 from tg import filters as tg_filters
 from tg.admin_command import get_stats, send_message, get_message_for_subscribe
@@ -47,44 +47,38 @@ async def welcome(_: Client, msg: types.Message):
     )
 
 
-async def get_chats_manager(c: Client, msg: types.Message):
+async def get_chats_manager(_: Client, msg: types.Message):
     tg_id = msg.from_user.id
     text = get_text(text="CHAT_MANAGER", tg_id=tg_id)
-    peer = await c.resolve_peer(msg.chat.id)
-    await c.invoke(
-        raw.functions.messages.SendMessage(
-            peer=peer,
-            message=text,
-            random_id=c.rnd_id(),
-            no_webpage=True,
-            reply_markup=raw.types.ReplyKeyboardMarkup(
-                rows=[
-                    raw.types.KeyboardButtonRow(
-                        buttons=[
-                            raw.types.KeyboardButtonRequestPeer(
-                                text=get_text("GROUP", tg_id),
-                                button_id=1,
-                                peer_type=raw.types.RequestPeerTypeChat(
-                                    user_admin_rights=raw.types.ChatAdminRights(
-                                        other=True
-                                    )
-                                ),
+
+    await msg.reply_text(
+        text=text,
+        disable_web_page_preview=True,
+        reply_markup=types.ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            keyboard=[
+                [
+                    # group
+                    types.KeyboardButton(
+                        text=get_text("GROUP", tg_id),
+                        request_peer=types.RequestChatInfo(
+                            button_id=3,
+                            user_privileges=types.ChatPrivileges(can_manage_chat=True),
+                        ),
+                    ),
+                    # channel
+                    types.KeyboardButton(
+                        text=get_text("CHANNEL", tg_id),
+                        request_peer=types.RequestChannelInfo(
+                            button_id=4,
+                            user_privileges=types.ChatPrivileges(
+                                can_manage_chat=True,
                             ),
-                            raw.types.KeyboardButtonRequestPeer(
-                                text=get_text("CHANNEL", tg_id),
-                                button_id=2,
-                                peer_type=raw.types.RequestPeerTypeBroadcast(
-                                    user_admin_rights=raw.types.ChatAdminRights(
-                                        other=True
-                                    )
-                                ),
-                            ),
-                        ]
-                    )
+                        ),
+                    ),
                 ],
-                resize=True,
-            ),
-        )
+            ],
+        ),
     )
 
 
@@ -148,7 +142,7 @@ def get_contact(_, msg: types.Message):
 async def get_request_peer(_: Client, msg: types.Message):
     tg_id = msg.from_user.id
 
-    request_chat = msg.requested_chat
+    request_chat = msg.requested_chats[0]  # TODO support on list of IDs
     match request_chat.type:
         case enums.ChatType.PRIVATE:
             text = get_text("ID_USER", tg_id).format(f"`{request_chat.id}`")
@@ -256,18 +250,14 @@ HANDLERS = [
         get_request_peer,
         filters=(
             filters.private
-            & filters.create(
-                lambda _, __, msg: msg.requested_chat is not None
-            )  # filter requested_chat
+            & filters.requested_chats
             & filters.create(tg_filters.create_user)
         ),
     ),
     handlers.MessageHandler(
         get_story,
         filters=(
-            filters.private
-            & filters.create(lambda _, __, msg: msg.story is not None)  # filter story
-            & filters.create(tg_filters.create_user)
+            filters.private & filters.story & filters.create(tg_filters.create_user)
         ),
     ),
     handlers.MessageHandler(
