@@ -1,4 +1,4 @@
-from pyrogram import Client, filters, types, handlers, enums
+from pyrogram import Client, filters, types, handlers, enums, raw
 
 from tg import filters as tg_filters
 from tg.admin_command import get_stats, send_message, get_message_for_subscribe
@@ -165,15 +165,80 @@ async def get_story(_: Client, msg: types.Message):
     )
 
 
-async def get_reply_to_another_chat(_: Client, msg: types.Message):
-    tg_id = msg.from_user.id
+async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
+    tg_id = update.message.peer_id.user_id
 
-    await msg.reply(
-        text=get_text("ID_CHANNEL_OR_GROUP", tg_id).format(
-            f"`{msg.reply_to_message.sender_chat.id}`"
-        ),
-        quote=True,
-    )
+    if isinstance(update, raw.types.UpdateNewMessage):
+        if isinstance(update.message, raw.types.Message):
+            if update.message.reply_to:
+                if isinstance(update.message.reply_to, raw.types.MessageReplyHeader):
+                    if reply_to := update.message.reply_to:
+                        # reply in another chat
+                        reply_to_chat_id, reply_from_id, reply_from_name = (
+                            None,
+                            None,
+                            None,
+                        )
+
+                        if reply_to.reply_to_peer_id:
+                            match type(reply_to.reply_to_peer_id):
+                                case raw.types.PeerChannel:
+                                    reply_to_chat_id = get_text(
+                                        "ID_CHANNEL_OR_GROUP", tg_id
+                                    ).format(
+                                        f"`-100{reply_to.reply_to_peer_id.channel_id}`"
+                                    )
+                                case raw.types.PeerUser:
+                                    reply_to_chat_id = get_text(
+                                        "ID_USER", tg_id
+                                    ).format(f"`{reply_to.reply_to_peer_id.user_id}`")
+                                case raw.types.PeerChat:
+                                    reply_to_chat_id = get_text(
+                                        "ID_USER", tg_id
+                                    ).format(f"`{reply_to.reply_to_peer_id.chat_id}`")
+                                case _:
+                                    pass
+
+                        if reply_to.reply_from.from_id:
+                            match type(reply_to.reply_from.from_id):
+                                case raw.types.PeerChannel:
+                                    reply_from_id = get_text(
+                                        "ID_CHANNEL_OR_GROUP", tg_id
+                                    ).format(
+                                        f"`-100{reply_to.reply_from.from_id.channel_id}`"
+                                    )
+
+                                case raw.types.PeerUser:
+                                    reply_from_id = get_text("ID_USER", tg_id).format(
+                                        f"`{reply_to.reply_from.from_id.user_id}`"
+                                    )
+
+                                case raw.types.PeerChat:
+                                    reply_from_id = get_text("ID_USER", tg_id).format(
+                                        f"`{reply_to.reply_from.from_id.chat_id}`"
+                                    )
+                                case _:
+                                    pass
+
+                        else:
+                            reply_from_name = get_text("ID_HIDDEN", tg_id).format(
+                                name=reply_to.reply_from.from_name
+                            )
+
+                        if reply_from_id:
+                            text = reply_from_id
+                        elif reply_from_name:
+                            text = reply_from_name
+                        elif reply_to_chat_id:
+                            text = reply_to_chat_id
+                        else:
+                            text = ""
+
+                        await client.send_message(
+                            chat_id=tg_id,
+                            text=text,
+                            reply_to_message_id=update.message.id,
+                        )
 
 
 def regex_start(arg: str):
@@ -260,16 +325,5 @@ HANDLERS = [
             filters.private & filters.story & filters.create(tg_filters.create_user)
         ),
     ),
-    handlers.MessageHandler(
-        get_reply_to_another_chat,
-        filters=(
-            filters.private
-            & filters.reply
-            #  filter reply to another chat
-            & filters.create(
-                lambda _, __, msg: msg.reply_to_message.sender_chat is not None
-            )
-            & filters.create(tg_filters.create_user)
-        ),
-    ),
+    handlers.RawUpdateHandler(get_raw),
 ]
