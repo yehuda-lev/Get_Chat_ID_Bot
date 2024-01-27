@@ -1,20 +1,6 @@
 from pyrogram import handlers, filters
 
-from tg import filters as tg_filters
-from tg.admin_command import get_stats, send_message, get_message_for_subscribe
-from tg.get_ids import (
-    choice_lang,
-    get_me,
-    get_chats_manager,
-    welcome,
-    get_forward,
-    get_contact,
-    get_lang,
-    get_request_peer,
-    get_story,
-    get_username,
-    get_raw,
-)
+from tg import filters as tg_filters, get_ids, admin_command
 
 
 def regex_start(arg: str):
@@ -23,50 +9,56 @@ def regex_start(arg: str):
 
 HANDLERS = [
     handlers.MessageHandler(
-        choice_lang,
+        get_ids.choice_lang,
         filters.text
         & (filters.command("lang") | regex_start(arg="lang"))
         & filters.private
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        get_me,
+        get_ids.get_me,
         filters.text
         & (filters.command("me") | regex_start(arg="me"))
         & filters.private
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        get_chats_manager,
+        get_ids.get_chats_manager,
         filters.text
         & (filters.command("admin") | regex_start(arg="admin"))
         & filters.private
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        welcome,
+        get_ids.welcome,
         filters.text
         & filters.command("start")
         & filters.private
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        get_username,
+        get_ids.get_username,
         filters.text
         & filters.private
         & filters.create(tg_filters.is_username)
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        get_forward,
-        filters.forwarded & filters.private & filters.create(tg_filters.create_user),
+        get_ids.get_forward,
+        filters.forwarded
+        & filters.private
+        & (
+            filters.all & ~filters.media_group
+            | filters.create(tg_filters.is_media_group_exists)
+        )
+        & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        get_contact,
+        get_ids.get_contact,
         filters.contact & filters.private & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        get_stats,
+        admin_command.get_stats,
         filters.text
         & filters.command("stats")
         & filters.private
@@ -74,7 +66,7 @@ HANDLERS = [
         & filters.create(tg_filters.is_admin),
     ),
     handlers.MessageHandler(
-        get_message_for_subscribe,
+        admin_command.get_message_for_subscribe,
         filters.private
         & (
             filters.text & filters.command("send")
@@ -85,17 +77,17 @@ HANDLERS = [
         & filters.create(tg_filters.is_not_raw),
     ),
     handlers.CallbackQueryHandler(
-        get_lang,
+        get_ids.get_lang,
         filters.create(tg_filters.create_user) & filters.create(tg_filters.query_lang),
     ),
     handlers.CallbackQueryHandler(
-        send_message,
+        admin_command.send_message,
         filters.create(lambda _, __, cbd: cbd.data.startswith("send"))
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin),
     ),
     handlers.MessageHandler(
-        get_request_peer,
+        get_ids.get_request_peer,
         filters=(
             filters.private
             & filters.requested_chats
@@ -103,10 +95,10 @@ HANDLERS = [
         ),
     ),
     handlers.MessageHandler(
-        get_story,
+        get_ids.get_story,
         filters=(
             filters.private & filters.story & filters.create(tg_filters.create_user)
         ),
     ),
-    handlers.RawUpdateHandler(get_raw),
+    handlers.RawUpdateHandler(get_ids.get_raw),
 ]

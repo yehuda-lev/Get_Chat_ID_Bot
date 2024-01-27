@@ -78,3 +78,15 @@ def query_lang(_, __, query: types.CallbackQuery) -> bool:
     if query.data == "he" or query.data == "en":
         return True
     return False
+
+
+list_of_media_group = []
+
+
+def is_media_group_exists(_, __, msg: types.Message) -> bool:
+    media_group = msg.media_group_id
+
+    if media_group not in list_of_media_group:
+        list_of_media_group.append(media_group)
+        return True
+    return False
