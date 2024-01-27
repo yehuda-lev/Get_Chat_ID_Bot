@@ -20,7 +20,9 @@ async def welcome(_: Client, msg: types.Message):
                     # user
                     types.KeyboardButton(
                         text=get_text("USER", tg_id),
-                        request_peer=types.RequestUserInfo(button_id=1, is_bot=False),
+                        request_peer=types.RequestUserInfo(
+                            button_id=1, is_bot=False, max_quantity=10
+                        ),
                     ),
                     # bot
                     types.KeyboardButton(
@@ -80,9 +82,9 @@ async def get_chats_manager(_: Client, msg: types.Message):
     )
 
 
-def choice_lang(_, msg: types.Message):
+async def choice_lang(_, msg: types.Message):
     tg_id = msg.from_user.id
-    msg.reply(
+    await msg.reply(
         text=get_text("CHOICE_LANG", tg_id=tg_id),
         reply_markup=types.InlineKeyboardMarkup(
             [
@@ -94,14 +96,16 @@ def choice_lang(_, msg: types.Message):
     )
 
 
-def get_lang(_, query: types.CallbackQuery):
+async def get_lang(_, query: types.CallbackQuery):
     lang = query.data
     tg_id = query.from_user.id
     db_filters.change_lang(tg_id=tg_id, lang=lang)
-    query.answer(text=get_text(text="DONE", tg_id=tg_id).format(lang), show_alert=True)
+    await query.answer(
+        text=get_text(text="DONE", tg_id=tg_id).format(lang), show_alert=True
+    )
 
 
-def forward(_, msg: types.Message):
+async def get_forward(_, msg: types.Message):
     tg_id = msg.from_user.id
     if isinstance(msg.forward_from, types.User):
         # user
@@ -116,38 +120,48 @@ def forward(_, msg: types.Message):
         text = get_text("ID_HIDDEN", tg_id).format(name=msg.forward_sender_name)
     else:
         return
-    msg.reply(text=text, reply_to_message_id=msg.id)
+    await msg.reply(text=text, reply_to_message_id=msg.id)
 
 
-def get_me(_, msg: types.Message):
+async def get_me(_, msg: types.Message):
     """Get id the user"""
     tg_id = msg.from_user.id
-    msg.reply(
+    await msg.reply(
         get_text("ID_USER", tg_id).format(f"`{msg.from_user.id}`"),
         reply_to_message_id=msg.id,
     )
 
 
-def get_contact(_, msg: types.Message):
+async def get_contact(_, msg: types.Message):
     tg_id = msg.from_user.id
     if msg.contact.user_id:
         text = get_text("ID_USER", tg_id).format(f"`{msg.contact.user_id}`")
     else:
         text = get_text("NOT_HAVE_ID", tg_id)
-    msg.reply(text=text, reply_to_message_id=msg.id)
+    await msg.reply(text=text, reply_to_message_id=msg.id)
 
 
 async def get_request_peer(_: Client, msg: types.Message):
     tg_id = msg.from_user.id
 
-    request_chat = msg.requested_chats[0]  # TODO support on list of IDs
-    match request_chat.type:
+    request_chat = msg.requested_chats
+    match request_chat[0].type:
         case enums.ChatType.PRIVATE:
-            text = get_text("ID_USER", tg_id).format(f"`{request_chat.id}`")
+            request_users = (
+                f"`{request_chat[0].id}`"
+                if len(request_chat) == 1
+                else ("".join(f"\n`{user.id}`" for user in request_chat))
+            )
+
+            text = get_text("ID_USER", tg_id).format(request_users)
         case enums.ChatType.GROUP:
-            text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(f"`{request_chat.id}`")
+            text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(
+                f"`{request_chat[0].id}`"
+            )
         case enums.ChatType.CHANNEL:
-            text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(f"`{request_chat.id}`")
+            text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(
+                f"`{request_chat[0].id}`"
+            )
         case _:
             return
 

@@ -7,7 +7,7 @@ from tg.get_ids import (
     get_me,
     get_chats_manager,
     welcome,
-    forward,
+    get_forward,
     get_contact,
     get_lang,
     get_request_peer,
@@ -50,7 +50,7 @@ HANDLERS = [
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
-        forward,
+        get_forward,
         filters.forwarded & filters.private & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(
