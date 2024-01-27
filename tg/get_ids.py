@@ -1,5 +1,6 @@
-from pyrogram import Client, types, enums, raw
+from pyrogram import Client, types, enums, raw, errors
 
+from tg.filters import check_username
 from tg.strings import get_text
 from db import filters as db_filters
 
@@ -175,6 +176,38 @@ async def get_story(_: Client, msg: types.Message):
         text=get_text("ID_CHANNEL_OR_GROUP", tg_id).format(f"`{msg.story.chat.id}`"),
         quote=True,
     )
+
+
+async def get_username(client: Client, msg: types.Message):
+    tg_id = msg.from_user.id
+
+    username = check_username(text=msg.text)
+
+    try:
+        chat = await client.get_chat(username)
+    except errors.BadRequest as e:
+        await msg.reply_text(text=get_text("CAN_NOT_GET_THE_ID", tg_id), quote=True)
+        return
+
+    else:
+        if isinstance(chat, types.Chat):
+            match chat.type:
+                case enums.ChatType.PRIVATE:
+                    text = get_text("ID_USER", tg_id).format(f"`{chat.id}`")
+                case enums.ChatType.BOT:
+                    text = get_text("ID_USER", tg_id).format(f"`{chat.id}`")
+                case enums.ChatType.GROUP:
+                    text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(f"`{chat.id}`")
+                case enums.ChatType.CHANNEL:
+                    text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(f"`{chat.id}`")
+                case enums.ChatType.SUPERGROUP:
+                    text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(f"`{chat.id}`")
+                case _:
+                    return
+        else:
+            text = get_text("CAN_NOT_GET_THE_ID", tg_id)
+
+        await msg.reply_text(text=text, quote=True)
 
 
 async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):

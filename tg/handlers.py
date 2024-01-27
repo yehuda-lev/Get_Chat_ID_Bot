@@ -12,6 +12,7 @@ from tg.get_ids import (
     get_lang,
     get_request_peer,
     get_story,
+    get_username,
     get_raw,
 )
 
@@ -47,6 +48,13 @@ HANDLERS = [
         filters.text
         & filters.command("start")
         & filters.private
+        & filters.create(tg_filters.create_user),
+    ),
+    handlers.MessageHandler(
+        get_username,
+        filters.text
+        & filters.private
+        & filters.create(tg_filters.is_username)
         & filters.create(tg_filters.create_user),
     ),
     handlers.MessageHandler(

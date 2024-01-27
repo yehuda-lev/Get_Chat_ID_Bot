@@ -1,3 +1,5 @@
+import re
+
 from pyrogram import types
 
 from db import filters as db_filters
@@ -53,6 +55,23 @@ def is_admin(_, __, msg: types.Message) -> bool:
     if db_filters.is_admin(tg_id=tg_id):
         return True
     return False
+
+
+def check_username(text) -> str | None:
+    """
+    Check if is a username
+    """
+    username_regex = r"(?:@|t\.me\/|https:\/\/t\.me\/)([a-zA-Z][a-zA-Z0-9_]{2,})"
+
+    match = re.search(username_regex, text)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+
+def is_username(_, __, msg: types.Message) -> bool:
+    return check_username(msg.text) is not None
 
 
 def query_lang(_, __, query: types.CallbackQuery) -> bool:

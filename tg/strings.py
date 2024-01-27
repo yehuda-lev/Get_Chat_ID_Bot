@@ -43,6 +43,10 @@ TEXT = {
         "en": "The contact you sent has no ID",
         "he": "לאיש הקשר ששלחת אין ID",
     },
+    "CAN_NOT_GET_THE_ID": {
+        "en": "It is not possible to get the ID of this chat",
+        "he": "אי אפשר לקבל את הID של הצאט הזה",
+    },
     "CHAT_MANAGER": {
         "en": "By clicking the buttons below you can see all the groups and channels you manage and get their ID",
         "he": "בלחיצה על הכפתורים למטה תוכל לראות את כל הקבוצות והערוצים שאתה מנהל בהם ולקבל את המזהה שלהם",
