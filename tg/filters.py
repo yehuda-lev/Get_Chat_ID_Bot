@@ -1,8 +1,13 @@
 import re
+import time
 
 from pyrogram import types
 
 from db import filters as db_filters
+from data import utils
+
+
+settings = utils.get_settings()
 
 
 def create_user(_, __, msg: types.Message) -> bool:
@@ -90,3 +95,33 @@ def is_media_group_exists(_, __, msg: types.Message) -> bool:
         list_of_media_group.append(media_group)
         return True
     return False
+
+
+last_message_time = {}
+
+
+def is_spamming(tg_id: int) -> bool:
+    """
+    Check if the user is spamming
+    """
+
+    current_time = time.time()
+
+    user_messages = last_message_time.get(tg_id, [])
+
+    # Remove messages older than 1 minute
+    user_messages = [
+        timestamp for timestamp in user_messages if current_time - timestamp <= 60
+    ]
+
+    # Update the message timestamps
+    user_messages.append(current_time)
+    last_message_time[tg_id] = user_messages
+
+    return len(user_messages) < int(settings.LIMIT_SPAM)
+
+
+def is_user_spamming(_, __, msg) -> bool:
+    tg_id = msg.from_user.id
+    return is_spamming(tg_id)
+

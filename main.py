@@ -3,23 +3,21 @@ from pyrogram.raw.all import layer
 
 from tg.handlers import HANDLERS
 from db import filters as db_filters
+from data import utils
 
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+settings = utils.get_settings()
 
 
 class Bot(Client):
-    name = os.environ["PYROGRAM_NAME_SESSION"]
+    name = settings.PYROGRAM_NAME_SESSION
 
     def __init__(self):
         super().__init__(
             name=self.name,
-            api_id=os.environ["TELEGRAM_API_ID"],
-            api_hash=os.environ["TELEGRAM_API_HASH"],
-            bot_token=os.environ["TELEGRAM_BOT_TOKEN"],
+            api_id=settings.TELEGRAM_API_ID,
+            api_hash=settings.TELEGRAM_API_HASH,
+            bot_token=settings.TELEGRAM_BOT_TOKEN,
         )
 
     async def start(self):
@@ -41,7 +39,7 @@ def main():
 
 
 if __name__ == "__main__":
-    for admin in os.environ["ADMINS"].split(","):
+    for admin in settings.ADMINS.split(","):
         if not db_filters.is_user_exists(tg_id=int(admin)):
             db_filters.create_user(tg_id=int(admin), name="admin", admin=True)
         else:

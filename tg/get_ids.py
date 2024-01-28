@@ -1,5 +1,6 @@
 from pyrogram import Client, types, enums, raw, errors
 
+from tg import filters
 from tg.filters import check_username
 from tg.strings import get_text
 from db import filters as db_filters
@@ -215,6 +216,11 @@ async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
 
     if isinstance(update, raw.types.UpdateNewMessage):
         if isinstance(update.message, raw.types.Message):
+
+            # check user spamming
+            if not filters.is_spamming(tg_id=tg_id):
+                return
+
             if update.message.reply_to:
                 if isinstance(update.message.reply_to, raw.types.MessageReplyHeader):
                     if reply_to := update.message.reply_to:

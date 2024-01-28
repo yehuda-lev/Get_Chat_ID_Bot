@@ -1,9 +1,9 @@
 from pony.orm import db_session, select
 
 from db.tables import Users
-from db.cashe_memory import MemoryCache
+from data import cashe_memory
 
-cache = MemoryCache()
+cache = cashe_memory.cache_memory
 
 
 @cache.cachable(cache_name="is_user_exists", params="tg_id")
