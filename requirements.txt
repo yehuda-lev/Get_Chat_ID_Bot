@@ -1,5 +1,4 @@
-Pyrogram @ https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip#sha256=2d86a0bc6a9728d5a0f56a5d480aeb94d7711b3546ab86e1ffa93dff2a90fbc8
+https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip
 TgCrypto==1.2.5
 pony~=0.7.16
 python-dotenv~=1.0.0
-Pyrogram~=2.1.1

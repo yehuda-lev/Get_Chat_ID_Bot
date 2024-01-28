@@ -174,3 +174,6 @@ class MemoryCache:
             cache_name: len([i for i in cache if cache[i] is not None])
             for cache_name, cache in self._cache.items()
         }
+
+
+cache_memory = MemoryCache()

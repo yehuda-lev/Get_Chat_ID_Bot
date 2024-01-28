@@ -3,6 +3,6 @@
 venv
 .idea
 *pycache*
-.env
+*.env
 config.json
 *.sqlite
