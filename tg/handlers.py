@@ -3,15 +3,22 @@ from pyrogram import handlers, filters
 from tg import filters as tg_filters, get_ids, admin_command, help
 
 
-def regex_start(arg: str):
-    return filters.regex(rf"^/start ({arg})")
-
-
 HANDLERS = [
+    handlers.MessageHandler(
+        get_ids.get_forward,
+        filters.forwarded
+        & filters.private
+        & (
+                filters.all & ~filters.media_group
+                | filters.create(tg_filters.is_media_group_exists)
+        )
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
     handlers.MessageHandler(
         get_ids.choice_lang,
         filters.text
-        & (filters.command("lang") | regex_start(arg="lang"))
+        & (filters.command("lang") | tg_filters.regex_start(arg="lang"))
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -19,7 +26,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_me,
         filters.text
-        & (filters.command("me") | regex_start(arg="me"))
+        & (filters.command("me") | tg_filters.regex_start(arg="me"))
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -27,7 +34,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_chats_manager,
         filters.text
-        & (filters.command("admin") | regex_start(arg="admin"))
+        & (filters.command("admin") | tg_filters.regex_start(arg="admin"))
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -43,7 +50,15 @@ HANDLERS = [
     handlers.MessageHandler(
         help.handle_callback_data_help,
         filters.text
-        & (filters.command("help") | regex_start(arg="help"))
+        & (filters.command("help") | tg_filters.regex_start(arg="help"))
+        & filters.private
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    handlers.MessageHandler(
+        get_ids.get_about,
+        filters.text
+        & (filters.command("about") | tg_filters.regex_start(arg="about"))
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -53,17 +68,6 @@ HANDLERS = [
         filters.text
         & filters.private
         & filters.create(tg_filters.is_username)
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_user_spamming),
-    ),
-    handlers.MessageHandler(
-        get_ids.get_forward,
-        filters.forwarded
-        & filters.private
-        & (
-            filters.all & ~filters.media_group
-            | filters.create(tg_filters.is_media_group_exists)
-        )
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
     ),

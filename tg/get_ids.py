@@ -7,6 +7,7 @@ from db import filters as db_filters
 
 
 async def welcome(_: Client, msg: types.Message):
+    """start the bot"""
     tg_id = msg.from_user.id
     name = msg.from_user.first_name + (
         " " + last if (last := msg.from_user.last_name) else ""
@@ -50,6 +51,7 @@ async def welcome(_: Client, msg: types.Message):
 
 
 async def get_chats_manager(_: Client, msg: types.Message):
+    """Get chats manager"""
     tg_id = msg.from_user.id
     text = get_text(text="CHAT_MANAGER", tg_id=tg_id)
 
@@ -85,6 +87,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
 
 
 async def choice_lang(_, msg: types.Message):
+    """Choice language"""
     tg_id = msg.from_user.id
     await msg.reply(
         text=get_text("CHOICE_LANG", tg_id=tg_id),
@@ -99,6 +102,7 @@ async def choice_lang(_, msg: types.Message):
 
 
 async def get_lang(_, query: types.CallbackQuery):
+    """Get language"""
     lang = query.data
     tg_id = query.from_user.id
     db_filters.change_lang(tg_id=tg_id, lang=lang)
@@ -108,6 +112,7 @@ async def get_lang(_, query: types.CallbackQuery):
 
 
 async def get_forward(_, msg: types.Message):
+    """Get message forward"""
     tg_id = msg.from_user.id
     if isinstance(msg.forward_from, types.User):
         # user
@@ -135,6 +140,7 @@ async def get_me(_, msg: types.Message):
 
 
 async def get_contact(_, msg: types.Message):
+    """Get id from contact"""
     tg_id = msg.from_user.id
     if msg.contact.user_id:
         text = get_text("ID_USER", tg_id).format(f"`{msg.contact.user_id}`")
@@ -144,6 +150,7 @@ async def get_contact(_, msg: types.Message):
 
 
 async def get_request_peer(_: Client, msg: types.Message):
+    """"Get request peer"""
     tg_id = msg.from_user.id
 
     request_chat = msg.requested_chats
@@ -171,6 +178,7 @@ async def get_request_peer(_: Client, msg: types.Message):
 
 
 async def get_story(_: Client, msg: types.Message):
+    """Get id from story"""
     tg_id = msg.from_user.id
 
     await msg.reply(
@@ -179,7 +187,30 @@ async def get_story(_: Client, msg: types.Message):
     )
 
 
+async def get_about(_: Client, msg: types.Message):
+    """Get info about the bot"""
+    tg_id = msg.from_user.id
+    await msg.reply_web_page(
+        text=get_text(text="INFO_ABOUT", tg_id=tg_id),
+        reply_to_message_id=msg.id,
+        url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
+        invert_media=True,
+        reply_markup=types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton(
+                        text=get_text(text="BUTTON_DEV", tg_id=tg_id),
+                        url=get_text(text="LINK_DEV", tg_id=tg_id)
+                    )
+                ],
+            ]
+        )
+
+    )
+
+
 async def get_username(client: Client, msg: types.Message):
+    """Get id from username or link"""
     tg_id = msg.from_user.id
 
     username = check_username(text=msg.text)
@@ -212,6 +243,7 @@ async def get_username(client: Client, msg: types.Message):
 
 
 async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
+    """get reply in another chat"""
     if isinstance(update, raw.types.UpdateNewMessage):
         if isinstance(update.message, raw.types.Message):
             tg_id = update.message.peer_id.user_id

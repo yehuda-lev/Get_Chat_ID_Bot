@@ -167,7 +167,7 @@ TEXT = {
             "Bot creator: @yehudalev 👨‍💻\n\n"
             "The bot is open source on GitHub 🖤\n"
             "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
-            "For updates on the bot, subscribe to @GetChatID_Updates,",
+            "📢 For updates on the bot, subscribe to @GetChatID_Updates,",
         'he':
             "\u200fℹ️ **פרטים על הבוט**\n\n"
             "שפה: Python \n"
@@ -175,7 +175,7 @@ TEXT = {
             "יוצר הבוט: @yehudalev  👨‍💻\n\n"
             "הבוט בקוד פתוח בגיטהאב 🖤\n"
             "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
-            "לעדכונים על הבוט הירשמו ל-@GetChatID_Updates",
+            "📢 לעדכונים על הבוט הירשמו ל-@GetChatID_Updates",
     },
     "BUTTON_DEV": {
         "en": "Send message👨‍💻",

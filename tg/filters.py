@@ -1,13 +1,17 @@
 import re
 import time
 
-from pyrogram import types
+from pyrogram import types, filters
 
 from db import filters as db_filters
 from data import utils
 
 
 settings = utils.get_settings()
+
+
+def regex_start(arg: str):
+    return filters.regex(rf"^/start ({arg})")
 
 
 def create_user(_, __, msg: types.Message) -> bool:
