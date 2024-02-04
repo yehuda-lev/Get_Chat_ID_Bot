@@ -1,6 +1,6 @@
 from pyrogram import handlers, filters
 
-from tg import filters as tg_filters, get_ids, admin_command
+from tg import filters as tg_filters, get_ids, admin_command, help
 
 
 def regex_start(arg: str):
@@ -36,6 +36,14 @@ HANDLERS = [
         get_ids.welcome,
         filters.text
         & filters.command("start")
+        & filters.private
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    handlers.MessageHandler(
+        help.handle_callback_data_help,
+        filters.text
+        & (filters.command("help") | regex_start(arg="help"))
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -85,6 +93,12 @@ HANDLERS = [
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin)
         & filters.create(tg_filters.is_not_raw)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    handlers.CallbackQueryHandler(
+        help.handle_callback_data_help,
+        filters.create(lambda _, __, cbd: cbd.data.startswith("help"))
+        & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.CallbackQueryHandler(

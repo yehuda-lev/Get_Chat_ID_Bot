@@ -212,10 +212,9 @@ async def get_username(client: Client, msg: types.Message):
 
 
 async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
-    tg_id = update.message.peer_id.user_id
-
     if isinstance(update, raw.types.UpdateNewMessage):
         if isinstance(update.message, raw.types.Message):
+            tg_id = update.message.peer_id.user_id
 
             # check user spamming
             if not filters.is_spamming(tg_id=tg_id):
