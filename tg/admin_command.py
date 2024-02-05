@@ -68,7 +68,6 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
         log_file = open(name_file, "a+", encoding="utf-8")
 
         users = repository.get_users_active()
-        users = users[1035:] # TODO delete
         sent = 0
         failed = 0
         count = 0
