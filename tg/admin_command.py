@@ -68,9 +68,11 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
         log_file = open(name_file, "a+", encoding="utf-8")
 
         users = repository.get_users_active()
+        users = users[1035:] # TODO delete
         sent = 0
         failed = 0
         count = 0
+        count_edit = 0
 
         await client.send_message(
             chat_id=tg_id,
@@ -99,11 +101,13 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
                     )
                 sent += 1
 
-                await client.edit_message_text(
-                    chat_id=tg_id,
-                    message_id=progress.id,
-                    text=f"**Message Sent To:** `{sent}` users",
-                )
+                if count_edit + 10 == sent:
+                    count_edit += 10
+                    await client.edit_message_text(
+                        chat_id=tg_id,
+                        message_id=progress.id,
+                        text=f"**Message Sent To:** `{sent}` users",
+                    )
 
                 log_file.write(f"sent to user: {user.tg_id}, name: {user.name} lang: {user.lang} \n")
                 count += 1
