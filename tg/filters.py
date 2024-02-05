@@ -3,7 +3,7 @@ import time
 
 from pyrogram import types, filters
 
-from db import filters as db_filters
+from db import repository as db_filters
 from data import utils
 
 

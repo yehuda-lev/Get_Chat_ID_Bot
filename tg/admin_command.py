@@ -10,14 +10,14 @@ from pyrogram.errors import (
     InputUserDeactivated,
 )
 
-from db import filters as db_filters
+from db import repository
 from tg import filters as tg_filters
 
 
 async def get_stats(_: Client, msg: types.Message):
     text = (
-        f"כמות המשתמשים בבוט היא: {db_filters.get_tg_count()} "
-        f"\nכמות המנויים הפעילים היא: {db_filters.get_tg_active_count()}"
+        f"כמות המשתמשים בבוט היא: {repository.get_tg_count()} "
+        f"\nכמות המנויים הפעילים היא: {repository.get_tg_active_count()}"
     )
     await msg.reply(text)
 
@@ -67,7 +67,7 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
         name_file = f"logger_{query.id}.txt"
         log_file = open(name_file, "a+", encoding="utf-8")
 
-        users = db_filters.get_users_active()
+        users = repository.get_users_active()
         sent = 0
         failed = 0
         count = 0
@@ -82,7 +82,7 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
         )
 
         for chat in users:
-            user = db_filters.get_user_by_tg_id(tg_id=int(chat))
+            user = repository.get_user_by_tg_id(tg_id=int(chat))
 
             # print(chat)
             if count > 40:
@@ -116,25 +116,25 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
                 time.sleep(e.value)
 
             except InputUserDeactivated:
-                db_filters.change_active(tg_id=int(user.tg_id), active=False)
+                repository.change_active(tg_id=int(user.tg_id), active=False)
                 log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.lang} is Deactivated\n")
                 failed += 1
                 continue
 
             except UserIsBlocked:
-                db_filters.change_active(tg_id=int(user.tg_id), active=False)
+                repository.change_active(tg_id=int(user.tg_id), active=False)
                 log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.lang} Blocked your bot\n")
                 failed += 1
                 continue
 
             except PeerIdInvalid:
-                db_filters.change_active(tg_id=int(user.tg_id), active=False)
+                repository.change_active(tg_id=int(user.tg_id), active=False)
                 log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.lang} IdInvalid\n")
                 failed += 1
                 continue
 
             except BadRequest as e:
-                db_filters.change_active(tg_id=int(user.tg_id), active=False)
+                repository.change_active(tg_id=int(user.tg_id), active=False)
                 log_file.write(f"BadRequest: {e} : user {user.tg_id}, name: {user.name} lang: {user.lang}")
                 failed += 1
                 continue

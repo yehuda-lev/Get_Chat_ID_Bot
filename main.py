@@ -2,7 +2,7 @@ from pyrogram import Client, __version__
 from pyrogram.raw.all import layer
 
 from tg.handlers import HANDLERS
-from db import filters as db_filters
+from db import repository
 from data import utils
 
 
@@ -40,9 +40,9 @@ def main():
 
 if __name__ == "__main__":
     for admin in settings.ADMINS.split(","):
-        if not db_filters.is_user_exists(tg_id=int(admin)):
-            db_filters.create_user(tg_id=int(admin), name="admin", admin=True)
+        if not repository.is_user_exists(tg_id=int(admin)):
+            repository.create_user(tg_id=int(admin), name="admin", admin=True)
         else:
-            db_filters.change_admin(tg_id=int(admin), admin=True)
+            repository.change_admin(tg_id=int(admin), admin=True)
 
     main()

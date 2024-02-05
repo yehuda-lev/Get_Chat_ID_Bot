@@ -3,7 +3,7 @@ from pyrogram import Client, types, enums, raw, errors
 from tg import filters
 from tg.filters import check_username
 from tg.strings import get_text
-from db import filters as db_filters
+from db import repository
 
 
 async def welcome(_: Client, msg: types.Message):
@@ -105,9 +105,9 @@ async def get_lang(_, query: types.CallbackQuery):
     """Get language"""
     lang = query.data
     tg_id = query.from_user.id
-    db_filters.change_lang(tg_id=tg_id, lang=lang)
-    await query.answer(
-        text=get_text(text="DONE", tg_id=tg_id).format(lang), show_alert=True
+    repository.change_lang(tg_id=tg_id, lang=lang)
+    await query.edit_message_text(
+        text=get_text(text="DONE", tg_id=tg_id).format(lang),
     )
 
 

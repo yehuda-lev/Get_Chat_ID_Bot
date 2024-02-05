@@ -12,7 +12,8 @@ list_of_help: list[list[str]] = [
 ]
 
 
-def get_keyboard(keyboard_from: str, tg_id: int) -> list[list[types.InlineKeyboardButton]]:
+@cache.cachable(cache_name="get_keyboard", params=('keyboard_from', 'tg_id'))
+def get_keyboard(*, keyboard_from: str | list, tg_id: int) -> list[list[types.InlineKeyboardButton]]:
     """
     Get keyboard for help
     :param keyboard_from: str
@@ -43,17 +44,6 @@ def get_item_from_callback_data(index_lst: int, index_item: int) -> str:
     :return: str
     """
     return list_of_help[index_lst][index_item]
-
-
-def get_index(index_item: str) -> tuple[int, int]:
-    """
-    Get index of item in list list_of_help
-    :param index_item: str
-    :return: tuple[int, int]
-    """
-    for i in list_of_help:
-        if index_item in i:
-            return list_of_help.index(i), i.index(index_item)
 
 
 def get_next_callback_data(data_index_lst: int, data_index_item: int) -> str:
@@ -108,7 +98,7 @@ def get_back_callback_data(data_index_lst: int, data_index_item: int) -> str:
     return f'help:back:{data_index_lst}-{data_index_item}:{index_lst}:{index_item}'
 
 
-def get_keyboard_menu(keyboard_from: str, tg_id: int) -> types.InlineKeyboardMarkup:
+def get_keyboard_menu(keyboard_from: str | list, tg_id: int) -> types.InlineKeyboardMarkup:
     return types.InlineKeyboardMarkup(
         [
             [
@@ -116,7 +106,7 @@ def get_keyboard_menu(keyboard_from: str, tg_id: int) -> types.InlineKeyboardMar
                     text=get_text(text="SHOW_ALL", tg_id=tg_id),
                     callback_data=f'help:next:{keyboard_from}:0:0')
             ],
-            *get_keyboard(keyboard_from, tg_id),
+            *get_keyboard(keyboard_from=keyboard_from, tg_id=tg_id),
             [
                 types.InlineKeyboardButton(
                     text=get_text(text="ABOUT", tg_id=tg_id),
@@ -216,5 +206,5 @@ async def handle_callback_data_help(_: Client, cbd: types.CallbackQuery | types.
                 index_lst, index_item = int(data[-2]), int(data[-1])
                 await cbd.edit_message_text(
                     text=get_text(f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}", tg_id=tg_id),
-                    reply_markup=get_keyboard_menu(keyboad_from, tg_id),
+                    reply_markup=get_keyboard_menu(keyboard_from=str(keyboad_from), tg_id=tg_id),
                 )
