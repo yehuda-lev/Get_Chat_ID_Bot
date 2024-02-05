@@ -281,31 +281,32 @@ async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
                                 case _:
                                     return
 
-                        if reply_to.reply_from.from_id:
-                            match type(reply_to.reply_from.from_id):
-                                case raw.types.PeerChannel:
-                                    reply_from_id = get_text(
-                                        "ID_CHANNEL_OR_GROUP", tg_id
-                                    ).format(
-                                        f"`-100{reply_to.reply_from.from_id.channel_id}`"
-                                    )
+                        if reply_to.reply_from:
+                            if reply_to.reply_from.from_id:
+                                match type(reply_to.reply_from.from_id):
+                                    case raw.types.PeerChannel:
+                                        reply_from_id = get_text(
+                                            "ID_CHANNEL_OR_GROUP", tg_id
+                                        ).format(
+                                            f"`-100{reply_to.reply_from.from_id.channel_id}`"
+                                        )
 
-                                case raw.types.PeerUser:
-                                    reply_from_id = get_text("ID_USER", tg_id).format(
-                                        f"`{reply_to.reply_from.from_id.user_id}`"
-                                    )
+                                    case raw.types.PeerUser:
+                                        reply_from_id = get_text("ID_USER", tg_id).format(
+                                            f"`{reply_to.reply_from.from_id.user_id}`"
+                                        )
 
-                                case raw.types.PeerChat:
-                                    reply_from_id = get_text("ID_USER", tg_id).format(
-                                        f"`{reply_to.reply_from.from_id.chat_id}`"
-                                    )
-                                case _:
-                                    return
+                                    case raw.types.PeerChat:
+                                        reply_from_id = get_text("ID_USER", tg_id).format(
+                                            f"`{reply_to.reply_from.from_id.chat_id}`"
+                                        )
+                                    case _:
+                                        return
 
-                        else:
-                            reply_from_name = get_text("ID_HIDDEN", tg_id).format(
-                                name=reply_to.reply_from.from_name
-                            )
+                            else:
+                                reply_from_name = get_text("ID_HIDDEN", tg_id).format(
+                                    name=reply_to.reply_from.from_name
+                                )
 
                         if reply_from_id:
                             text = reply_from_id
