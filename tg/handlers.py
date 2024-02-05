@@ -2,7 +2,6 @@ from pyrogram import handlers, filters
 
 from tg import filters as tg_filters, get_ids, admin_command, help
 
-
 HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_forward,
@@ -13,6 +12,7 @@ HANDLERS = [
                 | filters.create(tg_filters.is_media_group_exists)
         )
         & filters.create(tg_filters.create_user)
+        & ~ filters.create(tg_filters.is_status_answer)
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
@@ -67,8 +67,9 @@ HANDLERS = [
         get_ids.get_username,
         filters.text
         & filters.private
-        & filters.create(tg_filters.is_username)
         & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_username)
+        & ~ filters.create(tg_filters.is_status_answer)
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
@@ -76,8 +77,26 @@ HANDLERS = [
         filters.contact
         & filters.private
         & filters.create(tg_filters.create_user)
+        & ~ filters.create(tg_filters.is_status_answer)
         & filters.create(tg_filters.is_user_spamming),
     ),
+    handlers.MessageHandler(
+        get_ids.get_request_peer,
+        filters.private
+        & filters.requested_chats
+        & filters.create(tg_filters.create_user)
+        & ~ filters.create(tg_filters.is_status_answer)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    handlers.MessageHandler(
+        get_ids.get_story,
+        filters.private
+        & filters.story
+        & filters.create(tg_filters.create_user)
+        & ~ filters.create(tg_filters.is_status_answer)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    # admin command
     handlers.MessageHandler(
         admin_command.get_stats,
         filters.text
@@ -90,15 +109,15 @@ HANDLERS = [
     handlers.MessageHandler(
         admin_command.get_message_for_subscribe,
         filters.private
-        & (
-            filters.text & filters.command("send")
-            | filters.reply & filters.create(tg_filters.is_force_reply)
-        )
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin)
-        & filters.create(tg_filters.is_not_raw)
-        & filters.create(tg_filters.is_user_spamming),
+        & (
+                filters.command("send")
+                & ~ filters.create(tg_filters.is_status_answer) | filters.create(tg_filters.is_status_answer)
+        )
     ),
+
+    # callback
     handlers.CallbackQueryHandler(
         help.handle_callback_data_help,
         filters.create(lambda _, __, cbd: cbd.data.startswith("help"))
@@ -112,25 +131,12 @@ HANDLERS = [
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.CallbackQueryHandler(
-        admin_command.send_message,
+        admin_command.send_message_to_subscribers,
         filters.create(lambda _, __, cbd: cbd.data.startswith("send"))
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin)
         & filters.create(tg_filters.is_user_spamming),
     ),
-    handlers.MessageHandler(
-        get_ids.get_request_peer,
-        filters.private
-        & filters.requested_chats
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_user_spamming),
-    ),
-    handlers.MessageHandler(
-        get_ids.get_story,
-        filters=filters.private
-        & filters.story
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_user_spamming),
-    ),
+
     handlers.RawUpdateHandler(get_ids.get_raw),
 ]

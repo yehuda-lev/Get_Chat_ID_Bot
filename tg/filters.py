@@ -3,11 +3,47 @@ import time
 
 from pyrogram import types, filters
 
-from db import filters as db_filters
+from db import repository as db_filters
 from data import utils
 
 
 settings = utils.get_settings()
+
+
+user_id_to_state: dict[int:dict] = {}
+"""example: {tg_id: {send_message_to_subscribers}}"""
+
+
+def status_answer(*, tg_id: int) -> bool:
+    exists = user_id_to_state.get(tg_id)
+    if exists:
+        return True
+    return False
+
+
+def is_status_answer(_, __, msg: types.Message) -> bool:
+    """Check if user status is answer now"""
+    tg_id = msg.from_user.id
+    return status_answer(tg_id=tg_id)
+
+
+def add_listener(*, tg_id: int, data: dict):
+    """example: {1234567: {send_message_to_subscribers}}"""
+    user_id_to_state.update({tg_id: data})
+
+
+def remove_listener(*, tg_id: int):
+    try:
+        user_id_to_state.pop(tg_id)
+    except KeyError:
+        pass
+
+
+def remove_listener_by_wa_id(*, tg_id: int):
+    try:
+        user_id_to_state.pop(tg_id)
+    except KeyError:
+        pass
 
 
 def regex_start(arg: str):
@@ -30,33 +66,6 @@ def create_user(_, __, msg: types.Message) -> bool:
 
     return True
 
-
-def is_not_raw(_, __, msg: types.Message) -> bool:
-    if (
-        msg.text
-        or msg.game
-        or msg.command
-        or msg.photo
-        or msg.document
-        or msg.voice
-        or msg.service
-        or msg.media
-        or msg.audio
-        or msg.video
-        or msg.contact
-        or msg.location
-        or msg.sticker
-        or msg.poll
-        or msg.animation
-    ):
-        return True
-    return False
-
-
-def is_force_reply(_, __, msg: types.Message) -> bool:
-    if isinstance(msg.reply_to_message.reply_markup, types.ForceReply):
-        return True
-    return False
 
 
 def is_admin(_, __, msg: types.Message) -> bool:

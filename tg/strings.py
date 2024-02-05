@@ -1,4 +1,4 @@
-import db.filters
+from db import repository
 
 default_lang = None
 
@@ -24,9 +24,9 @@ TEXT = {
     "CHANNEL": {"en": "📢 Channel", "he": "📢 ערוץ"},
     "GROUP": {"en": "👥 Group", "he": "👥 קבוצה"},
     "ID_USER": {"en": "🪪 The ID is: {}", "he": "‏🪪 ה ID הוא: {}"},
-    "ID_CHANNEL_OR_GROUP": {"en": "The ID is: {}", "he": "ה ID הוא: \u200e{}"},
+    "ID_CHANNEL_OR_GROUP": {"en": "🪪 The ID is: {}", "he": "‏🪪 ה ID הוא: \u200e{}"},
     "ID_HIDDEN": {"en": "🪪 The ID is hidden. \n{name}", "he": "‏🪪 ה ID מוסתר \n{name}"},
-    "CHOICE_LANG": {"en": "Please select your language.", "he": "אנא בחר את השפה שלך."},
+    "CHOICE_LANG": {"en": "🤳 Select your language.", "he": "🤳 בחר את השפה שלך."},
     "DONE": {"en": "The selected language is {}", "he": "השפה שנבחרה היא {}"},
     "NOT_HAVE_ID": {
         "en": "❌ The contact you sent has no ID",
@@ -192,7 +192,7 @@ def get_text(text: str, tg_id: int) -> str:
     if default_lang is not None:
         lang = default_lang
     else:
-        lang = db.filters.get_lang_by_user(tg_id=tg_id)
+        lang = repository.get_lang_by_user(tg_id=tg_id)
 
     try:
         return TEXT[text][lang]

@@ -3,7 +3,7 @@ from pyrogram import Client, types, enums, raw, errors
 from tg import filters
 from tg.filters import check_username
 from tg.strings import get_text
-from db import filters as db_filters
+from db import repository
 
 
 async def welcome(_: Client, msg: types.Message):
@@ -105,9 +105,9 @@ async def get_lang(_, query: types.CallbackQuery):
     """Get language"""
     lang = query.data
     tg_id = query.from_user.id
-    db_filters.change_lang(tg_id=tg_id, lang=lang)
-    await query.answer(
-        text=get_text(text="DONE", tg_id=tg_id).format(lang), show_alert=True
+    repository.change_lang(tg_id=tg_id, lang=lang)
+    await query.edit_message_text(
+        text=get_text(text="DONE", tg_id=tg_id).format(lang),
     )
 
 
@@ -194,7 +194,7 @@ async def get_about(_: Client, msg: types.Message):
         text=get_text(text="INFO_ABOUT", tg_id=tg_id),
         reply_to_message_id=msg.id,
         url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
-        invert_media=True,
+        show_above_text=True,
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [
@@ -281,31 +281,32 @@ async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
                                 case _:
                                     return
 
-                        if reply_to.reply_from.from_id:
-                            match type(reply_to.reply_from.from_id):
-                                case raw.types.PeerChannel:
-                                    reply_from_id = get_text(
-                                        "ID_CHANNEL_OR_GROUP", tg_id
-                                    ).format(
-                                        f"`-100{reply_to.reply_from.from_id.channel_id}`"
-                                    )
+                        if reply_to.reply_from:
+                            if reply_to.reply_from.from_id:
+                                match type(reply_to.reply_from.from_id):
+                                    case raw.types.PeerChannel:
+                                        reply_from_id = get_text(
+                                            "ID_CHANNEL_OR_GROUP", tg_id
+                                        ).format(
+                                            f"`-100{reply_to.reply_from.from_id.channel_id}`"
+                                        )
 
-                                case raw.types.PeerUser:
-                                    reply_from_id = get_text("ID_USER", tg_id).format(
-                                        f"`{reply_to.reply_from.from_id.user_id}`"
-                                    )
+                                    case raw.types.PeerUser:
+                                        reply_from_id = get_text("ID_USER", tg_id).format(
+                                            f"`{reply_to.reply_from.from_id.user_id}`"
+                                        )
 
-                                case raw.types.PeerChat:
-                                    reply_from_id = get_text("ID_USER", tg_id).format(
-                                        f"`{reply_to.reply_from.from_id.chat_id}`"
-                                    )
-                                case _:
-                                    return
+                                    case raw.types.PeerChat:
+                                        reply_from_id = get_text("ID_USER", tg_id).format(
+                                            f"`{reply_to.reply_from.from_id.chat_id}`"
+                                        )
+                                    case _:
+                                        return
 
-                        else:
-                            reply_from_name = get_text("ID_HIDDEN", tg_id).format(
-                                name=reply_to.reply_from.from_name
-                            )
+                            else:
+                                reply_from_name = get_text("ID_HIDDEN", tg_id).format(
+                                    name=reply_to.reply_from.from_name
+                                )
 
                         if reply_from_id:
                             text = reply_from_id
