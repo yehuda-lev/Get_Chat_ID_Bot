@@ -194,7 +194,7 @@ async def get_about(_: Client, msg: types.Message):
         text=get_text(text="INFO_ABOUT", tg_id=tg_id),
         reply_to_message_id=msg.id,
         url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
-        invert_media=True,
+        show_above_text=True,
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [
