@@ -85,7 +85,9 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
             user = db_filters.get_user_by_tg_id(tg_id=int(chat))
 
             # print(chat)
-            await sleep_count(count)
+            if count > 40:
+                count = 0
+                time.sleep(3)
             try:
                 if message_to_send.forward_date:
                     await message_to_send.forward(
@@ -156,10 +158,3 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
             await client.send_message(chat_id=tg_id, text=str(e))
         finally:
             os.remove(name_file)
-
-
-async def sleep_count(count):  # delete?
-    if count > 40:
-        count = 0
-        time.sleep(3)
-    return count

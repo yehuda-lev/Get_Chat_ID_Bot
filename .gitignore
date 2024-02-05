@@ -4,5 +4,6 @@ venv
 .idea
 *pycache*
 *.env
+*.txt
 config.json
 *.sqlite
