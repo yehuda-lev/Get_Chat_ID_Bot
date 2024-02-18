@@ -48,6 +48,20 @@ HANDLERS = [
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
+        get_ids.added_to_group,
+        filters.text
+        & (filters.command("add") | tg_filters.regex_start(arg="add"))
+        & filters.private
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    handlers.MessageHandler(
+        get_ids.get_ids_in_the_group,
+        filters.text
+        & filters.command("id")
+        & filters.group
+    ),
+    handlers.MessageHandler(
         help.handle_callback_data_help,
         filters.text
         & (filters.command("help") | tg_filters.regex_start(arg="help"))
@@ -115,6 +129,11 @@ HANDLERS = [
                 filters.command("send")
                 & ~ filters.create(tg_filters.is_status_answer) | filters.create(tg_filters.is_status_answer)
         )
+    ),
+
+    handlers.ChatMemberUpdatedHandler(
+        get_ids.on_remove_permission,
+        filters.admin
     ),
 
     # callback

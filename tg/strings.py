@@ -185,6 +185,10 @@ TEXT = {
         "en": "https://t.me/yehudalev",
         "he": "https://t.me/yehudalev"
     },
+    "CHOSE_CHAT_TYPE": {
+        "en": "Choose chat type",
+        "he": "בחר את סוג הצ'אט"
+    },
 }
 
 

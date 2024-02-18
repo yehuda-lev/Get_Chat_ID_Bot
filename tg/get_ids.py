@@ -18,6 +18,7 @@ async def welcome(_: Client, msg: types.Message):
         disable_web_page_preview=True,
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
+            placeholder=get_text("CHOSE_CHAT_TYPE", tg_id=tg_id),
             keyboard=[
                 [
                     # user
@@ -60,6 +61,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
         disable_web_page_preview=True,
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
+            placeholder=get_text("CHOSE_CHAT_TYPE", tg_id=tg_id),
             keyboard=[
                 [
                     # group
@@ -153,6 +155,13 @@ async def get_request_peer(_: Client, msg: types.Message):
     """"Get request peer"""
     tg_id = msg.from_user.id
 
+    print(msg)
+    if msg.id == 100:  # added bot to the group
+        await msg.reply(
+            text=f"The bot was added to the group {msg.requested_chats[0].id}",
+            quote=True
+        )
+
     request_chat = msg.requested_chats
     match request_chat[0].type:
         case enums.ChatType.PRIVATE:
@@ -240,6 +249,66 @@ async def get_username(client: Client, msg: types.Message):
             text = get_text("CAN_NOT_GET_THE_ID", tg_id)
 
         await msg.reply_text(text=text, quote=True)
+
+
+async def added_to_group(_: Client, msg: types.Message):
+    """
+    Added the bot to the group
+    """
+    tg_id = msg.from_user.id
+    await msg.reply(
+        text="click on the button to add the button to the group",
+        quote=True,
+        reply_markup=types.ReplyKeyboardMarkup(
+            [
+                [
+                    types.KeyboardButton(
+                        text="add me to the group",
+                        request_peer=types.RequestChatInfo(
+                            button_id=100,
+                            user_privileges=types.ChatPrivileges(
+                                can_manage_chat=True,
+                                can_promote_members=True,
+                            ),
+                            bot_privileges=types.ChatPrivileges(
+                                can_manage_chat=True
+                            )
+                        ),
+                    )
+                ]
+            ],
+            resize_keyboard=True
+        )
+    )
+
+
+async def on_remove_permission(client: Client, msg: types.ChatMemberUpdated):
+    """
+    on remove permission,
+    if remove permission. the bot will leave the group
+    """
+    if msg.new_chat_member:
+        if msg.new_chat_member.status == enums.ChatMemberStatus.RESTRICTED:
+            await client.leave_chat(chat_id=msg.chat.id)
+
+
+async def get_ids_in_the_group(client: Client, msg: types.Message):
+    """
+    get ids in the group
+    """
+    if not msg.reply_to_message:
+        chat_id = msg.chat.id
+    else:
+        if msg.reply_to_message.from_user:
+            chat_id = msg.reply_to_message.from_user.id
+        elif msg.reply_to_message.sender_chat:
+            chat_id = msg.reply_to_message.sender_chat.id
+        else:
+            return
+    try:
+        await msg.reply(text=f"`{chat_id}`", quote=True)
+    except Exception: # noqa
+        await client.leave_chat(chat_id=msg.chat.id)
 
 
 async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
