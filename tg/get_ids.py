@@ -155,30 +155,30 @@ async def get_request_peer(_: Client, msg: types.Message):
     """"Get request peer"""
     tg_id = msg.from_user.id
 
-    print(msg)
-    if msg.id == 100:  # added bot to the group
+    request_chat = msg.requested_chats
+    if request_chat.button_id == 100:  # added bot to the group
         await msg.reply(
-            text=f"The bot was added to the group {msg.requested_chats[0].id}",
+            text=f"The bot was added to the group `{request_chat.chats[0].id}`",
             quote=True
         )
+        return
 
-    request_chat = msg.requested_chats
-    match request_chat[0].type:
+    match request_chat.chats[0].type:
         case enums.ChatType.PRIVATE:
             request_users = (
-                f"`{request_chat[0].id}`"
-                if len(request_chat) == 1
-                else ("".join(f"\n`{user.id}`" for user in request_chat))
+                f"`{request_chat.chats[0].id}`"
+                if len(request_chat.chats) == 1
+                else ("".join(f"\n`{user.id}`" for user in request_chat.chats))
             )
 
             text = get_text("ID_USER", tg_id).format(request_users)
         case enums.ChatType.GROUP:
             text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(
-                f"`{request_chat[0].id}`"
+                f"`{request_chat.chats[0].id}`"
             )
         case enums.ChatType.CHANNEL:
             text = get_text("ID_CHANNEL_OR_GROUP", tg_id).format(
-                f"`{request_chat[0].id}`"
+                f"`{request_chat.chats[0].id}`"
             )
         case _:
             return
@@ -296,15 +296,37 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
     """
     get ids in the group
     """
-    if not msg.reply_to_message:
-        chat_id = msg.chat.id
-    else:
-        if msg.reply_to_message.from_user:
-            chat_id = msg.reply_to_message.from_user.id
-        elif msg.reply_to_message.sender_chat:
-            chat_id = msg.reply_to_message.sender_chat.id
+    chat_id = None
+
+    if filters.is_mention_users(msg):  # get is mention users
+        for entity in msg.entities:
+            if entity.type == enums.MessageEntityType.MENTION:
+                try:
+                    chat_id = (await client.get_chat(msg.text[entity.offset:entity.offset + entity.length])).id
+                except errors.BadRequest:
+                    break
+                else:
+                    break
+            elif entity.type == enums.MessageEntityType.TEXT_MENTION:
+                chat_id = entity.user.id
+                break
+            else:
+                continue
+
+    else:  # get reply to chat id
+        if not msg.reply_to_message:
+            chat_id = msg.chat.id
         else:
-            return
+            if msg.reply_to_message.from_user:
+                chat_id = msg.reply_to_message.from_user.id
+            elif msg.reply_to_message.sender_chat:
+                chat_id = msg.reply_to_message.sender_chat.id
+            else:  # TODO added support on reply to story (layer 174)
+                return
+
+    if not chat_id:
+        return
+
     try:
         await msg.reply(text=f"`{chat_id}`", quote=True)
     except Exception: # noqa

@@ -1,7 +1,7 @@
 import re
 import time
 
-from pyrogram import types, filters
+from pyrogram import types, filters, enums
 
 from db import repository as db_filters
 from data import utils
@@ -48,6 +48,19 @@ def remove_listener_by_wa_id(*, tg_id: int):
 
 def regex_start(arg: str):
     return filters.regex(rf"^/start ({arg})")
+
+
+def is_mention_users(msg: types.Message) -> bool:
+    """
+    Check if the message contains a mention
+    """""
+    if msg.entities:
+        return any(
+            x for x in msg.entities
+            if x.type == enums.MessageEntityType.MENTION
+            or x.type == enums.MessageEntityType.TEXT_MENTION
+        )
+    return False
 
 
 def create_user(_, __, msg: types.Message) -> bool:
