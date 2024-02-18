@@ -189,6 +189,24 @@ TEXT = {
         "en": "Choose chat type",
         "he": "בחר את סוג הצ'אט"
     },
+    "BUTTON_ADD_BOT_TO_GROUP": {
+        "en": "Add bot to group",
+        "he": "הוסף את הבוט לקבוצה"
+    },
+    "ADD_BOT_TO_GROUP": {
+        "en": "**Add bot to group**\n\n"
+              "Click on the button to add the bot to the group to get id's of members in the group",
+        "he": "**הוספת הבוט לקבוצה**\n\n"
+              "לחץ על הכפתור בכדי להוסיף את הבוט לקבוצה בשביל לקבל מזהים של חברים בקבוצה"
+    },
+    "BOT_ADDED_TO_GROUP": {
+        "en": "**Bot added to group**\n\n"
+              "The bot was added to the group {group_id}\n"
+              "to get ids of members in the group, send `/id` in the group",
+        "he": "**הוספת הבוט לקבוצה**\n\n"
+              "\u200fהבוט נוסף לקבוצה {group_id}\n"
+              "כדי לקבל מזהים של חברים בקבוצה, שלחו `/id` בקבוצה",
+    },
 }
 
 

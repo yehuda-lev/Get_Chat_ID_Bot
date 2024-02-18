@@ -158,7 +158,8 @@ async def get_request_peer(_: Client, msg: types.Message):
     request_chat = msg.requested_chats
     if request_chat.button_id == 100:  # added bot to the group
         await msg.reply(
-            text=f"The bot was added to the group `{request_chat.chats[0].id}`",
+            text=get_text("BOT_ADDED_TO_GROUP", tg_id).format(
+                group_id=f"`{request_chat.chats[0].id}`"),
             quote=True
         )
         return
@@ -257,13 +258,13 @@ async def added_to_group(_: Client, msg: types.Message):
     """
     tg_id = msg.from_user.id
     await msg.reply(
-        text="click on the button to add the button to the group",
+        text=get_text("ADD_BOT_TO_GROUP", tg_id),
         quote=True,
         reply_markup=types.ReplyKeyboardMarkup(
             [
                 [
                     types.KeyboardButton(
-                        text="add me to the group",
+                        text=get_text("BUTTON_ADD_BOT_TO_GROUP", tg_id),
                         request_peer=types.RequestChatInfo(
                             button_id=100,
                             user_privileges=types.ChatPrivileges(
@@ -315,13 +316,16 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
 
     else:  # get reply to chat id
         if not msg.reply_to_message:
-            chat_id = msg.chat.id
+            if msg.reply_to_story_user_id:
+                chat_id = msg.reply_to_story_user_id
+            else:
+                chat_id = msg.chat.id
         else:
             if msg.reply_to_message.from_user:
                 chat_id = msg.reply_to_message.from_user.id
             elif msg.reply_to_message.sender_chat:
                 chat_id = msg.reply_to_message.sender_chat.id
-            else:  # TODO added support on reply to story (layer 174)
+            else:
                 return
 
     if not chat_id:
