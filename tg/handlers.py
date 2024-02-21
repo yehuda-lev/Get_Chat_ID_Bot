@@ -1,6 +1,6 @@
 from pyrogram import handlers, filters
 
-from tg import filters as tg_filters, get_ids, admin_command, help
+from tg import filters as tg_filters, get_ids, admin_command, help, payments
 
 HANDLERS = [
     handlers.MessageHandler(
@@ -73,6 +73,14 @@ HANDLERS = [
         get_ids.get_about,
         filters.text
         & (filters.command("about") | tg_filters.regex_start(arg="about"))
+        & filters.private
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_user_spamming),
+    ),
+    handlers.MessageHandler(
+        payments.send_payment,
+        filters.text
+        & (filters.command("donate") | tg_filters.regex_start(arg="donate"))
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),

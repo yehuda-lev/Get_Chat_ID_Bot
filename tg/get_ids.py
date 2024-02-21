@@ -1,6 +1,6 @@
 from pyrogram import Client, types, enums, raw, errors
 
-from tg import filters
+from tg import filters, payments
 from tg.filters import check_username
 from tg.strings import get_text
 from db import repository
@@ -227,7 +227,7 @@ async def get_username(client: Client, msg: types.Message):
 
     try:
         chat = await client.get_chat(username)
-    except errors.BadRequest as e:
+    except errors.BadRequest:  # username not found
         await msg.reply_text(text=get_text("CAN_NOT_GET_THE_ID", tg_id), quote=True)
         return
 
@@ -337,8 +337,84 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         await client.leave_chat(chat_id=msg.chat.id)
 
 
+async def get_reply_to_another_chat(client: Client, update: raw.types.UpdateNewMessage):
+    """
+    get reply to another chat
+    """
+    reply_to = update.message.reply_to
+    tg_id = update.message.peer_id.user_id
+
+    reply_to_chat_id, reply_from_id, reply_from_name = (
+        None,
+        None,
+        None,
+    )
+
+    if reply_to.reply_to_peer_id:
+        match type(reply_to.reply_to_peer_id):
+            case raw.types.PeerChannel:
+                reply_to_chat_id = get_text(
+                    "ID_CHANNEL_OR_GROUP", tg_id
+                ).format(
+                    f"`-100{reply_to.reply_to_peer_id.channel_id}`"
+                )
+            case raw.types.PeerUser:
+                reply_to_chat_id = get_text(
+                    "ID_USER", tg_id
+                ).format(f"`{reply_to.reply_to_peer_id.user_id}`")
+            case raw.types.PeerChat:
+                reply_to_chat_id = get_text(
+                    "ID_USER", tg_id
+                ).format(f"`{reply_to.reply_to_peer_id.chat_id}`")
+            case _:
+                return
+
+    if reply_to.reply_from:
+        if reply_to.reply_from.from_id:
+            match type(reply_to.reply_from.from_id):
+                case raw.types.PeerChannel:
+                    reply_from_id = get_text(
+                        "ID_CHANNEL_OR_GROUP", tg_id
+                    ).format(
+                        f"`-100{reply_to.reply_from.from_id.channel_id}`"
+                    )
+                case raw.types.PeerUser:
+                    reply_from_id = get_text("ID_USER", tg_id).format(
+                        f"`{reply_to.reply_from.from_id.user_id}`"
+                    )
+
+                case raw.types.PeerChat:
+                    reply_from_id = get_text("ID_USER", tg_id).format(
+                        f"`{reply_to.reply_from.from_id.chat_id}`"
+                    )
+                case _:
+                    return
+
+        else:
+            reply_from_name = get_text("ID_HIDDEN", tg_id).format(
+                name=reply_to.reply_from.from_name
+            )
+
+    if reply_from_id:
+        text = reply_from_id
+    elif reply_from_name:
+        text = reply_from_name
+    elif reply_to_chat_id:
+        text = reply_to_chat_id
+    else:
+        return
+
+    await client.send_message(
+        chat_id=tg_id,
+        text=text,
+        reply_to_message_id=update.message.id,
+    )
+
+
 async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
-    """get reply in another chat"""
+    """
+    Handle raw message
+    """
     if isinstance(update, raw.types.UpdateNewMessage):
         if isinstance(update.message, raw.types.Message):
             tg_id = update.message.peer_id.user_id
@@ -349,71 +425,18 @@ async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
 
             if update.message.reply_to:
                 if isinstance(update.message.reply_to, raw.types.MessageReplyHeader):
-                    if reply_to := update.message.reply_to:
-                        # reply in another chat
-                        reply_to_chat_id, reply_from_id, reply_from_name = (
-                            None,
-                            None,
-                            None,
-                        )
+                    # reply to another chat
+                    await get_reply_to_another_chat(client, update)
 
-                        if reply_to.reply_to_peer_id:
-                            match type(reply_to.reply_to_peer_id):
-                                case raw.types.PeerChannel:
-                                    reply_to_chat_id = get_text(
-                                        "ID_CHANNEL_OR_GROUP", tg_id
-                                    ).format(
-                                        f"`-100{reply_to.reply_to_peer_id.channel_id}`"
-                                    )
-                                case raw.types.PeerUser:
-                                    reply_to_chat_id = get_text(
-                                        "ID_USER", tg_id
-                                    ).format(f"`{reply_to.reply_to_peer_id.user_id}`")
-                                case raw.types.PeerChat:
-                                    reply_to_chat_id = get_text(
-                                        "ID_USER", tg_id
-                                    ).format(f"`{reply_to.reply_to_peer_id.chat_id}`")
-                                case _:
-                                    return
+        elif isinstance(update.message, raw.types.MessageService):
+            if isinstance(update.message.action, raw.types.MessageActionPaymentSentMe):
+                # handle payments
+                await payments.handle_payment(client, update)
 
-                        if reply_to.reply_from:
-                            if reply_to.reply_from.from_id:
-                                match type(reply_to.reply_from.from_id):
-                                    case raw.types.PeerChannel:
-                                        reply_from_id = get_text(
-                                            "ID_CHANNEL_OR_GROUP", tg_id
-                                        ).format(
-                                            f"`-100{reply_to.reply_from.from_id.channel_id}`"
-                                        )
+    elif isinstance(update, raw.types.UpdateBotShippingQuery):
+        # handle shipping queries
+        await payments.handle_shipping_query(client, update)
 
-                                    case raw.types.PeerUser:
-                                        reply_from_id = get_text("ID_USER", tg_id).format(
-                                            f"`{reply_to.reply_from.from_id.user_id}`"
-                                        )
-
-                                    case raw.types.PeerChat:
-                                        reply_from_id = get_text("ID_USER", tg_id).format(
-                                            f"`{reply_to.reply_from.from_id.chat_id}`"
-                                        )
-                                    case _:
-                                        return
-
-                            else:
-                                reply_from_name = get_text("ID_HIDDEN", tg_id).format(
-                                    name=reply_to.reply_from.from_name
-                                )
-
-                        if reply_from_id:
-                            text = reply_from_id
-                        elif reply_from_name:
-                            text = reply_from_name
-                        elif reply_to_chat_id:
-                            text = reply_to_chat_id
-                        else:
-                            return
-
-                        await client.send_message(
-                            chat_id=tg_id,
-                            text=text,
-                            reply_to_message_id=update.message.id,
-                        )
+    elif isinstance(update, raw.types.UpdateBotPrecheckoutQuery):
+        # handle pre checkout queries
+        await payments.handle_pre_checkout_query(client, update)
