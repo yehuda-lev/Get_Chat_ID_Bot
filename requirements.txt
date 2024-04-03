@@ -1,4 +1,4 @@
-https://github.com/KurimuzonAkuma/pyrogram/archive/dev.zip
+https://github.com/TelegramPlayGround/pyrogram/archive/26816917f85f7017564b3f17e37632af38310d08.zip
 TgCrypto==1.2.5
 pony~=0.7.16
 python-dotenv~=1.0.0

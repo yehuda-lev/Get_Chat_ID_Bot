@@ -97,7 +97,8 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_request_peer,
         filters.private
-        & filters.requested_chats
+        # & filters.requested_chats
+        & filters.create(lambda _, __, msg: msg.chat_shared is not None or msg.users_shared is not None)
         & filters.create(tg_filters.create_user)
         & ~ filters.create(tg_filters.is_status_answer)
         & filters.create(tg_filters.is_user_spamming),
@@ -105,7 +106,8 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_story,
         filters.private
-        & filters.story
+        # & filters.story
+        & filters.create(lambda _, __, msg: msg.story is not None)
         & filters.create(tg_filters.create_user)
         & ~ filters.create(tg_filters.is_status_answer)
         & filters.create(tg_filters.is_user_spamming),
@@ -133,7 +135,7 @@ HANDLERS = [
 
     handlers.ChatMemberUpdatedHandler(
         get_ids.on_remove_permission,
-        filters.admin
+        # filters.admin
     ),
 
     # callback

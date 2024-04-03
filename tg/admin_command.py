@@ -19,7 +19,7 @@ async def get_stats(_: Client, msg: types.Message):
         f"כמות המשתמשים בבוט היא: {repository.get_tg_count()} "
         f"\nכמות המנויים הפעילים היא: {repository.get_tg_active_count()}"
     )
-    await msg.reply(text)
+    await msg.reply(text=text)
 
 
 # in the admin want to send message for everyone
@@ -34,7 +34,7 @@ async def get_message_for_subscribe(_, msg: types.Message):
     # ask if want to send this message to subscribers
     else:
         await msg.reply(
-            reply_to_message_id=msg.id,
+            quote=True,
             text="לשלוח את ההודעה?",
             reply_markup=types.InlineKeyboardMarkup(
                 [
