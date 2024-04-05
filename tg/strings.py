@@ -1,5 +1,3 @@
-from db import repository
-
 default_lang = None
 
 TEXT = {
@@ -210,13 +208,13 @@ TEXT = {
 }
 
 
-def get_text(text: str, tg_id: int) -> str:
+def get_text(*, key: str, lang: str) -> str:
     if default_lang is not None:
         lang = default_lang
     else:
-        lang = repository.get_lang_by_user(tg_id=tg_id)
+        lang = lang
 
     try:
-        return TEXT[text][lang]
+        return TEXT[key][lang]
     except KeyError:
         return "Error"
