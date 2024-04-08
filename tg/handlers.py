@@ -12,7 +12,7 @@ HANDLERS = [
                 | filters.create(tg_filters.is_media_group_exists)
         )
         & filters.create(tg_filters.create_user)
-        & ~ filters.create(tg_filters.is_status_answer)
+        & ~ filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
@@ -83,7 +83,7 @@ HANDLERS = [
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_username)
-        & ~ filters.create(tg_filters.is_status_answer)
+        & ~ filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
@@ -91,7 +91,7 @@ HANDLERS = [
         filters.contact
         & filters.private
         & filters.create(tg_filters.create_user)
-        & ~ filters.create(tg_filters.is_status_answer)
+        & ~ filters.create(tg_filters.status_answer(answer=True))
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
@@ -100,7 +100,7 @@ HANDLERS = [
         # & filters.requested_chats
         & filters.create(lambda _, __, msg: msg.chat_shared is not None or msg.users_shared is not None)
         & filters.create(tg_filters.create_user)
-        & ~ filters.create(tg_filters.is_status_answer)
+        & ~ filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
@@ -109,7 +109,7 @@ HANDLERS = [
         # & filters.story
         & filters.create(lambda _, __, msg: msg.story is not None)
         & filters.create(tg_filters.create_user)
-        & ~ filters.create(tg_filters.is_status_answer)
+        & ~ filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming),
     ),
     # admin command
@@ -129,7 +129,8 @@ HANDLERS = [
         & filters.create(tg_filters.is_admin)
         & (
                 filters.command("send")
-                & ~ filters.create(tg_filters.is_status_answer) | filters.create(tg_filters.is_status_answer)
+                & ~ filters.create(tg_filters.status_answer()) |
+                filters.create(tg_filters.status_answer(send_message_to_subscribers=True))
         )
     ),
 

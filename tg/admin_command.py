@@ -25,7 +25,7 @@ async def get_stats(_: Client, msg: types.Message):
 # in the admin want to send message for everyone
 async def get_message_for_subscribe(_, msg: types.Message):
     tg_id = msg.from_user.id
-    if not tg_filters.status_answer(tg_id=tg_id):
+    if msg.command and msg.text == "/send":
         await msg.reply(
             text="אנא שלח את המידע אותו תרצה להעביר למנויים",
         )
@@ -50,7 +50,7 @@ async def get_message_for_subscribe(_, msg: types.Message):
 async def send_message_to_subscribers(client: Client, query: types.CallbackQuery):
     tg_id = query.from_user.id
 
-    tg_filters.remove_listener_by_wa_id(tg_id=tg_id)
+    tg_filters.remove_listener_by_tg_id(tg_id=tg_id)
 
     msg_id = query.message.id
     if query.data == "send:no":

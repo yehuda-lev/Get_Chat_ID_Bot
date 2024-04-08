@@ -3,21 +3,21 @@ from pyrogram.raw.all import layer
 
 from tg.handlers import HANDLERS
 from db import repository
-from data import utils
+from data import config
 
 
-settings = utils.get_settings()
+settings = config.get_settings()
 
 
 class Bot(Client):
-    name = settings.PYROGRAM_NAME_SESSION
+    name = settings.pyrogram_name_session
 
     def __init__(self):
         super().__init__(
             name=self.name,
-            api_id=settings.TELEGRAM_API_ID,
-            api_hash=settings.TELEGRAM_API_HASH,
-            bot_token=settings.TELEGRAM_BOT_TOKEN,
+            api_id=settings.telegram_api_id,
+            api_hash=settings.telegram_api_hash,
+            bot_token=settings.telegram_bot_token,
         )
 
     async def start(self):
@@ -39,10 +39,10 @@ def main():
 
 
 if __name__ == "__main__":
-    for admin in settings.ADMINS.split(","):
-        if not repository.is_user_exists(tg_id=int(admin)):
-            repository.create_user(tg_id=int(admin), name="admin", admin=True)
+    for admin in settings.admins:
+        if not repository.is_user_exists(tg_id=admin):
+            repository.create_user(tg_id=admin, name="admin", admin=True)
         else:
-            repository.change_admin(tg_id=int(admin), admin=True)
+            repository.change_admin(tg_id=admin, admin=True)
 
     main()

@@ -1,30 +1,27 @@
 import re
 import time
 
-from pyrogram import types, filters, enums
+from pyrogram import types, filters, enums, Client
 
 from db import repository as db_filters
-from data import utils
+from data import config
 
-
-settings = utils.get_settings()
-
+settings = config.get_settings()
 
 user_id_to_state: dict[int:dict] = {}
-"""example: {tg_id: {send_message_to_subscribers}}"""
 
 
-def status_answer(*, tg_id: int) -> bool:
-    exists = user_id_to_state.get(tg_id)
-    if exists:
-        return True
-    return False
-
-
-def is_status_answer(_, __, msg: types.Message) -> bool:
+def status_answer(**kwargs) -> callable:
     """Check if user status is answer now"""
-    tg_id = msg.from_user.id
-    return status_answer(tg_id=tg_id)
+
+    def get_is_answer(_, __, msg: types.Message) -> bool:
+        tg_id = msg.from_user.id
+        exists = user_id_to_state.get(tg_id)
+        if exists:
+            return all(exists.get(key, False) == value for key, value in kwargs.items())
+        return False
+
+    return get_is_answer
 
 
 def add_listener(*, tg_id: int, data: dict):
@@ -32,14 +29,7 @@ def add_listener(*, tg_id: int, data: dict):
     user_id_to_state.update({tg_id: data})
 
 
-def remove_listener(*, tg_id: int):
-    try:
-        user_id_to_state.pop(tg_id)
-    except KeyError:
-        pass
-
-
-def remove_listener_by_wa_id(*, tg_id: int):
+def remove_listener_by_tg_id(*, tg_id: int):
     try:
         user_id_to_state.pop(tg_id)
     except KeyError:
@@ -68,7 +58,7 @@ def create_user(_, __, msg: types.Message) -> bool:
     name = msg.from_user.first_name + (
         " " + last if (last := msg.from_user.last_name) else ""
     )
-    lang = l if (l := msg.from_user.language_code) == "he" else "en"
+    lang = lng if (lng := msg.from_user.language_code) == "he" else "en"
 
     if not db_filters.is_user_exists(tg_id=tg_id):
         db_filters.create_user(tg_id=tg_id, name=name, admin=False, lang=lang)
@@ -78,7 +68,6 @@ def create_user(_, __, msg: types.Message) -> bool:
         db_filters.change_active(tg_id=tg_id, active=True)
 
     return True
-
 
 
 def is_admin(_, __, msg: types.Message) -> bool:
@@ -144,10 +133,9 @@ def is_spamming(tg_id: int) -> bool:
     user_messages.append(current_time)
     last_message_time[tg_id] = user_messages
 
-    return len(user_messages) < int(settings.LIMIT_SPAM)
+    return len(user_messages) < int(settings.limit_spam)
 
 
 def is_user_spamming(_, __, msg) -> bool:
     tg_id = msg.from_user.id
     return is_spamming(tg_id)
-
