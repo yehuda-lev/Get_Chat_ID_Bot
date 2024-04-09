@@ -1,7 +1,7 @@
 import re
 import time
 
-from pyrogram import types, filters, enums, Client
+from pyrogram import types, filters, enums
 
 from db import repository as db_filters
 from data import config
@@ -36,8 +36,39 @@ def remove_listener_by_tg_id(*, tg_id: int):
         pass
 
 
-def regex_start(arg: str):
-    return filters.regex(rf"^/start ({arg})")
+def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
+    """
+    Check if the message is a start command
+        /start or https://t.me/bot?start=command
+    Args:
+        command: the command to check
+        prefixes: the prefixes to check, default is "/"
+    """
+
+    def get_start_command(_, __, msg: types.Message) -> bool:
+        text: str = msg.text or msg.caption
+        if not text:
+            return False
+
+        for prefix in prefixes:
+            if not text.startswith(prefix):
+                continue
+
+            without_prefix = text[len(prefix):]
+
+            text_command = without_prefix.split(" ")
+            if len(text_command) > 1:
+                return without_prefix[(len(text_command[0]) + 1):] == command
+            else:
+                return text_command[0] == command
+        return False
+
+    return filters.create(
+        func=get_start_command,
+        name="StartCommand",
+        command=command,
+        prefixes=prefixes,
+    )
 
 
 def is_mention_users(msg: types.Message) -> bool:

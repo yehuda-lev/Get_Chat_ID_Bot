@@ -18,7 +18,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.choice_lang,
         filters.text
-        & (filters.command("lang") | tg_filters.regex_start(arg="lang"))
+        & tg_filters.start_command(command="lang")
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -26,15 +26,15 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_me,
         filters.text
-        & (filters.command("me") | tg_filters.regex_start(arg="me"))
         & filters.private
+        & tg_filters.start_command(command="me")
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
         get_ids.get_chats_manager,
         filters.text
-        & (filters.command("admin") | tg_filters.regex_start(arg="admin"))
+        & tg_filters.start_command(command="admin")
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -42,7 +42,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.welcome,
         filters.text
-        & filters.command("start")
+        & tg_filters.start_command(command="start")
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -50,7 +50,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.added_to_group,
         filters.text
-        & (filters.command("add") | tg_filters.regex_start(arg="add"))
+        & tg_filters.start_command(command="add")
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -58,13 +58,13 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_ids_in_the_group,
         filters.text
-        & filters.command("id")
+        & tg_filters.start_command(command="id")
         & filters.group
     ),
     handlers.MessageHandler(
         help.handle_callback_data_help,
         filters.text
-        & (filters.command("help") | tg_filters.regex_start(arg="help"))
+        & tg_filters.start_command(command="help")
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -72,7 +72,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_about,
         filters.text
-        & (filters.command("about") | tg_filters.regex_start(arg="about"))
+        & tg_filters.start_command(command="about")
         & filters.private
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_user_spamming),
@@ -128,7 +128,7 @@ HANDLERS = [
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin)
         & (
-                filters.command("send")
+                tg_filters.start_command(command="send")
                 & ~ filters.create(tg_filters.status_answer()) |
                 filters.create(tg_filters.status_answer(send_message_to_subscribers=True))
         )
