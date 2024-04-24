@@ -85,27 +85,24 @@ def is_mention_users(msg: types.Message) -> bool:
 
 
 def create_user(_, __, msg: types.Message) -> bool:
-    tg_id = msg.from_user.id
-    name = msg.from_user.first_name + (
-        " " + last if (last := msg.from_user.last_name) else ""
-    )
-    lang = lng if (lng := msg.from_user.language_code) == "he" else "en"
+    user = msg.from_user
+    tg_id = user.id
+    name = user.first_name + (" " + last if (last := user.last_name) else "")
+    lang = lng if (lng := user.language_code) == "he" else "en"
 
     if not db_filters.is_user_exists(tg_id=tg_id):
-        db_filters.create_user(tg_id=tg_id, name=name, admin=False, lang=lang)
+        db_filters.create_user(tg_id=tg_id, name=name, admin=False, language_code=lang, username=user.username)
         return True
 
     if not db_filters.is_active(tg_id=tg_id):
-        db_filters.change_active(tg_id=tg_id, active=True)
+        db_filters.update_user(tg_id=tg_id, active=True)
 
     return True
 
 
 def is_admin(_, __, msg: types.Message) -> bool:
     tg_id = msg.from_user.id
-    if db_filters.is_admin(tg_id=tg_id):
-        return True
-    return False
+    return db_filters.is_admin(tg_id=tg_id)
 
 
 def check_username(text) -> str | None:
@@ -123,12 +120,6 @@ def check_username(text) -> str | None:
 
 def is_username(_, __, msg: types.Message) -> bool:
     return check_username(msg.text) is not None
-
-
-def query_lang(_, __, query: types.CallbackQuery) -> bool:
-    if query.data == "he" or query.data == "en":
-        return True
-    return False
 
 
 list_of_media_group = []

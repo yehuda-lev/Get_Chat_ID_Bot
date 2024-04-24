@@ -1,7 +1,6 @@
 from pyrogram import Client, types, enums, raw, errors
 
 from tg import filters, strings
-from tg.filters import check_username
 from db import repository
 
 
@@ -11,7 +10,7 @@ async def welcome(_: Client, msg: types.Message):
     name = msg.from_user.first_name + (
         " " + last if (last := msg.from_user.last_name) else ""
     )
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     await msg.reply_text(
         text=strings.get_text(key="WELCOME", lang=lang).format(name=name),
@@ -60,7 +59,7 @@ async def welcome(_: Client, msg: types.Message):
 async def get_chats_manager(_: Client, msg: types.Message):
     """Get chats manager"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
     text = strings.get_text(key="CHAT_MANAGER", lang=lang)
 
     await msg.reply_text(
@@ -93,17 +92,17 @@ async def get_chats_manager(_: Client, msg: types.Message):
     )
 
 
-async def choice_lang(_, msg: types.Message):
-    """Choice language"""
+async def choose_lang(_, msg: types.Message):
+    """Choose language"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     await msg.reply(
         text=strings.get_text(key="CHOICE_LANG", lang=lang),
         reply_markup=types.InlineKeyboardMarkup(
             [
-                [types.InlineKeyboardButton(text="עברית 🇮🇱", callback_data="he")],
-                [types.InlineKeyboardButton(text="English 🇱🇷", callback_data="en")],
+                [types.InlineKeyboardButton(text="עברית 🇮🇱", callback_data="lang:he")],
+                [types.InlineKeyboardButton(text="English 🇱🇷", callback_data="lang:en")],
             ]
         ),
         quote=True,
@@ -112,9 +111,9 @@ async def choice_lang(_, msg: types.Message):
 
 async def get_lang(_, query: types.CallbackQuery):
     """Get language"""
-    data_lang = query.data
+    data_lang = query.data.split(":")[1]
     tg_id = query.from_user.id
-    repository.change_lang(tg_id=tg_id, lang=data_lang)
+    repository.update_user(tg_id=tg_id, language_code=data_lang)
     await query.edit_message_text(
         text=strings.get_text(key="DONE", lang=data_lang).format(data_lang),
     )
@@ -123,7 +122,7 @@ async def get_lang(_, query: types.CallbackQuery):
 async def get_forward(_, msg: types.Message):
     """Get message forward"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     if isinstance(msg.forward_from, types.User):
         # user
@@ -144,7 +143,7 @@ async def get_forward(_, msg: types.Message):
 async def get_me(_, msg: types.Message):
     """Get id the user"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     await msg.reply(
         text=strings.get_text(key="ID_USER", lang=lang).format(f"`{msg.from_user.id}`"),
@@ -155,7 +154,7 @@ async def get_me(_, msg: types.Message):
 async def get_contact(_, msg: types.Message):
     """Get id from contact"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     if msg.contact.user_id:
         text = strings.get_text(key="ID_USER", lang=lang).format(f"`{msg.contact.user_id}`")
@@ -167,7 +166,7 @@ async def get_contact(_, msg: types.Message):
 async def get_request_peer(_: Client, msg: types.Message):
     """"Get request peer"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     # TODO added name of chats
     reply_markup = None
@@ -183,15 +182,27 @@ async def get_request_peer(_: Client, msg: types.Message):
         text = strings.get_text(key="ID_USER", lang=lang).format(request_users)
     elif msg.chat_shared:
         request_chat = msg.chat_shared
+        chat = request_chat.chats[0]
         if request_chat.request_id == 100:
+
+            if not repository.is_group_exists(group_id=chat.id):
+                repository.create_group(
+                    group_id=chat.id, name=chat.title, username=chat.username, added_by_id=tg_id
+                )
+            else:
+                user = repository.get_user(tg_id=tg_id)
+                repository.update_group(
+                    group_id=chat.id, added_by_id=user.id, active=True
+                )
+
             text = strings.get_text(key="BOT_ADDED_TO_GROUP", lang=lang).format(
-                group_id=f"`{request_chat.chats[0].id}`"
+                group_id=f"`{chat.id}`"
             )
             reply_markup = types.ReplyKeyboardRemove()
 
         else:
             text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                f"`{msg.chat_shared.chats[0].id}`"
+                f"`{chat.id}`"
             )
     else:
         return
@@ -202,7 +213,7 @@ async def get_request_peer(_: Client, msg: types.Message):
 async def get_story(_: Client, msg: types.Message):
     """Get id from story"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     await msg.reply(
         text=strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(f"`{msg.story.chat.id}`"),
@@ -210,10 +221,10 @@ async def get_story(_: Client, msg: types.Message):
     )
 
 
-async def get_about(_: Client, msg: types.Message):
-    """Get info about the bot"""
+async def send_about(_: Client, msg: types.Message):
+    """Send info about the bot"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     await msg.reply_text(
         text=strings.get_text(key="INFO_ABOUT", lang=lang),
@@ -239,9 +250,9 @@ async def get_about(_: Client, msg: types.Message):
 async def get_username(client: Client, msg: types.Message):
     """Get id from username or link"""
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
-    username = check_username(text=msg.text)
+    username = filters.check_username(text=msg.text)
 
     try:
         chat = await client.get_chat(username)
@@ -275,7 +286,7 @@ async def added_to_group(_: Client, msg: types.Message):
     Added the bot to the group
     """
     tg_id = msg.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     await msg.reply(
         text=strings.get_text(key="ADD_BOT_TO_GROUP", lang=lang),
@@ -288,7 +299,7 @@ async def added_to_group(_: Client, msg: types.Message):
                         request_chat=types.KeyboardButtonRequestChat(
                             request_id=100, chat_is_channel=False, request_title=True,
                             user_administrator_rights=types.ChatPrivileges(
-                                can_manage_chat=True, can_promote_members=True
+                                can_manage_chat=True, can_promote_members=True, can_invite_users=True,
                             ),
                             bot_administrator_rights=types.ChatPrivileges(can_manage_chat=True)
                         ),
@@ -371,7 +382,7 @@ async def get_reply_to_another_chat(client: Client, update: raw.types.UpdateNewM
     """
     reply_to = update.message.reply_to
     tg_id = update.message.peer_id.user_id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     reply_to_chat_id, reply_from_id, reply_from_name = (
         None,

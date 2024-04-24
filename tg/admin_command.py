@@ -16,8 +16,8 @@ from tg import filters as tg_filters
 
 async def get_stats(_: Client, msg: types.Message):
     text = (
-        f"כמות המשתמשים בבוט היא: {repository.get_tg_count()} "
-        f"\nכמות המנויים הפעילים היא: {repository.get_tg_active_count()}"
+        f"כמות המשתמשים בבוט היא: {repository.get_all_users_count()} "
+        f"\nכמות המנויים הפעילים היא: {repository.get_users_count_active()}"
     )
     await msg.reply(text=text)
 
@@ -67,7 +67,7 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
         name_file = f"logger_{query.id}.txt"
         log_file = open(name_file, "a+", encoding="utf-8")
 
-        users = repository.get_users_active()
+        users = repository.get_all_users_active()
         sent = 0
         failed = 0
         count = 0
@@ -76,15 +76,13 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
         await client.send_message(
             chat_id=tg_id,
             text=f"**📣 starting broadcast to:** "
-            f"`{len(users)} users`\nPlease Wait...",
+                 f"`{len(users)} users`\nPlease Wait...",
         )
         progress = await client.send_message(
             chat_id=tg_id, text=f"**Message Sent To:** `{sent} users`"
         )
 
-        for chat in users:
-            user = repository.get_user_by_tg_id(tg_id=int(chat))
-
+        for user in users:
             # print(chat)
             if count > 40:
                 count = 0
@@ -92,11 +90,11 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
             try:
                 if message_to_send.forward_date:
                     await message_to_send.forward(
-                        chat_id=int(user.tg_id),
+                        chat_id=user.tg_id,
                     )
                 else:
                     await message_to_send.copy(
-                        chat_id=int(user.tg_id),
+                        chat_id=user.tg_id,
                     )
                 sent += 1
 
@@ -108,7 +106,7 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
                         text=f"**Message Sent To:** `{sent}` users",
                     )
 
-                log_file.write(f"sent to user: {user.tg_id}, name: {user.name} lang: {user.lang} \n")
+                log_file.write(f"sent to user: {user.tg_id}, name: {user.name} lang: {user.language_code} \n")
                 count += 1
                 time.sleep(
                     0.05
@@ -119,26 +117,26 @@ async def send_message_to_subscribers(client: Client, query: types.CallbackQuery
                 time.sleep(e.value)
 
             except InputUserDeactivated:
-                repository.change_active(tg_id=int(user.tg_id), active=False)
+                # repository.change_active(tg_id=int(user.tg_id), active=False)
                 log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.lang} is Deactivated\n")
                 failed += 1
                 continue
 
             except UserIsBlocked:
-                repository.change_active(tg_id=int(user.tg_id), active=False)
-                log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.lang} Blocked your bot\n")
+                # repository.change_active(tg_id=int(user.tg_id), active=False)
+                log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.language_code} Blocked your bot\n")
                 failed += 1
                 continue
 
             except PeerIdInvalid:
-                repository.change_active(tg_id=int(user.tg_id), active=False)
-                log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.lang} IdInvalid\n")
+                # repository.change_active(tg_id=int(user.tg_id), active=False)
+                log_file.write(f"user {user.tg_id}, name: {user.name} lang: {user.language_code} IdInvalid\n")
                 failed += 1
                 continue
 
             except BadRequest as e:
-                repository.change_active(tg_id=int(user.tg_id), active=False)
-                log_file.write(f"BadRequest: {e} : user {user.tg_id}, name: {user.name} lang: {user.lang}")
+                # repository.change_active(tg_id=int(user.tg_id), active=False)
+                log_file.write(f"BadRequest: {e} : user {user.tg_id}, name: {user.name} lang: {user.language_code}")
                 failed += 1
                 continue
 

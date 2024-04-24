@@ -21,7 +21,7 @@ def get_keyboard(*, keyboard_from: str | list, tg_id: int) -> list[list[types.In
     :param tg_id: int
     :return: list[list[types.InlineKeyboardButton]]
     """
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
     list_of_keyboard = []
 
     for lst in list_of_help:
@@ -101,7 +101,7 @@ def get_back_callback_data(data_index_lst: int, data_index_item: int) -> str:
 
 
 def get_keyboard_menu(keyboard_from: str | list, tg_id: int) -> types.InlineKeyboardMarkup:
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
     return types.InlineKeyboardMarkup(
         [
             [
@@ -122,7 +122,7 @@ def get_keyboard_menu(keyboard_from: str | list, tg_id: int) -> types.InlineKeyb
 # handle callback data
 async def handle_callback_data_help(_: Client, cbd: types.CallbackQuery | types.Message):
     tg_id = cbd.from_user.id
-    lang = repository.get_lang_by_user(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).language_code
 
     if isinstance(cbd, types.Message):
         await cbd.reply(
