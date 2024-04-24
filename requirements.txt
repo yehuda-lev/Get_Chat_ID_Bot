@@ -1,4 +1,4 @@
-https://github.com/TelegramPlayGround/pyrogram/archive/a572c0823e1638709a9181fe46f2431b68aa075f.zip
+pyrotgfork==2.1.23
 TgCrypto==1.2.5
-pony~=0.7.16
+SQLAlchemy~=2.0.23
 pydantic-settings==2.2.1
