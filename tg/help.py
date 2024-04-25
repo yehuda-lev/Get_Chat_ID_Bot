@@ -1,8 +1,12 @@
+import logging
 from pyrogram import types, Client, errors
 
 from data import cashe_memory
 from db import repository
 from tg import strings
+
+
+_logger = logging.getLogger(__name__)
 
 cache = cashe_memory.cache_memory
 

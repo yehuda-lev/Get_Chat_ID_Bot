@@ -1,3 +1,4 @@
+import logging
 import re
 import time
 
@@ -5,6 +6,9 @@ from pyrogram import types, filters, enums
 
 from db import repository as db_filters
 from data import config
+
+
+_logger = logging.getLogger(__name__)
 
 settings = config.get_settings()
 

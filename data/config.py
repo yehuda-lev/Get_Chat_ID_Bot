@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
-    pyrogram_name_session: str
     telegram_api_id: int
     telegram_api_hash: str
     telegram_bot_token: str

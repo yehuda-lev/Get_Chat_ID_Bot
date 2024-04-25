@@ -1,7 +1,11 @@
-from pyrogram import Client, types, enums, raw, errors
+import logging
+from pyrogram import Client, types, enums, errors
 
 from tg import filters, strings
 from db import repository
+
+
+_logger = logging.getLogger(__name__)
 
 
 async def welcome(_: Client, msg: types.Message):
@@ -377,14 +381,36 @@ async def added_to_group(_: Client, msg: types.Message):
     )
 
 
-async def on_remove_permission(client: Client, msg: types.ChatMemberUpdated):
+async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
     """
-    on remove permission,
-    if remove permission. the bot will leave the group
+    When the bot has had permissions removed from a chat or user blocked the bot.
     """
-    if msg.new_chat_member:
-        if msg.new_chat_member.status == enums.ChatMemberStatus.RESTRICTED:
-            await client.leave_chat(chat_id=msg.chat.id)
+    if not update.new_chat_member:
+        return
+    # user blocked the bot
+    if update.from_user.id == update.chat.id:
+        if (update.old_chat_member.status == enums.ChatMemberStatus.MEMBER
+                and update.new_chat_member.status == enums.ChatMemberStatus.BANNED):
+            if repository.is_user_exists(tg_id=update.from_user.id):
+                _logger.info(
+                    f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
+                )
+                repository.update_user(tg_id=update.from_user.id, active=False)
+
+    # the bot has had permissions removed from a chat
+    if not update.new_chat_member.user.is_self:
+        return
+    if update.new_chat_member.status in {
+        enums.ChatMemberStatus.MEMBER,
+        enums.ChatMemberStatus.RESTRICTED,
+    } and (
+        update.old_chat_member
+        or update.old_chat_member.status is enums.ChatMemberStatus.ADMINISTRATOR
+    ):
+        _logger.debug(
+            f"The bot has had permissions removed from: {update.chat.id}, {update.chat.title}"
+        )
+        repository.update_group(group_id=update.chat.id, active=False)
 
 
 async def get_ids_in_the_group(client: Client, msg: types.Message):

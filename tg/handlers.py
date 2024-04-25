@@ -1,6 +1,11 @@
+import logging
 from pyrogram import handlers, filters
 
 from tg import filters as tg_filters, get_ids, admin_command, help
+
+
+_logger = logging.getLogger(__name__)
+
 
 HANDLERS = [
     handlers.MessageHandler(
