@@ -129,7 +129,7 @@ async def get_forward(_, msg: types.Message):
     if isinstance(forward, types.MessageOriginUser):  # user
         user = forward.sender_user
         text = strings.get_text(key="ID_USER", lang=lang).format(
-            user.first_name + (user.last_name if user.last_name else ''),
+            user.first_name + ((' ' + user.last_name) if user.last_name else ''),
             user.id
         )
     elif isinstance(forward, types.MessageOriginChat):  # group
@@ -160,7 +160,7 @@ async def get_me(_, msg: types.Message):
 
     await msg.reply(
         text=strings.get_text(key="ID_USER", lang=lang).format(
-            user.first_name + (user.last_name if user.last_name else ''),
+            user.first_name + ((' ' + user.last_name) if user.last_name else ''),
             tg_id
         ),
         quote=True,
@@ -175,7 +175,7 @@ async def get_contact(_, msg: types.Message):
     if msg.contact.user_id:
         contact = msg.contact
         text = strings.get_text(key="ID_USER", lang=lang).format(
-            contact.first_name + (contact.last_name if contact.last_name else ''),
+            contact.first_name + (('' + contact.last_name) if contact.last_name else ''),
             contact.user_id
         )
     else:
@@ -194,14 +194,14 @@ async def get_request_peer(_: Client, msg: types.Message):
         if len(users) == 1:
             user = users[0]
             text = strings.get_text(key="ID_USER", lang=lang).format(
-                user.first_name + (user.last_name if user.last_name else ''),
+                user.first_name + ((' ' + user.last_name) if user.last_name else ''),
                 user.id
             )
 
         else:  # support of multiple users
             text = strings.get_text(key="ID_USERS", lang=lang).format(
                 "".join(
-                    f"\n`{user.id}` • {user.first_name + (user.last_name if user.last_name else '')}"
+                    f"\n`{user.id}` • {user.first_name + ((' ' + user.last_name) if user.last_name else '')}"
                     for user in users
                 )
             )
@@ -223,7 +223,8 @@ async def get_request_peer(_: Client, msg: types.Message):
                 )
 
             text = strings.get_text(key="BOT_ADDED_TO_GROUP", lang=lang).format(
-                group_id=f"`{chat.id}`"
+                chat.title,
+                chat.id
             )
             reply_markup = types.ReplyKeyboardRemove()
 
@@ -252,16 +253,33 @@ async def get_story(_: Client, msg: types.Message):
     lang = repository.get_user(tg_id=tg_id).language_code
     chat = msg.story.chat
 
-    await msg.reply(
-        text=strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-            (
-                chat.title if not isinstance(chat, types.User)
-                else chat.first_name + (chat.last_name if chat.last_name else '')
-            ),
-            chat.id
-        ),
-        quote=True,
-    )
+    match chat.type:
+        case enums.ChatType.PRIVATE:  # user
+            text = strings.get_text(key="ID_USER", lang=lang).format(
+                chat.first_name + ((' ' + chat.last_name) if chat.last_name else ''),
+                chat.id
+            )
+        case enums.ChatType.BOT:  # bot (when it's possible to upload story with bot)
+            text = strings.get_text(key="ID_USER", lang=lang).format(
+                chat.first_name + ((' ' + chat.last_name) if chat.last_name else ''),
+                chat.id
+            )
+        case enums.ChatType.CHANNEL:  # channel
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                chat.title, chat.id
+            )
+        case enums.ChatType.SUPERGROUP:  # supergroup
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                chat.title, chat.id
+            )
+        case enums.ChatType.GROUP:  # group
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                chat.title, chat.id
+            )
+        case _:
+            return
+
+    await msg.reply(text=text, quote=True)
 
 
 async def send_about(_: Client, msg: types.Message):
@@ -307,7 +325,7 @@ async def get_username(client: Client, msg: types.Message):
         if isinstance(chat, types.Chat):
             name = (
                 chat.title if chat.title
-                else chat.first_name + (chat.last_name if chat.last_name else '')
+                else chat.first_name + (' ' + chat.last_name if chat.last_name else '')
             )
             chat_id = chat.id
             match chat.type:
@@ -382,6 +400,7 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                     username = msg.text[entity.offset:entity.offset + entity.length]
                     user = await client.get_chat(username)
                     name = f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
+                    chat_id = user.id
                 except errors.BadRequest:
                     break
                 else:
@@ -389,7 +408,8 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
             elif entity.type == enums.MessageEntityType.TEXT_MENTION:
                 chat_id = entity.user.id
                 name = f"{entity.user.first_name} {entity.user.last_name}" \
-                    if entity.user.last_name else entity.user.first_name
+                    if entity.user.last_name else entity.user.first_name if \
+                    not entity.user.is_deleted else 'Deleted Account'
                 break
             else:
                 continue
@@ -404,7 +424,8 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
             if msg.reply_to_message.from_user:
                 chat = msg.reply_to_message.from_user
                 chat_id = chat.id
-                name = f"{chat.first_name} {chat.last_name}" if chat.last_name else chat.first_name
+                name = f"{chat.first_name} {chat.last_name}" if chat.last_name \
+                    else chat.first_name if not chat.is_deleted else 'Deleted Account'
             elif msg.reply_to_message.sender_chat:
                 chat = msg.reply_to_message.sender_chat
                 chat_id = chat.id
@@ -419,97 +440,40 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         return
 
     try:
-        await msg.reply(text=f"{name} | `{chat_id}`", quote=True)
+        await msg.reply(text=f"{name} • `{chat_id}`", quote=True)
     except Exception:  # noqa
         await client.leave_chat(chat_id=msg.chat.id)
 
 
-async def get_reply_to_another_chat(client: Client, update: raw.types.UpdateNewMessage):
+async def get_reply_to_another_chat(_: Client, msg: types.Message):
     """
     get reply to another chat
     """
-    reply_to = update.message.reply_to
-    tg_id = update.message.peer_id.user_id
-    lang = repository.get_user(tg_id=tg_id).language_code
+    if (reply_to := msg.external_reply.origin) is not None:
+        tg_id = msg.from_user.id
+        lang = repository.get_user(tg_id=tg_id).language_code
 
-    reply_to_chat_id, reply_from_id, reply_from_name = (
-        None,
-        None,
-        None,
-    )
-
-    # TODO get name chat
-
-    if reply_to.reply_to_peer_id:
-        match type(reply_to.reply_to_peer_id):
-            case raw.types.PeerChannel:
-                reply_to_chat_id = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                    f"`-100{reply_to.reply_to_peer_id.channel_id}`"
-                )
-            case raw.types.PeerUser:
-                reply_to_chat_id = strings.get_text(key="ID_USER", lang=lang).format(
-                    f"`{reply_to.reply_to_peer_id.user_id}`")
-            case raw.types.PeerChat:
-                reply_to_chat_id = strings.get_text(key="ID_USER", lang=lang).format(
-                    f"`{reply_to.reply_to_peer_id.chat_id}`")
-            case _:
-                return
-
-    if reply_to.reply_from:
-        if reply_to.reply_from.from_id:
-            match type(reply_to.reply_from.from_id):
-                case raw.types.PeerChannel:
-                    reply_from_id = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                        f"`-100{reply_to.reply_from.from_id.channel_id}`"
-                    )
-                case raw.types.PeerUser:
-                    reply_from_id = strings.get_text(key="ID_USER", lang=lang).format(
-                        f"`{reply_to.reply_from.from_id.user_id}`"
-                    )
-
-                case raw.types.PeerChat:
-                    reply_from_id = strings.get_text(key="ID_USER", lang=lang).format(
-                        f"`{reply_to.reply_from.from_id.chat_id}`"
-                    )
-                case _:
-                    return
-
-        else:
-            reply_from_name = strings.get_text(key="ID_HIDDEN", lang=lang).format(
-                name=reply_to.reply_from.from_name
+        if isinstance(reply_to, types.MessageOriginUser):  # user
+            user = reply_to.sender_user
+            text = strings.get_text(key="ID_USER", lang=lang).format(
+                user.first_name + (' ' + user.last_name if user.last_name else ''),                user.id
             )
+        elif isinstance(reply_to, types.MessageOriginChat):  # group
+            group = reply_to.sender_chat
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                group.title,
+                group.id
+            )
+        elif isinstance(reply_to, types.MessageOriginChannel):  # channel
+            channel = reply_to.chat
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                channel.title,
+                channel.id
+            )
+        elif isinstance(reply_to, types.MessageOriginHiddenUser):
+            # The user hides the forwarding of a message from him or Deleted Account
+            text = strings.get_text(key="ID_HIDDEN", lang=lang).format(name=reply_to.sender_user_name)
+        else:
+            return
 
-    if reply_from_id:
-        text = reply_from_id
-    elif reply_from_name:
-        text = reply_from_name
-    elif reply_to_chat_id:
-        text = reply_to_chat_id
-    else:
-        return
-
-    await client.send_message(
-        chat_id=tg_id,
-        text=text,
-        message_thread_id=update.message.id,
-    )
-
-
-async def get_raw(client: Client, update: raw.types.UpdateNewMessage, _, __):
-    """
-    Handle raw message
-    """
-    if isinstance(update, raw.types.UpdateNewMessage):
-        if isinstance(update.message, raw.types.Message):
-            if not update.message.peer_id and not update.message.peer_id.user_id:
-                return
-            tg_id = update.message.peer_id.user_id
-
-            # check user spamming
-            if not filters.is_spamming(tg_id=tg_id):
-                return
-
-            if update.message.reply_to:
-                if isinstance(update.message.reply_to, raw.types.MessageReplyHeader):
-                    # reply to another chat
-                    await get_reply_to_another_chat(client, update)
+        await msg.reply(text=text, quote=True)

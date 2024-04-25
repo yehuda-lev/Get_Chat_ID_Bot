@@ -53,7 +53,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_ids_in_the_group,
         filters.group
-        & tg_filters.start_command(command="id")
+        & filters.command("id")
     ),
     handlers.MessageHandler(
         help.handle_callback_data_help,
@@ -98,6 +98,14 @@ HANDLERS = [
         get_ids.get_story,
         filters.private
         & filters.create(lambda _, __, msg: msg.story is not None)
+        & ~ filters.create(tg_filters.status_answer())
+        & filters.create(tg_filters.is_user_spamming)
+        & filters.create(tg_filters.create_user)
+    ),
+    handlers.MessageHandler(
+        get_ids.get_reply_to_another_chat,
+        filters.private
+        & filters.create(lambda _, __, msg: msg.external_reply is not None)
         & ~ filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming)
         & filters.create(tg_filters.create_user)
@@ -148,6 +156,4 @@ HANDLERS = [
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin)
     ),
-
-    handlers.RawUpdateHandler(get_ids.get_raw),
 ]

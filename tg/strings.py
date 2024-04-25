@@ -23,7 +23,7 @@ TEXT = {
     "GROUP": {"en": "👥 Group", "he": "👥 קבוצה"},
     "ID_USER": {"en": "🪪 The ID of {} is: `{}`", "he": "‏🪪 ה ID  של {} הוא: `{}`"},
     "ID_USERS": {"en": "🪪 The ID of: \n{}", "he": "‏🪪 ה ID של: \n{}"},
-    "ID_CHANNEL_OR_GROUP": {"en": "🪪 The ID of {} is: {}", "he": "‏🪪 ה ID של {} הוא: \u200e`{}`"},
+    "ID_CHANNEL_OR_GROUP": {"en": "🪪 The ID of {} is: `{}`", "he": "‏🪪 ה ID של {} הוא: \u200e`{}`"},
     "ID_CHANNELS_OR_GROUPS": {"en": "🪪 The ID of: \n{}", "he": "‏🪪 ה ID של: \u200e{}"},
     "ID_HIDDEN": {"en": "🪪 The ID is hidden. \n{name}", "he": "‏🪪 ה ID מוסתר \n{name}"},
     "CHOICE_LANG": {"en": "🤳 Select your language.", "he": "🤳 בחר את השפה שלך."},
@@ -201,10 +201,10 @@ TEXT = {
     },
     "BOT_ADDED_TO_GROUP": {
         "en": "**Bot added to group**\n\n"
-              "The bot was added to the group {group_id}\n"
+              "The bot was added to the group {group_name} • `{group_id}`\n"
               "to get ids of members in the group, send `/id` in the group",
         "he": "**הוספת הבוט לקבוצה**\n\n"
-              "\u200fהבוט נוסף לקבוצה {group_id}\n"
+              "\u200fהבוט נוסף לקבוצה {group_name} • `{group_id}`\n"
               "כדי לקבל מזהים של חברים בקבוצה, שלחו `/id` בקבוצה",
     },
 }
