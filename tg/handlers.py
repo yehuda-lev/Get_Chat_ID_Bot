@@ -110,32 +110,9 @@ HANDLERS = [
         & filters.create(tg_filters.is_user_spamming)
         & filters.create(tg_filters.create_user)
     ),
-    # admin command
-    handlers.MessageHandler(
-        admin_command.get_stats,
-        filters.private
-        & filters.command("stats")
-        & filters.create(tg_filters.is_user_spamming)
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_admin)
-    ),
-    handlers.MessageHandler(
-        admin_command.get_message_for_subscribe,
-        filters.private
-        & (
-                tg_filters.start_command(command="send")
-                & ~ filters.create(tg_filters.status_answer()) |
-                filters.create(tg_filters.status_answer(send_message_to_subscribers=True))
-        )
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_admin)
-    ),
-
     handlers.ChatMemberUpdatedHandler(
         get_ids.on_remove_permission,
-        # filters.admin
     ),
-
     # callback
     handlers.CallbackQueryHandler(
         help.handle_callback_data_help,
@@ -149,11 +126,42 @@ HANDLERS = [
         & filters.create(tg_filters.is_user_spamming)
         & filters.create(tg_filters.create_user)
     ),
-    handlers.CallbackQueryHandler(
-        admin_command.send_message_to_subscribers,
-        filters.create(lambda _, __, cbd: cbd.data.startswith("send"))
+    # admin command
+    handlers.MessageHandler(
+        admin_command.stats,
+        filters.private
+        & filters.command("stats")
         & filters.create(tg_filters.is_user_spamming)
         & filters.create(tg_filters.create_user)
         & filters.create(tg_filters.is_admin)
+    ),
+    handlers.MessageHandler(
+        admin_command.ask_for_who_to_send,
+        filters.private
+        & tg_filters.start_command("send")
+        & filters.create(tg_filters.is_user_spamming)
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_admin),
+    ),
+    handlers.MessageHandler(
+        admin_command.delete_sent_messages,
+        filters.command("delete")
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_admin),
+    ),
+    handlers.CallbackQueryHandler(
+        admin_command.asq_message_for_subscribe,
+        filters.create(lambda _, __, msg: msg.data.startswith("send"))
+        & filters.create(tg_filters.is_user_spamming)
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_admin),
+    ),
+    handlers.MessageHandler(
+        admin_command.send_broadcast,
+        filters.private
+        & filters.create(tg_filters.status_answer(send_message_to_subscribers=True))
+        & filters.create(tg_filters.is_user_spamming)
+        & filters.create(tg_filters.create_user)
+        & filters.create(tg_filters.is_admin),
     ),
 ]
