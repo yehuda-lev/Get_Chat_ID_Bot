@@ -43,6 +43,7 @@ if __name__ == "__main__":
         if not repository.is_user_exists(tg_id=admin):
             repository.create_user(tg_id=admin, name="admin", admin=True)
         else:
-            repository.change_admin(tg_id=admin, admin=True)
+            if not repository.is_admin(tg_id=admin):
+                repository.update_user(tg_id=admin, admin=True)
 
     main()

@@ -72,6 +72,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_username,
         filters.private
+        & filters.text
         & filters.create(tg_filters.is_username)
         & ~ filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming)

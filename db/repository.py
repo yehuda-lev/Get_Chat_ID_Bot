@@ -50,7 +50,7 @@ def create_user(
     tg_id: int,
     name: str,
     username: str = None,
-    language_code: str = None,
+    language_code: str = "en",
     admin: bool = False,
     active: bool = True,
 ):
