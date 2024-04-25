@@ -74,4 +74,16 @@ class Group(BaseTable):
     added_by: Mapped[User] = relationship("User", back_populates="groups")
 
 
+class MessageSent(BaseTable):
+    """Sent message details"""
+
+    __tablename__ = "message_sent"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    sent_id: Mapped[str] = mapped_column(String(20))
+    message_id: Mapped[int]
+    chat_id: Mapped[int]
+    sent_at: Mapped[datetime.datetime]
+
+
 BaseTable.metadata.create_all(engine)

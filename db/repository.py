@@ -3,9 +3,8 @@
 import datetime
 import logging
 from sqlalchemy import exists, func
-from sqlalchemy.exc import NoResultFound, MultipleResultsFound
 
-from db.tables import get_session, User, Group
+from db.tables import get_session, User, Group, MessageSent
 from data import cashe_memory
 
 
@@ -170,15 +169,13 @@ def get_group(*, group_id: int) -> Group:
     Get group by group id
     :param group_id: the group id
     :return: :class:`Group`,
-    if group not found raise :class:`NoResultFound`,
-    if more than one group found raise :class:`MultipleResultsFound`
     """
 
     with get_session() as session:
         return session.query(Group).filter(Group.group_id == group_id).one()
 
 
-# admin
+# stats
 
 
 def get_all_users_count() -> int:
@@ -221,3 +218,51 @@ def get_all_groups_active() -> list[Group]:
 
     with get_session() as session:
         return session.query(Group).filter(Group.active == True).all()
+
+
+# message_sent
+
+
+def create_message_sent(*, sent_id: str, chat_id: int, message_id: int) -> MessageSent:
+    """Create message sent
+    :param sent_id: the sent id
+    :param chat_id: the chat id
+    :param message_id: the message id
+    :return: :class:`MessageSent`
+    """
+
+    _logger.debug(
+        f"Create message sent: sent_id:{sent_id}, chat_id:{chat_id}, message_id:{message_id}"
+    )
+
+    with get_session() as session:
+        message_sent = MessageSent(
+            sent_id=sent_id,
+            chat_id=chat_id,
+            message_id=message_id,
+            sent_at=datetime.datetime.now(),
+        )
+        session.add(message_sent)
+        session.commit()
+        return message_sent
+
+
+def get_messages_sent(*, sent_id: str) -> list[MessageSent]:
+    """Get messages sent by sent_id
+    :param sent_id: the sent id
+    :return: list of :class:`MessageSent`
+    """
+
+    with get_session() as session:
+        return session.query(MessageSent).filter(MessageSent.sent_id == sent_id).all()
+
+
+def is_message_sent_exists(*, sent_id: str) -> bool:
+    """
+    Check if message sent exists
+    :param sent_id: the sent id
+    :return: bool
+    """
+
+    with get_session() as session:
+        return session.query(exists().where(MessageSent.sent_id == sent_id)).scalar()
