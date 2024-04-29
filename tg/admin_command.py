@@ -23,16 +23,17 @@ async def stats(_: Client, msg: types.Message):  # command /stats
     groups = repository.get_all_groups_count()
     groups_active = repository.get_groups_count_active()
 
-    text = (f"**סטטיסטיקות על הבוט**\n"
-            f"**כמות היוזרים המנויים בבוט הם:** \n"
-            f"הכל: {users}\n"
-            f"פעילים: {users_active}\n"
-            f"לא פעילים: {users - users_active}\n\n"
-            f"**כמות הקבוצות בבוט הם:** \n"
-            f"הכל: {groups}\n"
-            f"פעילות: {groups_active}\n"
-            f"לא פעילות: {groups - groups_active}\n"
-            )
+    text = (
+        f"**סטטיסטיקות על הבוט**\n"
+        f"**כמות היוזרים המנויים בבוט הם:** \n"
+        f"הכל: {users}\n"
+        f"פעילים: {users_active}\n"
+        f"לא פעילים: {users - users_active}\n\n"
+        f"**כמות הקבוצות בבוט הם:** \n"
+        f"הכל: {groups}\n"
+        f"פעילות: {groups_active}\n"
+        f"לא פעילות: {groups - groups_active}\n"
+    )
 
     await msg.reply(text=text, quote=True)
 
@@ -61,7 +62,7 @@ async def ask_for_who_to_send(_: Client, msg: types.Message):
 
 
 async def asq_message_for_subscribe(_: Client, msg: types.CallbackQuery):
-    match (send_to := msg.data.split(":")[-1]):
+    match send_to := msg.data.split(":")[-1]:
         case "users":
             send_to = send_to
             text = "כל המשתמשים"
@@ -77,7 +78,7 @@ async def asq_message_for_subscribe(_: Client, msg: types.CallbackQuery):
 
     await msg.message.reply(
         text=f"אנא שלח את ההודעה שתרצה לשלוח ל{text}\n "
-             f"> אם ההודעה תועבר עם קרדיט, הבוט גם יעביר את ההודעה עם קרדיט",
+        f"> אם ההודעה תועבר עם קרדיט, הבוט גם יעביר את ההודעה עם קרדיט",
     )
     filters.add_listener(
         tg_id=msg.from_user.id,
@@ -115,8 +116,8 @@ async def send_broadcast(_: Client, msg: types.Message):
             break
 
     await msg.reply(
-        text=f"**📣 מתחיל שליחה ל:** {len((chats if chats is not None else users))} צ'אטים\nאנא המתן..."
-             f"> מזהה השליחה: `{sent_id}` ניתן להשתמש בו בכדי למחוק את ההודעות שנשלחו עם הפקודה `/delete {sent_id}`",
+        text=f"**📣 מתחיל שליחה ל:** {len((chats if chats is not None else users))} צ'אטים\nאנא המתן...\n"
+        f"> מזהה השליחה: `{sent_id}` ניתן להשתמש בו בכדי למחוק את ההודעות שנשלחו עם הפקודה `/delete {sent_id}`",
     )
     progress = await msg.reply(text=f"**ההודעה נשלחת ל:** {sent} צ'אטים")
 

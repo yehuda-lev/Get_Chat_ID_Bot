@@ -54,9 +54,7 @@ class User(BaseTable):
     created_at: Mapped[datetime.datetime]
     active: Mapped[bool] = mapped_column(default=True)
     admin: Mapped[bool] = mapped_column(default=False)
-    groups: Mapped[list[Group]] = relationship(
-        back_populates="added_by", lazy="joined"
-    )
+    groups: Mapped[list[Group]] = relationship(back_populates="added_by", lazy="joined")
 
 
 class Group(BaseTable):

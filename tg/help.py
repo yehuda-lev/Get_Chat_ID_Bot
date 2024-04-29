@@ -11,14 +11,16 @@ _logger = logging.getLogger(__name__)
 cache = cache_memory.cache_memory
 
 list_of_help: list[list[str]] = [
-    ['Request_chat', 'Forward', 'Story'],
-    ['Search_username', 'Reply_to_another_chat', 'Contact'],
-    ['Me', 'Request_admin', 'Language', 'Group'],
+    ["Request_chat", "Forward", "Story"],
+    ["Search_username", "Reply_to_another_chat", "Contact"],
+    ["Me", "Request_admin", "Language", "Group"],
 ]
 
 
-@cache.cachable(cache_name="get_keyboard", params=('keyboard_from', 'tg_id'))
-def get_keyboard(*, keyboard_from: str | list, tg_id: int) -> list[list[types.InlineKeyboardButton]]:
+@cache.cachable(cache_name="get_keyboard", params=("keyboard_from", "tg_id"))
+def get_keyboard(
+    *, keyboard_from: str | list, tg_id: int
+) -> list[list[types.InlineKeyboardButton]]:
     """
     Get keyboard for help
     :param keyboard_from: str
@@ -35,7 +37,8 @@ def get_keyboard(*, keyboard_from: str | list, tg_id: int) -> list[list[types.In
             x.append(
                 types.InlineKeyboardButton(
                     text=strings.get_text(key=item.upper(), lang=lang),
-                    callback_data=f'help:info:{keyboard_from}:{list_of_help.index(lst)}:{lst.index(item)}')
+                    callback_data=f"help:info:{keyboard_from}:{list_of_help.index(lst)}:{lst.index(item)}",
+                )
             )
         list_of_keyboard.append(x)
 
@@ -72,7 +75,7 @@ def get_next_callback_data(data_index_lst: int, data_index_item: int) -> str:
     except IndexError:
         index_lst, index_item = 0, 0
 
-    return f'help:next:{data_index_lst}-{data_index_item}:{index_lst}:{index_item}'
+    return f"help:next:{data_index_lst}-{data_index_item}:{index_lst}:{index_item}"
 
 
 def get_back_callback_data(data_index_lst: int, data_index_item: int) -> str:
@@ -101,42 +104,48 @@ def get_back_callback_data(data_index_lst: int, data_index_item: int) -> str:
     except IndexError:
         index_lst, index_item = 0, 0
 
-    return f'help:back:{data_index_lst}-{data_index_item}:{index_lst}:{index_item}'
+    return f"help:back:{data_index_lst}-{data_index_item}:{index_lst}:{index_item}"
 
 
-def get_keyboard_menu(keyboard_from: str | list, tg_id: int) -> types.InlineKeyboardMarkup:
+def get_keyboard_menu(
+    keyboard_from: str | list, tg_id: int
+) -> types.InlineKeyboardMarkup:
     lang = repository.get_user(tg_id=tg_id).language_code
     return types.InlineKeyboardMarkup(
         [
             [
                 types.InlineKeyboardButton(
                     text=strings.get_text(key="SHOW_ALL", lang=lang),
-                    callback_data=f'help:next:{keyboard_from}:0:0')
+                    callback_data=f"help:next:{keyboard_from}:0:0",
+                )
             ],
             *get_keyboard(keyboard_from=keyboard_from, tg_id=tg_id),
             [
                 types.InlineKeyboardButton(
                     text=strings.get_text(key="ABOUT", lang=lang),
-                    callback_data=f'help:info:{keyboard_from}:about')
-            ]
+                    callback_data=f"help:info:{keyboard_from}:about",
+                )
+            ],
         ]
     )
 
 
 # handle callback data
-async def handle_callback_data_help(_: Client, cbd: types.CallbackQuery | types.Message):
+async def handle_callback_data_help(
+    _: Client, cbd: types.CallbackQuery | types.Message
+):
     tg_id = cbd.from_user.id
     lang = repository.get_user(tg_id=tg_id).language_code
 
     if isinstance(cbd, types.Message):
         await cbd.reply(
             text=strings.get_text(key="INFO_MENU", lang=lang),
-            reply_markup=get_keyboard_menu(keyboard_from="menu", tg_id=tg_id)
+            reply_markup=get_keyboard_menu(keyboard_from="menu", tg_id=tg_id),
         )
 
     else:
         try:
-            data = cbd.data.split(':')
+            data = cbd.data.split(":")
 
             if data[2].replace("-", ":").split(":")[0] == str(data[3:]):
                 return
@@ -151,40 +160,47 @@ async def handle_callback_data_help(_: Client, cbd: types.CallbackQuery | types.
                 index_lst, index_item = int(data[-2]), int(data[-1])
 
                 await cbd.edit_message_text(
-                    text=strings.get_text(key=f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}", lang=lang),
+                    text=strings.get_text(
+                        key=f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}",
+                        lang=lang,
+                    ),
                     reply_markup=types.InlineKeyboardMarkup(
                         [
                             [
                                 types.InlineKeyboardButton(
                                     text=strings.get_text(key="BACK", lang=lang),
-                                    callback_data=get_back_callback_data(index_lst, index_item)
+                                    callback_data=get_back_callback_data(
+                                        index_lst, index_item
+                                    ),
                                 ),
                                 types.InlineKeyboardButton(
                                     text=strings.get_text(key="NEXT", lang=lang),
-                                    callback_data=get_next_callback_data(index_lst, index_item)
+                                    callback_data=get_next_callback_data(
+                                        index_lst, index_item
+                                    ),
                                 ),
                             ],
                             # back to menu:
                             [
                                 types.InlineKeyboardButton(
                                     text=strings.get_text(key="MENU", lang=lang),
-                                    callback_data=f"help:menu:{keyboad_from}:menu"
+                                    callback_data=f"help:menu:{keyboad_from}:menu",
                                 )
                             ],
-
                             [
                                 types.InlineKeyboardButton(
                                     text=strings.get_text(key="ABOUT", lang=lang),
-                                    callback_data=f'help:info:{keyboad_from}:about')
-                            ]
+                                    callback_data=f"help:info:{keyboad_from}:about",
+                                )
+                            ],
                         ]
-                    )
+                    ),
                 )
 
             elif data[1] == "menu":
                 await cbd.edit_message_text(
                     text=strings.get_text(key="INFO_MENU", lang=lang),
-                    reply_markup=get_keyboard_menu(keyboad_from, tg_id)
+                    reply_markup=get_keyboard_menu(keyboad_from, tg_id),
                 )
 
             elif data[1] == "info":
@@ -196,18 +212,20 @@ async def handle_callback_data_help(_: Client, cbd: types.CallbackQuery | types.
                             [
                                 [
                                     types.InlineKeyboardButton(
-                                        text=strings.get_text(key="BUTTON_DEV", lang=lang),
-                                        url=strings.get_text(key="LINK_DEV", lang=lang)
+                                        text=strings.get_text(
+                                            key="BUTTON_DEV", lang=lang
+                                        ),
+                                        url=strings.get_text(key="LINK_DEV", lang=lang),
                                     )
                                 ],
                                 [
                                     types.InlineKeyboardButton(
                                         text=strings.get_text(key="MENU", lang=lang),
-                                        callback_data=f"help:menu:{keyboad_from}:menu"
+                                        callback_data=f"help:menu:{keyboad_from}:menu",
                                     )
-                                ]
+                                ],
                             ]
-                        )
+                        ),
                     )
 
                 # get item
@@ -215,8 +233,12 @@ async def handle_callback_data_help(_: Client, cbd: types.CallbackQuery | types.
                     index_lst, index_item = int(data[-2]), int(data[-1])
                     await cbd.edit_message_text(
                         text=strings.get_text(
-                            key=f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}", lang=lang),
-                        reply_markup=get_keyboard_menu(keyboard_from=str(keyboad_from), tg_id=tg_id),
+                            key=f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}",
+                            lang=lang,
+                        ),
+                        reply_markup=get_keyboard_menu(
+                            keyboard_from=str(keyboad_from), tg_id=tg_id
+                        ),
                     )
         except errors.MessageNotModified:
             pass

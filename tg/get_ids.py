@@ -28,14 +28,20 @@ async def welcome(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=strings.get_text(key="USER", lang=lang),
                         request_users=types.KeyboardButtonRequestUsers(
-                            request_id=1, user_is_bot=False, max_quantity=10, request_name=True
+                            request_id=1,
+                            user_is_bot=False,
+                            max_quantity=10,
+                            request_name=True,
                         ),
                     ),
                     # bot
                     types.KeyboardButton(
                         text=strings.get_text(key="BOT", lang=lang),
                         request_users=types.KeyboardButtonRequestUsers(
-                            request_id=2, user_is_bot=True, max_quantity=10, request_name=True
+                            request_id=2,
+                            user_is_bot=True,
+                            max_quantity=10,
+                            request_name=True,
                         ),
                     ),
                 ],
@@ -44,14 +50,18 @@ async def welcome(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=strings.get_text(key="GROUP", lang=lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=3, chat_is_channel=False, request_title=True,
+                            request_id=3,
+                            chat_is_channel=False,
+                            request_title=True,
                         ),
                     ),
                     # channel
                     types.KeyboardButton(
                         text=strings.get_text(key="CHANNEL", lang=lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=4, chat_is_channel=True, request_title=True,
+                            request_id=4,
+                            chat_is_channel=True,
+                            request_title=True,
                         ),
                     ),
                 ],
@@ -78,16 +88,24 @@ async def get_chats_manager(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=strings.get_text(key="GROUP", lang=lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=3, chat_is_channel=False, request_title=True,
-                            user_administrator_rights=types.ChatPrivileges(can_manage_chat=True)
+                            request_id=3,
+                            chat_is_channel=False,
+                            request_title=True,
+                            user_administrator_rights=types.ChatPrivileges(
+                                can_manage_chat=True
+                            ),
                         ),
                     ),
                     # channel
                     types.KeyboardButton(
                         text=strings.get_text(key="CHANNEL", lang=lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=4, chat_is_channel=True, request_title=True,
-                            user_administrator_rights=types.ChatPrivileges(can_manage_chat=True)
+                            request_id=4,
+                            chat_is_channel=True,
+                            request_title=True,
+                            user_administrator_rights=types.ChatPrivileges(
+                                can_manage_chat=True
+                            ),
                         ),
                     ),
                 ],
@@ -106,7 +124,11 @@ async def choose_lang(_, msg: types.Message):
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [types.InlineKeyboardButton(text="עברית 🇮🇱", callback_data="lang:he")],
-                [types.InlineKeyboardButton(text="English 🇱🇷", callback_data="lang:en")],
+                [
+                    types.InlineKeyboardButton(
+                        text="English 🇱🇷", callback_data="lang:en"
+                    )
+                ],
             ]
         ),
         quote=True,
@@ -133,24 +155,24 @@ async def get_forward(_, msg: types.Message):
     if isinstance(forward, types.MessageOriginUser):  # user
         user = forward.sender_user
         text = strings.get_text(key="ID_USER", lang=lang).format(
-            user.first_name + ((' ' + user.last_name) if user.last_name else ''),
-            user.id
+            user.first_name + ((" " + user.last_name) if user.last_name else ""),
+            user.id,
         )
     elif isinstance(forward, types.MessageOriginChat):  # group
         group = forward.sender_chat
         text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-            group.title,
-            group.id
+            group.title, group.id
         )
     elif isinstance(forward, types.MessageOriginChannel):  # channel
         channel = forward.chat
         text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-            channel.title,
-            channel.id
+            channel.title, channel.id
         )
     elif isinstance(forward, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
-        text = strings.get_text(key="ID_HIDDEN", lang=lang).format(name=forward.sender_user_name)
+        text = strings.get_text(key="ID_HIDDEN", lang=lang).format(
+            name=forward.sender_user_name
+        )
     else:
         return
     await msg.reply(text=text, quote=True)
@@ -164,8 +186,7 @@ async def get_me(_, msg: types.Message):
 
     await msg.reply(
         text=strings.get_text(key="ID_USER", lang=lang).format(
-            user.first_name + ((' ' + user.last_name) if user.last_name else ''),
-            tg_id
+            user.first_name + ((" " + user.last_name) if user.last_name else ""), tg_id
         ),
         quote=True,
     )
@@ -179,8 +200,9 @@ async def get_contact(_, msg: types.Message):
     if msg.contact.user_id:
         contact = msg.contact
         text = strings.get_text(key="ID_USER", lang=lang).format(
-            contact.first_name + (('' + contact.last_name) if contact.last_name else ''),
-            contact.user_id
+            contact.first_name
+            + (("" + contact.last_name) if contact.last_name else ""),
+            contact.user_id,
         )
     else:
         text = strings.get_text(key="NOT_HAVE_ID", lang=lang)
@@ -188,7 +210,7 @@ async def get_contact(_, msg: types.Message):
 
 
 async def get_request_peer(_: Client, msg: types.Message):
-    """"Get request peer"""
+    """ "Get request peer"""
     tg_id = msg.from_user.id
     lang = repository.get_user(tg_id=tg_id).language_code
     reply_markup = None
@@ -198,8 +220,8 @@ async def get_request_peer(_: Client, msg: types.Message):
         if len(users) == 1:
             user = users[0]
             text = strings.get_text(key="ID_USER", lang=lang).format(
-                user.first_name + ((' ' + user.last_name) if user.last_name else ''),
-                user.id
+                user.first_name + ((" " + user.last_name) if user.last_name else ""),
+                user.id,
             )
 
         else:  # support of multiple users
@@ -218,7 +240,10 @@ async def get_request_peer(_: Client, msg: types.Message):
 
             if not repository.is_group_exists(group_id=chat.id):
                 repository.create_group(
-                    group_id=chat.id, name=chat.title, username=chat.username, added_by_id=tg_id
+                    group_id=chat.id,
+                    name=chat.title,
+                    username=chat.username,
+                    added_by_id=tg_id,
                 )
             else:
                 user = repository.get_user(tg_id=tg_id)
@@ -228,7 +253,7 @@ async def get_request_peer(_: Client, msg: types.Message):
 
             text = strings.get_text(key="BOT_ADDED_TO_GROUP", lang=lang).format(
                 group_name=f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
-                group_id=chat.id
+                group_id=chat.id,
             )
             reply_markup = types.ReplyKeyboardRemove()
 
@@ -240,10 +265,7 @@ async def get_request_peer(_: Client, msg: types.Message):
                 )
             else:  # support of multiple chats
                 text = strings.get_text(key="ID_CHANNELS_OR_GROUPS", lang=lang).format(
-                    "".join(
-                        f"\n{chat.title} • `{chat.id}`"
-                        for chat in chats
-                    )
+                    "".join(f"\n{chat.title} • `{chat.id}`" for chat in chats)
                 )
     else:
         return
@@ -260,13 +282,13 @@ async def get_story(_: Client, msg: types.Message):
     match chat.type:
         case enums.ChatType.PRIVATE:  # user
             text = strings.get_text(key="ID_USER", lang=lang).format(
-                chat.first_name + ((' ' + chat.last_name) if chat.last_name else ''),
-                chat.id
+                chat.first_name + ((" " + chat.last_name) if chat.last_name else ""),
+                chat.id,
             )
         case enums.ChatType.BOT:  # bot (when it's possible to upload story with bot)
             text = strings.get_text(key="ID_USER", lang=lang).format(
-                chat.first_name + ((' ' + chat.last_name) if chat.last_name else ''),
-                chat.id
+                chat.first_name + ((" " + chat.last_name) if chat.last_name else ""),
+                chat.id,
             )
         case enums.ChatType.CHANNEL:  # channel
             text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
@@ -303,12 +325,11 @@ async def send_about(_: Client, msg: types.Message):
                 [
                     types.InlineKeyboardButton(
                         text=strings.get_text(key="BUTTON_DEV", lang=lang),
-                        url=strings.get_text(key="LINK_DEV", lang=lang)
+                        url=strings.get_text(key="LINK_DEV", lang=lang),
                     )
                 ],
             ]
-        )
-
+        ),
     )
 
 
@@ -322,27 +343,40 @@ async def get_username(client: Client, msg: types.Message):
     try:
         chat = await client.get_chat(username)
     except errors.BadRequest:
-        await msg.reply_text(text=strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang), quote=True)
+        await msg.reply_text(
+            text=strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang), quote=True
+        )
         return
 
     else:
         if isinstance(chat, types.Chat):
             name = (
-                chat.title if chat.title
-                else chat.first_name + (' ' + chat.last_name if chat.last_name else '')
+                chat.title
+                if chat.title
+                else chat.first_name + (" " + chat.last_name if chat.last_name else "")
             )
             chat_id = chat.id
             match chat.type:
                 case enums.ChatType.PRIVATE:
-                    text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+                    text = strings.get_text(key="ID_USER", lang=lang).format(
+                        name, chat_id
+                    )
                 case enums.ChatType.BOT:
-                    text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+                    text = strings.get_text(key="ID_USER", lang=lang).format(
+                        name, chat_id
+                    )
                 case enums.ChatType.GROUP:
-                    text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(name, chat_id)
+                    text = strings.get_text(
+                        key="ID_CHANNEL_OR_GROUP", lang=lang
+                    ).format(name, chat_id)
                 case enums.ChatType.CHANNEL:
-                    text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(name, chat_id)
+                    text = strings.get_text(
+                        key="ID_CHANNEL_OR_GROUP", lang=lang
+                    ).format(name, chat_id)
                 case enums.ChatType.SUPERGROUP:
-                    text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(name, chat_id)
+                    text = strings.get_text(
+                        key="ID_CHANNEL_OR_GROUP", lang=lang
+                    ).format(name, chat_id)
                 case _:
                     return
         else:
@@ -367,17 +401,24 @@ async def added_to_group(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=strings.get_text(key="BUTTON_ADD_BOT_TO_GROUP", lang=lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=100, chat_is_channel=False, request_title=True, request_username=True,
+                            request_id=100,
+                            chat_is_channel=False,
+                            request_title=True,
+                            request_username=True,
                             user_administrator_rights=types.ChatPrivileges(
-                                can_manage_chat=True, can_promote_members=True, can_invite_users=True,
+                                can_manage_chat=True,
+                                can_promote_members=True,
+                                can_invite_users=True,
                             ),
-                            bot_administrator_rights=types.ChatPrivileges(can_manage_chat=True)
+                            bot_administrator_rights=types.ChatPrivileges(
+                                can_manage_chat=True
+                            ),
                         ),
                     )
                 ]
             ],
-            resize_keyboard=True
-        )
+            resize_keyboard=True,
+        ),
     )
 
 
@@ -389,8 +430,10 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
         return
     # user blocked the bot
     if update.from_user.id == update.chat.id:
-        if (update.old_chat_member.status == enums.ChatMemberStatus.MEMBER
-                and update.new_chat_member.status == enums.ChatMemberStatus.BANNED):
+        if (
+            update.old_chat_member.status == enums.ChatMemberStatus.MEMBER
+            and update.new_chat_member.status == enums.ChatMemberStatus.BANNED
+        ):
             if repository.is_user_exists(tg_id=update.from_user.id):
                 _logger.info(
                     f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
@@ -423,9 +466,13 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         for entity in msg.entities:
             if entity.type == enums.MessageEntityType.MENTION:
                 try:
-                    username = msg.text[entity.offset:entity.offset + entity.length]
+                    username = msg.text[entity.offset : entity.offset + entity.length]
                     user = await client.get_chat(username)
-                    name = f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
+                    name = (
+                        f"{user.first_name} {user.last_name}"
+                        if user.last_name
+                        else user.first_name
+                    )
                     chat_id = user.id
                 except errors.BadRequest:
                     break
@@ -433,9 +480,13 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                     break
             elif entity.type == enums.MessageEntityType.TEXT_MENTION:
                 chat_id = entity.user.id
-                name = f"{entity.user.first_name} {entity.user.last_name}" \
-                    if entity.user.last_name else entity.user.first_name if \
-                    not entity.user.is_deleted else 'Deleted Account'
+                name = (
+                    f"{entity.user.first_name} {entity.user.last_name}"
+                    if entity.user.last_name
+                    else entity.user.first_name
+                    if not entity.user.is_deleted
+                    else "Deleted Account"
+                )
                 break
             else:
                 continue
@@ -444,14 +495,24 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         if msg.reply_to_story:
             chat = msg.reply_to_story.chat
             chat_id = chat.id
-            name = chat.title if chat.title \
-                else f"{chat.first_name} {chat.last_name}" if chat.last_name else chat.first_name
+            name = (
+                chat.title
+                if chat.title
+                else f"{chat.first_name} {chat.last_name}"
+                if chat.last_name
+                else chat.first_name
+            )
         elif msg.reply_to_message:
             if msg.reply_to_message.from_user:
                 chat = msg.reply_to_message.from_user
                 chat_id = chat.id
-                name = f"{chat.first_name} {chat.last_name}" if chat.last_name \
-                    else chat.first_name if not chat.is_deleted else 'Deleted Account'
+                name = (
+                    f"{chat.first_name} {chat.last_name}"
+                    if chat.last_name
+                    else chat.first_name
+                    if not chat.is_deleted
+                    else "Deleted Account"
+                )
             elif msg.reply_to_message.sender_chat:
                 chat = msg.reply_to_message.sender_chat
                 chat_id = chat.id
@@ -482,23 +543,24 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
         if isinstance(reply_to, types.MessageOriginUser):  # user
             user = reply_to.sender_user
             text = strings.get_text(key="ID_USER", lang=lang).format(
-                user.first_name + (' ' + user.last_name if user.last_name else ''),                user.id
+                user.first_name + (" " + user.last_name if user.last_name else ""),
+                user.id,
             )
         elif isinstance(reply_to, types.MessageOriginChat):  # group
             group = reply_to.sender_chat
             text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                group.title,
-                group.id
+                group.title, group.id
             )
         elif isinstance(reply_to, types.MessageOriginChannel):  # channel
             channel = reply_to.chat
             text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                channel.title,
-                channel.id
+                channel.title, channel.id
             )
         elif isinstance(reply_to, types.MessageOriginHiddenUser):
             # The user hides the forwarding of a message from him or Deleted Account
-            text = strings.get_text(key="ID_HIDDEN", lang=lang).format(name=reply_to.sender_user_name)
+            text = strings.get_text(key="ID_HIDDEN", lang=lang).format(
+                name=reply_to.sender_user_name
+            )
         else:
             return
 

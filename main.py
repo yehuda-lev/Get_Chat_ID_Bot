@@ -1,7 +1,6 @@
-import asyncio
 import logging
 from logging.handlers import RotatingFileHandler
-from pyrogram import Client, raw, __version__, idle
+from pyrogram import Client, raw, __version__
 
 from tg.handlers import HANDLERS
 from db import repository
@@ -49,10 +48,7 @@ def main():
             if not repository.is_admin(tg_id=admin):
                 repository.update_user(tg_id=admin, admin=True)
 
-    app.start()
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(idle())
+    app.run()
 
 
 if __name__ == "__main__":

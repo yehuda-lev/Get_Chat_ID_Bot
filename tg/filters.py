@@ -58,11 +58,11 @@ def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
             if not text.startswith(prefix):
                 continue
 
-            without_prefix = text[len(prefix):]
+            without_prefix = text[len(prefix) :]
 
             text_command = without_prefix.split(" ")
             if len(text_command) > 1:
-                return without_prefix[(len(text_command[0]) + 1):] == command
+                return without_prefix[(len(text_command[0]) + 1) :] == command
             else:
                 return text_command[0] == command
         return False
@@ -78,10 +78,11 @@ def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
 def is_mention_users(msg: types.Message) -> bool:
     """
     Check if the message contains a mention
-    """""
+    """ ""
     if msg.entities:
         return any(
-            x for x in msg.entities
+            x
+            for x in msg.entities
             if x.type == enums.MessageEntityType.MENTION
             or x.type == enums.MessageEntityType.TEXT_MENTION
         )
@@ -95,7 +96,13 @@ def create_user(_, __, msg: types.Message) -> bool:
     lang = lng if (lng := user.language_code) == "he" else "en"
 
     if not db_filters.is_user_exists(tg_id=tg_id):
-        db_filters.create_user(tg_id=tg_id, name=name, admin=False, language_code=lang, username=user.username)
+        db_filters.create_user(
+            tg_id=tg_id,
+            name=name,
+            admin=False,
+            language_code=lang,
+            username=user.username,
+        )
         return True
 
     if not db_filters.is_active(tg_id=tg_id):
