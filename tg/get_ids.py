@@ -227,8 +227,8 @@ async def get_request_peer(_: Client, msg: types.Message):
                 )
 
             text = strings.get_text(key="BOT_ADDED_TO_GROUP", lang=lang).format(
-                chat.title,
-                chat.id
+                group_name=f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
+                group_id=chat.id
             )
             reply_markup = types.ReplyKeyboardRemove()
 

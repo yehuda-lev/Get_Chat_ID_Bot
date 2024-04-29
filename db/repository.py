@@ -5,17 +5,18 @@ import logging
 from sqlalchemy import exists, func
 
 from db.tables import get_session, User, Group, MessageSent
-from data import cashe_memory
+from data import cache_memory
 
 
 _logger = logging.getLogger(__name__)
 
-cache = cashe_memory.cache_memory
+cache = cache_memory.cache_memory
 
 
 # user
 
 
+@cache.cachable(cache_name="is_user_exists", params="tg_id")
 def is_user_exists(*, tg_id: int) -> bool:
     """Check if user exists in DB or not"""
 
@@ -23,6 +24,7 @@ def is_user_exists(*, tg_id: int) -> bool:
         return session.query(exists().where(User.tg_id == tg_id)).scalar()
 
 
+@cache.cachable(cache_name="is_active", params="tg_id")
 def is_active(*, tg_id: int) -> bool:
     """Check if user active or not."""
 
@@ -30,18 +32,12 @@ def is_active(*, tg_id: int) -> bool:
         return session.query(User.active).filter(User.tg_id == tg_id).scalar()
 
 
+@cache.cachable(cache_name="is_admin", params="tg_id")
 def is_admin(*, tg_id: int) -> bool:
     """Check if user admin or not"""
 
     with get_session() as session:
         return session.query(User.admin).filter(User.tg_id == tg_id).scalar()
-
-
-def get_lang_by_user(*, tg_id: int) -> str:
-    """Get lang user"""
-
-    with get_session() as session:
-        return session.query(User.language_code).filter(User.tg_id == tg_id).scalar()
 
 
 def create_user(
@@ -68,6 +64,12 @@ def create_user(
         f"language_code:{language_code}, is_admin:{admin}, active:{active}"
     )
 
+    # delete the cache
+    cache.delete("is_user_exists", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("is_active", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("is_admin", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
+
     with get_session() as session:
         user = User(
             tg_id=tg_id,
@@ -88,12 +90,21 @@ def update_user(*, tg_id: int, **kwargs):
     :param tg_id: the user id
     :param kwargs: the data to update
     """
+
     _logger.debug(f"Update user: tg_id:{tg_id}, data:{kwargs}")
+
+    # delete the cache
+    cache.delete("is_user_exists", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("is_active", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("is_admin", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
+
     with get_session() as session:
         session.query(User).filter(User.tg_id == tg_id).update(kwargs)
         session.commit()
 
 
+@cache.cachable(cache_name="get_user", params="tg_id")
 def get_user(*, tg_id: int) -> User:
     """
     Get user by tg id

@@ -1,19 +1,19 @@
 import logging
 from pyrogram import types, Client, errors
 
-from data import cashe_memory
+from data import cache_memory
 from db import repository
 from tg import strings
 
 
 _logger = logging.getLogger(__name__)
 
-cache = cashe_memory.cache_memory
+cache = cache_memory.cache_memory
 
 list_of_help: list[list[str]] = [
     ['Request_chat', 'Forward', 'Story'],
     ['Search_username', 'Reply_to_another_chat', 'Contact'],
-    ['Me', 'Request_admin', 'Language'],
+    ['Me', 'Request_admin', 'Language', 'Group'],
 ]
 
 

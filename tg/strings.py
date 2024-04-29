@@ -6,16 +6,16 @@ TEXT = {
               "🪪 In this bot you can get the id of any group, channel, user or bot\n\n"
               "📤 To use the bot, click on the buttons below and share the chat whose ID you want to know."
               " - In response, the bot will return the ID of the chat you shared\n\n"
-              "🇺🇸 To change the language please send the /lang command\n\n"
+              "🇺🇸 To change the language send the /lang command\n\n"
               "📝 For the list of available commands send the command /help\n\n"
               "📢 For updates on the bot subscribe to @GetChatID_Updates",
         "he": "ברוך הבא {name} 🤠\n\n"
               "\u200f🪪 בבוט זה תוכל לקבל מזהה של כל קבוצה, ערוץ, משתמש או בוט\n\n"
-              "📤 בשביל להשתמש בבוט לחץ על הכפתורים למטה ושתף את הצאט שברצונך לדעת מה המזהה שלו. "
+              "📤 בכדי להשתמש בבוט לחץ על הכפתורים למטה ושתף את הצאט שברצונך לדעת מה המזהה שלו. "
               "- בתגובה הבוט יחזיר לך את המזהה של הצאט אותו שיתפת\n\n"
-              "\u200f🇺🇸 לשינוי השפה אנא שלחו את הפקודה /lang\n\n"
-              "📝 לרשימת הפקודות הזמינות שלחו את הפקודה /help\n\n"
-              "📢 לעדכונים על הבוט הירשמו ל-@GetChatID_Updates",
+              "\u200f🇺🇸 לשינוי השפה שלח את הפקודה /lang\n\n"
+              "📝 לרשימת הפקודות הזמינות שלח את הפקודה /help\n\n"
+              "📢 לעדכונים על הבוט הירשם ל-@GetChatID_Updates",
     },
     "USER": {"en": "👤 User", "he": "👤 משתמש"},
     "BOT": {"en": "🤖 Bot", "he": "🤖 בוט"},
@@ -135,6 +135,14 @@ TEXT = {
         'he': "**\u200f🇺🇸 שפה**\n\n"
               "לשינוי השפה שלחו את הפקודה /lang",
     },
+    'INFO_GROUP': {
+        'en': '**👥 Group**\n\n'
+              "Add the bot to the group with the command `/add` "
+              "and get the id of the group members with the command `/id`",
+        'he': "**👥 קבוצה**\n\n"
+              "הוסף את הבוט לקבוצה עם הפקודה `/add`"
+              " וקבל את המזהה של חברי הקבוצה באמצעות הפקודה `/id`",
+    },
     'SHOW_ALL': {
         'en': '📕 show all',
         'he': '📕 הצג הכל'
@@ -165,6 +173,7 @@ TEXT = {
             "Language: Python \n"
             "Library: Pyrogram \n"
             "Bot creator: @yehudalev 👨‍💻\n\n"
+            "Donations: [To donate to the bot creator](https://www.paypal.com/paypalme/yehudalev100)\n\n"
             "The bot is open source on GitHub 🖤\n"
             "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
             "📢 For updates on the bot, subscribe to @GetChatID_Updates,",
@@ -173,6 +182,7 @@ TEXT = {
             "שפה: Python \n"
             "ספרייה: Pyrogram \n"
             "יוצר הבוט: @yehudalev  👨‍💻\n\n"
+            "תרומות: [לתרומה ליוצר הבוט](https://www.paypal.com/paypalme/yehudalev100)\n\n"
             "הבוט בקוד פתוח בגיטהאב 🖤\n"
             "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
             "📢 לעדכונים על הבוט הירשמו ל-@GetChatID_Updates",
