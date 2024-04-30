@@ -567,7 +567,7 @@ async def get_id_with_business_connection(_: Client, msg: types.Message):
     await msg.reply(
         disable_notification=True,
         text=strings.get_text(key="ID_USER", lang=lang).format(
-            user.full_name if user.full_name else "",
+            msg.chat.full_name if msg.chat.full_name else "",
             msg.chat.id,
         ),
     )
