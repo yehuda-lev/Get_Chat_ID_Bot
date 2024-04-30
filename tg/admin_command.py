@@ -19,6 +19,7 @@ async def stats(_: Client, msg: types.Message):  # command /stats
     """
     users = repository.get_all_users_count()
     users_active = repository.get_users_count_active()
+    business = repository.get_users_business_count()
 
     groups = repository.get_all_groups_count()
     groups_active = repository.get_groups_count_active()
@@ -28,7 +29,8 @@ async def stats(_: Client, msg: types.Message):  # command /stats
         f"**כמות היוזרים המנויים בבוט הם:** \n"
         f"הכל: {users}\n"
         f"פעילים: {users_active}\n"
-        f"לא פעילים: {users - users_active}\n\n"
+        f"לא פעילים: {users - users_active}\n"
+        f"משתמשי ביזנס {business}\n\n"
         f"**כמות הקבוצות בבוט הם:** \n"
         f"הכל: {groups}\n"
         f"פעילות: {groups_active}\n"

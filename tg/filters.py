@@ -91,7 +91,7 @@ def is_mention_users(msg: types.Message) -> bool:
 def create_user(_, __, msg: types.Message) -> bool:
     user = msg.from_user
     tg_id = user.id
-    name = user.first_name + (" " + last if (last := user.last_name) else "")
+    name = user.full_name if user.full_name else ""
     lang = lng if (lng := user.language_code) == "he" else "en"
 
     if not db_filters.is_user_exists(tg_id=tg_id):

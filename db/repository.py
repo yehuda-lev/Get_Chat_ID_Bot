@@ -69,6 +69,7 @@ def create_user(
     cache.delete("is_active", cache_id=cache.build_cache_id(tg_id=tg_id))
     cache.delete("is_admin", cache_id=cache.build_cache_id(tg_id=tg_id))
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("get_user_language", cache_id=cache.build_cache_id(tg_id=tg_id))
 
     with get_session() as session:
         user = User(
@@ -98,6 +99,7 @@ def update_user(*, tg_id: int, **kwargs):
     cache.delete("is_active", cache_id=cache.build_cache_id(tg_id=tg_id))
     cache.delete("is_admin", cache_id=cache.build_cache_id(tg_id=tg_id))
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
+    cache.delete("get_user_language", cache_id=cache.build_cache_id(tg_id=tg_id))
 
     with get_session() as session:
         session.query(User).filter(User.tg_id == tg_id).update(kwargs)
@@ -114,6 +116,18 @@ def get_user(*, tg_id: int) -> User:
 
     with get_session() as session:
         return session.query(User).filter(User.tg_id == tg_id).one()
+
+
+@cache.cachable(cache_name="get_user_language", params="tg_id")
+def get_user_language(*, tg_id: int) -> str:
+    """
+    Get user language by tg id
+    :param tg_id: the user id
+    :return: str
+    """
+
+    with get_session() as session:
+        return session.query(User.language_code).filter(User.tg_id == tg_id).scalar()
 
 
 # group
@@ -201,6 +215,15 @@ def get_users_count_active() -> int:
 
     with get_session() as session:
         return session.query(func.count(User.id)).filter(User.active == True).scalar()  # noqa
+
+
+def get_users_business_count() -> int:
+    """Get all business users count"""
+
+    with get_session() as session:
+        return (
+            session.query(func.count(User.id)).filter(User.business_id != None).scalar()
+        )  # noqa
 
 
 def get_all_users_active() -> list[User]:
