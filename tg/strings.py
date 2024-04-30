@@ -161,14 +161,14 @@ TEXT = {
     },
     "BUSINESS": {"en": "🔗 Business connection", "he": "🔗 חיבור עסקי"},
     "INFO_BUSINESS": {
-        "en": "****🔗 Business connection****"
+        "en": "**🔗 Business connection**\n\n"
         "You can connect the bot to your business and get the ID of any chat."
         "\n> Go to settings > Telegram Business > Chatbot > and select this bot"
         "\nThen you can send the command `.id` in any private chat to get the chat ID."
         "\nYou can also get the ID without sending a message in the chat!"
         "\n> Go to the chat and then click on the bot management button "
         "and the bot will send the ID of the chat you came from",
-        "he": "**🔗 חיבור עסקי**"
+        "he": "**🔗 חיבור עסקי**\n\n"
         "ניתן לחבר את הבוט לעסק שלך ולקבל מזהה של כל צ'אט."
         "\n> כנס להגדרות > טלגרם ביזנס > צ'אטבוט > ובחר בבוט הזה"
         "\nלאחר מכן תוכל לשלוח את הפקודה `.id` "
@@ -180,11 +180,16 @@ TEXT = {
         "en": "**🔗 Business connection**"
         "\nHi, thanks for connecting with me! "
         "\nYou can use me by sending the command `.id` "
-        "in any chat (private) to get the chat ID.",
+        "in any chat (private) to get the chat ID."
+        "\n> You can also get the ID without sending a message in the chat!"
+        "\n> Go to the chat and then click on the bot management button "
+        "and the bot will send the ID of the chat you came from",
         "he": "**🔗 חיבור עסקי**"
         "\nהיי, תודה שהתחברת לצ'אט בוט שלי! "
         "\nאתה יכול להשתמש בי על ידי שליחה של הפקודה `.id` "
-        "בכל צ'אט (פרטי) כדי לקבל את המזהה של הצ'אט.",
+        "בכל צ'אט (פרטי) כדי לקבל את המזהה של הצ'אט."
+        "\n> ניתן גם לקבל את הID ללא שליחת הודעה בצא'ט!"
+        "\n> כנס לצא'ט ואז לחץ על כפתור ניהול הבוט והבוט ישלח את המזהה של הצאט שממנו הגעת",
     },
     "BUSINESS_CONNECTION_DISABLED": {
         "en": "**🔗 Business connection**"
