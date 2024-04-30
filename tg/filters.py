@@ -1,30 +1,31 @@
+import logging
 import re
 import time
 
-from pyrogram import types, filters
+from pyrogram import types, filters, enums
 
 from db import repository as db_filters
-from data import utils
+from data import config
 
 
-settings = utils.get_settings()
+_logger = logging.getLogger(__name__)
 
+settings = config.get_settings()
 
 user_id_to_state: dict[int:dict] = {}
-"""example: {tg_id: {send_message_to_subscribers}}"""
 
 
-def status_answer(*, tg_id: int) -> bool:
-    exists = user_id_to_state.get(tg_id)
-    if exists:
-        return True
-    return False
-
-
-def is_status_answer(_, __, msg: types.Message) -> bool:
+def status_answer(**kwargs) -> callable:
     """Check if user status is answer now"""
-    tg_id = msg.from_user.id
-    return status_answer(tg_id=tg_id)
+
+    def get_is_answer(_, __, msg: types.Message) -> bool:
+        tg_id = msg.from_user.id
+        exists = user_id_to_state.get(tg_id)
+        if exists:
+            return all(exists.get(key, False) == value for key, value in kwargs.items())
+        return False
+
+    return get_is_answer
 
 
 def add_listener(*, tg_id: int, data: dict):
@@ -32,47 +33,87 @@ def add_listener(*, tg_id: int, data: dict):
     user_id_to_state.update({tg_id: data})
 
 
-def remove_listener(*, tg_id: int):
+def remove_listener_by_tg_id(*, tg_id: int):
     try:
         user_id_to_state.pop(tg_id)
     except KeyError:
         pass
 
 
-def remove_listener_by_wa_id(*, tg_id: int):
-    try:
-        user_id_to_state.pop(tg_id)
-    except KeyError:
-        pass
+def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
+    """
+    Check if the message is a start command
+        /start or https://t.me/bot?start=command
+    Args:
+        command: the command to check
+        prefixes: the prefixes to check, default is "/"
+    """
+
+    def get_start_command(_, __, msg: types.Message) -> bool:
+        text: str = msg.text or msg.caption
+        if not text:
+            return False
+
+        for prefix in prefixes:
+            if not text.startswith(prefix):
+                continue
+
+            without_prefix = text[len(prefix) :]
+
+            text_command = without_prefix.split(" ")
+            if len(text_command) > 1:
+                return without_prefix[(len(text_command[0]) + 1) :] == command
+            else:
+                return text_command[0] == command
+        return False
+
+    return filters.create(
+        func=get_start_command,
+        name="StartCommand",
+        command=command,
+        prefixes=prefixes,
+    )
 
 
-def regex_start(arg: str):
-    return filters.regex(rf"^/start ({arg})")
+def is_mention_users(msg: types.Message) -> bool:
+    """
+    Check if the message contains a mention
+    """ ""
+    if msg.entities:
+        return any(
+            x
+            for x in msg.entities
+            if x.type == enums.MessageEntityType.MENTION
+            or x.type == enums.MessageEntityType.TEXT_MENTION
+        )
+    return False
 
 
 def create_user(_, __, msg: types.Message) -> bool:
-    tg_id = msg.from_user.id
-    name = msg.from_user.first_name + (
-        " " + last if (last := msg.from_user.last_name) else ""
-    )
-    lang = l if (l := msg.from_user.language_code) == "he" else "en"
+    user = msg.from_user
+    tg_id = user.id
+    name = user.first_name + (" " + last if (last := user.last_name) else "")
+    lang = lng if (lng := user.language_code) == "he" else "en"
 
     if not db_filters.is_user_exists(tg_id=tg_id):
-        db_filters.create_user(tg_id=tg_id, name=name, admin=False, lang=lang)
+        db_filters.create_user(
+            tg_id=tg_id,
+            name=name,
+            admin=False,
+            language_code=lang,
+            username=user.username,
+        )
         return True
 
     if not db_filters.is_active(tg_id=tg_id):
-        db_filters.change_active(tg_id=tg_id, active=True)
+        db_filters.update_user(tg_id=tg_id, active=True)
 
     return True
 
 
-
 def is_admin(_, __, msg: types.Message) -> bool:
     tg_id = msg.from_user.id
-    if db_filters.is_admin(tg_id=tg_id):
-        return True
-    return False
+    return db_filters.is_admin(tg_id=tg_id)
 
 
 def check_username(text) -> str | None:
@@ -90,12 +131,6 @@ def check_username(text) -> str | None:
 
 def is_username(_, __, msg: types.Message) -> bool:
     return check_username(msg.text) is not None
-
-
-def query_lang(_, __, query: types.CallbackQuery) -> bool:
-    if query.data == "he" or query.data == "en":
-        return True
-    return False
 
 
 list_of_media_group = []
@@ -131,10 +166,9 @@ def is_spamming(tg_id: int) -> bool:
     user_messages.append(current_time)
     last_message_time[tg_id] = user_messages
 
-    return len(user_messages) < int(settings.LIMIT_SPAM)
+    return len(user_messages) < int(settings.limit_spam)
 
 
 def is_user_spamming(_, __, msg) -> bool:
     tg_id = msg.from_user.id
     return is_spamming(tg_id)
-
