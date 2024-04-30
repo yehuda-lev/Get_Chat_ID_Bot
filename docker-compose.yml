@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  get-chat-id-bot:
+    build:
+      context: .
+    environment:
+      - TZ=Asia/Jerusalem
+    platform: linux/amd64
+    container_name: get-chat-id-bot
+    volumes:
+      - ./:/get-chat-id-bot
+    command: ["python", "main.py"]
