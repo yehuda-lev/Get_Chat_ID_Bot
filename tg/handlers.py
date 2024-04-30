@@ -96,7 +96,7 @@ HANDLERS = [
         filters.private
         & ~filters.tg_business
         & filters.contact
-        & ~filters.create(tg_filters.status_answer(answer=True))
+        & ~filters.create(tg_filters.status_answer())
         & filters.create(tg_filters.is_user_spamming)
         & filters.create(tg_filters.create_user),
     ),
@@ -133,6 +133,26 @@ HANDLERS = [
     handlers.ChatMemberUpdatedHandler(
         get_ids.on_remove_permission,
     ),
+    # business
+    handlers.MessageHandler(
+        get_ids.get_id_with_business_connection,
+        filters.tg_business
+        & filters.command("id", prefixes=[".", "/"])
+        & filters.create(lambda _, __, msg: msg.outgoing)
+        & filters.create(tg_filters.is_user_spamming)
+        & filters.create(tg_filters.create_user),
+    ),
+    handlers.MessageHandler(
+        get_ids.get_id_by_manage_business,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="bizChat")
+        & filters.create(tg_filters.is_user_spamming)
+        & filters.create(tg_filters.create_user),
+    ),
+    handlers.RawUpdateHandler(
+        get_ids.handle_business_connection,
+    ),
     # callback
     handlers.CallbackQueryHandler(
         help.handle_callback_data_help,
@@ -145,15 +165,6 @@ HANDLERS = [
         filters.create(lambda _, __, cbd: cbd.data.startswith("lang"))
         & filters.create(tg_filters.is_user_spamming)
         & filters.create(tg_filters.create_user),
-    ),
-    handlers.MessageHandler(
-        get_ids.get_id_with_business_connection,
-        filters.tg_business
-        & filters.command("id", prefixes=[".", "/"])
-        & filters.create(lambda _, __, msg: msg.outgoing),
-    ),
-    handlers.RawUpdateHandler(
-        get_ids.handle_business_connection,
     ),
     # admin command
     handlers.MessageHandler(

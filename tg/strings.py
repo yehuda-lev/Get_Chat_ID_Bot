@@ -125,16 +125,16 @@ TEXT = {
     "ABOUT": {"en": "ℹ️ about", "he": "ℹ️ אודות"},
     "INFO_ABOUT": {
         "en": "ℹ️ **Details about the bot**\n\n"
-        "Language: Python \n"
-        "Library: Pyrogram \n"
+        "Language: [Python](https://www.python.org/) \n"
+        "Library: [pyrotgfork](https://telegramplayground.github.io/pyrogram/) \n"
         "Bot creator: @yehudalev 👨‍💻\n\n"
         "Donations: [To donate to the bot creator](https://www.paypal.com/paypalme/yehudalev100)\n\n"
         "The bot is open source on GitHub 🖤\n"
         "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
         "📢 For updates on the bot, subscribe to @GetChatID_Updates,",
         "he": "\u200fℹ️ **פרטים על הבוט**\n\n"
-        "שפה: Python \n"
-        "ספרייה: Pyrogram \n"
+        "שפה: [Python](https://www.python.org/) \n"
+        "ספרייה: [pyrotgfork](https://telegramplayground.github.io/pyrogram/) \n"
         "יוצר הבוט: @yehudalev  👨‍💻\n\n"
         "תרומות: [לתרומה ליוצר הבוט](https://www.paypal.com/paypalme/yehudalev100)\n\n"
         "הבוט בקוד פתוח בגיטהאב 🖤\n"
@@ -164,12 +164,17 @@ TEXT = {
         "en": "****🔗 Business connection****"
         "You can connect the bot to your business and get the ID of any chat."
         "\n> Go to settings > Telegram Business > Chatbot > and select this bot"
-        "\nThen you can send the command `.id` in any private chat to get the chat ID.",
+        "\nThen you can send the command `.id` in any private chat to get the chat ID."
+        "\nYou can also get the ID without sending a message in the chat!"
+        "\n> Go to the chat and then click on the bot management button "
+        "and the bot will send the ID of the chat you came from",
         "he": "**🔗 חיבור עסקי**"
         "ניתן לחבר את הבוט לעסק שלך ולקבל מזהה של כל צ'אט."
         "\n> כנס להגדרות > טלגרם ביזנס > צ'אטבוט > ובחר בבוט הזה"
         "\nלאחר מכן תוכל לשלוח את הפקודה `.id` "
-        "בכל צ'אט פרטי כדי לקבל את המזהה של הצ'אט.",
+        "בכל צ'אט פרטי כדי לקבל את המזהה של הצ'אט."
+        "\nניתן גם לקבל את הID ללא שליחת הודעה בצא'ט!"
+        "\n> כנס לצא'ט ואז לחץ על כפתור ניהול הבוט והבוט ישלח את המזהה של הצאט שממנו הגעת",
     },
     "BUSINESS_CONNECTION": {
         "en": "**🔗 Business connection**"
@@ -195,6 +200,10 @@ TEXT = {
         "he": "**🔗 חיבור עסקי**"
         "\nאני מצטער שהתנתקת מהחיבור לבוט."
         "תוכל לחזור בכל עת ולהתחבר אלי שוב.",
+    },
+    "ID_BY_MANAGE_BUSINESS": {
+        "en": "🪪 The ID of the chat you came from is: `{}`",
+        "he": "‏🪪 ה ID של הצ'אט ממנו באת הוא: `{}`",
     },
 }
 

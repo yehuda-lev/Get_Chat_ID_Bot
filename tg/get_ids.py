@@ -1,5 +1,5 @@
 import logging
-from pyrogram import Client, types, enums, errors, raw
+from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
 from tg import filters, strings
 from db import repository
@@ -573,11 +573,31 @@ async def get_id_with_business_connection(_: Client, msg: types.Message):
     """
 
     lang = repository.get_user(tg_id=msg.from_user.id).language_code
+    # send the id of the chat without the notification
     await msg.reply(
+        disable_notification=True,
         text=strings.get_text(key="ID_USER", lang=lang).format(
             msg.chat.first_name
             + (" " + msg.chat.last_name if msg.chat.last_name else ""),
             msg.chat.id,
+        ),
+    )
+
+
+async def get_id_by_manage_business(_: Client, msg: types.Message):
+    """
+    Get id by manage business.
+    """
+
+    lang = repository.get_user(tg_id=msg.from_user.id).language_code
+    from_chat_id = msg.text.split("bizChat")[1]
+    try:
+        from_chat_id = int(from_chat_id)
+    except ValueError:
+        return
+    await msg.reply(
+        text=strings.get_text(key="ID_BY_MANAGE_BUSINESS", lang=lang).format(
+            from_chat_id
         )
     )
 
@@ -585,6 +605,9 @@ async def get_id_with_business_connection(_: Client, msg: types.Message):
 async def handle_business_connection(
     client: Client, update: raw.types.UpdateNewMessage, users: dict, __: dict
 ):
+    """
+    Handle business connection and disconnection
+    """
     try:
         if isinstance(update, raw.types.UpdateBotBusinessConnect):
             if not repository.is_user_exists(tg_id=update.connection.user_id):
@@ -633,3 +656,5 @@ async def handle_business_connection(
 
     except Exception as e:
         _logger.exception(e)
+
+    raise ContinuePropagation

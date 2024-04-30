@@ -7,7 +7,6 @@ from pyrogram import types, filters, enums
 from db import repository as db_filters
 from data import config
 
-
 _logger = logging.getLogger(__name__)
 
 settings = config.get_settings()
@@ -62,9 +61,9 @@ def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
 
             text_command = without_prefix.split(" ")
             if len(text_command) > 1:
-                return without_prefix[(len(text_command[0]) + 1) :] == command
+                return without_prefix[(len(text_command[0]) + 1) :].startswith(command)
             else:
-                return text_command[0] == command
+                return text_command[0].startswith(command)
         return False
 
     return filters.create(
