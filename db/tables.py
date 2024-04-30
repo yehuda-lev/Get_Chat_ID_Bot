@@ -50,6 +50,7 @@ class User(BaseTable):
     tg_id: Mapped[int] = mapped_column(unique=True)
     name: Mapped[str] = mapped_column(String(32))
     username: Mapped[str | None] = mapped_column(String(32))
+    business_id: Mapped[str | None] = mapped_column(String(32))
     language_code: Mapped[str | None] = mapped_column(String(5))
     created_at: Mapped[datetime.datetime]
     active: Mapped[bool] = mapped_column(default=True)

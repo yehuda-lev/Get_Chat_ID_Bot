@@ -1,5 +1,5 @@
 import logging
-from pyrogram import Client, types, enums, errors
+from pyrogram import Client, types, enums, errors, raw
 
 from tg import filters, strings
 from db import repository
@@ -565,3 +565,71 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
             return
 
         await msg.reply(text=text, quote=True)
+
+
+async def get_id_with_business_connection(_: Client, msg: types.Message):
+    """
+    Get id with business connection.
+    """
+
+    lang = repository.get_user(tg_id=msg.from_user.id).language_code
+    await msg.reply(
+        text=strings.get_text(key="ID_USER", lang=lang).format(
+            msg.chat.first_name
+            + (" " + msg.chat.last_name if msg.chat.last_name else ""),
+            msg.chat.id,
+        )
+    )
+
+
+async def handle_business_connection(
+    client: Client, update: raw.types.UpdateNewMessage, users: dict, __: dict
+):
+    try:
+        if isinstance(update, raw.types.UpdateBotBusinessConnect):
+            if not repository.is_user_exists(tg_id=update.connection.user_id):
+                user = users.get(update.connection.user_id)
+                repository.create_user(
+                    tg_id=user.id,
+                    name=user.first_name,
+                    username=user.username,
+                    language_code=user.language_code,
+                )
+            else:
+                if not repository.is_active(tg_id=update.connection.user_id):
+                    repository.update_user(tg_id=update.connection.user_id, active=True)
+
+            lang = repository.get_user(tg_id=update.connection.user_id).language_code
+
+            if not update.connection.disabled:  # user add the bot to our business
+                if update.connection.can_reply:
+                    repository.update_user(
+                        tg_id=update.connection.user_id,
+                        business_id=update.connection.connection_id,
+                    )
+
+                    await client.send_message(
+                        chat_id=update.connection.user_id,
+                        text=strings.get_text(key="BUSINESS_CONNECTION", lang=lang),
+                    )
+
+                else:  # with no permission to reply
+                    await client.send_message(
+                        chat_id=update.connection.user_id,
+                        text=strings.get_text(
+                            key="BUSINESS_CONNECTION_DISABLED", lang=lang
+                        ),
+                    )
+
+            else:  # user remove the bot from our business
+                repository.update_user(
+                    tg_id=update.connection.user_id, business_id=None
+                )
+
+                await client.send_message(
+                    chat_id=update.connection.user_id,
+                    text=strings.get_text(key="BUSINESS_CONNECTION_REMOVED", lang=lang),
+                )
+
+    except Exception as e:
+        _logger.exception(e)

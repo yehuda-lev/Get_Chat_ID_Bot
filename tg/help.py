@@ -13,7 +13,8 @@ cache = cache_memory.cache_memory
 list_of_help: list[list[str]] = [
     ["Request_chat", "Forward", "Story"],
     ["Search_username", "Reply_to_another_chat", "Contact"],
-    ["Me", "Request_admin", "Language", "Group"],
+    ["Me", "Group", "Business"],
+    ["Request_admin", "Language"],
 ]
 
 

@@ -154,10 +154,47 @@ TEXT = {
     "BOT_ADDED_TO_GROUP": {
         "en": "**Bot added to group**\n\n"
         "The bot was added to the group {group_name} • `{group_id}`\n"
-        "to get ids of members in the group, send `/id` in the group",
+        "to get ids of members in the group, send the command `/id` in the group",
         "he": "**הוספת הבוט לקבוצה**\n\n"
         "\u200fהבוט נוסף לקבוצה {group_name} • `{group_id}`\n"
-        "כדי לקבל מזהים של חברים בקבוצה, שלחו `/id` בקבוצה",
+        "כדי לקבל מזהים של חברים בקבוצה, שלח את הפקודה `/id` בקבוצה",
+    },
+    "BUSINESS": {"en": "🔗 Business connection", "he": "🔗 חיבור עסקי"},
+    "INFO_BUSINESS": {
+        "en": "****🔗 Business connection****"
+        "You can connect the bot to your business and get the ID of any chat."
+        "\n> Go to settings > Telegram Business > Chatbot > and select this bot"
+        "\nThen you can send the command `.id` in any private chat to get the chat ID.",
+        "he": "**🔗 חיבור עסקי**"
+        "ניתן לחבר את הבוט לעסק שלך ולקבל מזהה של כל צ'אט."
+        "\n> כנס להגדרות > טלגרם ביזנס > צ'אטבוט > ובחר בבוט הזה"
+        "\nלאחר מכן תוכל לשלוח את הפקודה `.id` "
+        "בכל צ'אט פרטי כדי לקבל את המזהה של הצ'אט.",
+    },
+    "BUSINESS_CONNECTION": {
+        "en": "**🔗 Business connection**"
+        "\nHi, thanks for connecting with me! "
+        "\nYou can use me by sending the command `.id` "
+        "in any chat (private) to get the chat ID.",
+        "he": "**🔗 חיבור עסקי**"
+        "\nהיי, תודה שהתחברת לצ'אט בוט שלי! "
+        "\nאתה יכול להשתמש בי על ידי שליחה של הפקודה `.id` "
+        "בכל צ'אט (פרטי) כדי לקבל את המזהה של הצ'אט.",
+    },
+    "BUSINESS_CONNECTION_DISABLED": {
+        "en": "**🔗 Business connection**"
+        "\nI'm sorry, but I can't reply to your messages. "
+        "If you want to get the chat ID, enable the permission to reply to messages.",
+        "he": "**🔗 חיבור עסקי**"
+        "\nאני מצטער, אבל אני לא יכול לענות על ההודעות שלך. "
+        "אם ברצונך לקבל את מזהה הצ'אט, הפעל את ההרשאה להשיב על הודעות.",
+    },
+    "BUSINESS_CONNECTION_REMOVED": {
+        "en": "**🔗 Business connection**"
+        "\nI'm sorry to see you go, but I'm always here if you need me.",
+        "he": "**🔗 חיבור עסקי**"
+        "\nאני מצטער שהתנתקת מהחיבור לבוט."
+        "תוכל לחזור בכל עת ולהתחבר אלי שוב.",
     },
 }
 
