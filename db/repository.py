@@ -207,7 +207,7 @@ def get_all_users_active() -> list[User]:
     """Get all active users"""
 
     with get_session() as session:
-        return session.query(User).filter(User.active == True).all() # noqa
+        return session.query(User).filter(User.active == True).all()  # noqa
 
 
 def get_all_groups_count() -> int:
@@ -221,14 +221,14 @@ def get_groups_count_active() -> int:
     """Get all active groups count"""
 
     with get_session() as session:
-        return session.query(func.count(Group.id)).filter(Group.active == True).scalar() # noqa
+        return session.query(func.count(Group.id)).filter(Group.active == True).scalar()  # noqa
 
 
 def get_all_groups_active() -> list[Group]:
     """Get all active groups"""
 
     with get_session() as session:
-        return session.query(Group).filter(Group.active == True).all() # noqa
+        return session.query(Group).filter(Group.active == True).all()  # noqa
 
 
 # message_sent
