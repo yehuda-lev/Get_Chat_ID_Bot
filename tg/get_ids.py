@@ -445,7 +445,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
         enums.ChatMemberStatus.RESTRICTED,
     } and (
         update.old_chat_member
-        or update.old_chat_member.status is enums.ChatMemberStatus.ADMINISTRATOR
+        and update.old_chat_member.status is enums.ChatMemberStatus.ADMINISTRATOR
     ):
         _logger.debug(
             f"The bot has had permissions removed from: {update.chat.id}, {update.chat.title}"
