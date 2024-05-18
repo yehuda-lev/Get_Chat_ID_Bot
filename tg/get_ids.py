@@ -4,7 +4,6 @@ from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 from tg import filters, strings
 from db import repository
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -200,7 +199,7 @@ async def get_contact(_, msg: types.Message):
         contact = msg.contact
         text = strings.get_text(key="ID_USER", lang=lang).format(
             contact.first_name
-            + (("" + contact.last_name) if contact.last_name else ""),
+            + ((" " + contact.last_name) if contact.last_name else ""),
             contact.user_id,
         )
     else:
@@ -432,7 +431,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
             and update.new_chat_member.status == enums.ChatMemberStatus.BANNED
         ):
             if repository.is_user_exists(tg_id=update.from_user.id):
-                _logger.info(
+                _logger.debug(
                     f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
                 )
                 repository.update_user(tg_id=update.from_user.id, active=False)
@@ -451,6 +450,142 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
             f"The bot has had permissions removed from: {update.chat.id}, {update.chat.title}"
         )
         repository.update_group(group_id=update.chat.id, active=False)
+
+
+async def get_id_by_reply_to_another_chat(
+    lang: str, msg: types.Message
+) -> str | tuple[int, str]:
+    """
+    Get id by reply to another chat,
+    if the message sent in a group than return the id and name of the group,
+    else return the text of the message.
+    """
+    text, chat_id, name = None, None, None
+
+    reply_to = msg.external_reply.origin
+
+    if isinstance(reply_to, types.MessageOriginUser):  # user
+        user = reply_to.sender_user
+        name = user.full_name
+        chat_id = user.id
+        if lang:
+            text = strings.get_text(key="ID_USER", lang=lang).format(
+                name,
+                chat_id,
+            )
+    elif isinstance(reply_to, types.MessageOriginChat):  # group
+        group = reply_to.sender_chat
+        name = group.title
+        chat_id = group.id
+        if lang:
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                name, chat_id
+            )
+    elif isinstance(reply_to, types.MessageOriginChannel):  # channel
+        channel = reply_to.chat
+        name = channel.title
+        chat_id = channel.id
+        if lang:
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                name, chat_id
+            )
+    elif isinstance(reply_to, types.MessageOriginHiddenUser):
+        # The user hides the forwarding of a message from him or Deleted Account
+        name = reply_to.sender_user_name
+        if lang:
+            text = strings.get_text(key="ID_HIDDEN", lang=lang).format(name=name)
+
+    if lang:
+        return text
+    return chat_id, name
+
+
+async def get_reply_to_message(lang, msg) -> str | tuple[int, str] | None:
+    """
+    Get reply to message
+    """
+    text, chat_id, name = None, None, None
+    if msg.reply_to_message.from_user:
+        chat = msg.reply_to_message.from_user
+        chat_id = chat.id
+        name = (
+            chat.full_name
+            if chat.full_name
+            else ""
+            if not chat.is_deleted
+            else "Deleted Account"
+        )
+        if lang:
+            text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+    elif msg.reply_to_message.sender_chat:
+        chat = msg.reply_to_message.sender_chat
+        chat_id = chat.id
+        name = chat.title
+        if lang:
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                name, chat_id
+            )
+    if lang:
+        return text
+    return chat_id, name
+
+
+async def get_id_by_reply_to_story(lang, msg) -> str | tuple[int, str]:
+    """
+    Get id by reply to story
+    """
+    text, chat_id, name = None, None, None
+    story = msg.reply_to_story
+    if story.chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
+        chat_id = story.chat.id
+        name = story.chat.full_name if story.chat.full_name else ""
+        if lang:
+            text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+    elif story.chat.type in (
+        enums.ChatType.CHANNEL,
+        enums.ChatType.GROUP,
+        enums.ChatType.SUPERGROUP,
+    ):
+        chat_id = story.chat.id
+        name = story.chat.title
+        if lang:
+            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                name, chat_id
+            )
+    if lang:
+        return text
+    return chat_id, name
+
+
+async def get_id_by_reply(msg: types.Message) -> str | tuple[int, str]:
+    """
+    Get id by all reply types
+    """
+    lang = None
+
+    if msg.chat.type == enums.ChatType.PRIVATE:
+        tg_id = msg.from_user.id
+        lang = repository.get_user_language(tg_id=tg_id)
+
+    if msg.reply_to_story:
+        return await get_id_by_reply_to_story(lang, msg)
+
+    elif msg.reply_to_message:
+        return await get_reply_to_message(lang, msg)
+
+    # reply to another chat
+    elif msg.external_reply:
+        return await get_id_by_reply_to_another_chat(lang, msg)
+
+    else:
+        chat_id = msg.chat.id
+        name = msg.chat.full_name or "" if lang else msg.chat.title
+        if lang:
+            return strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                name, chat_id
+            )
+
+    return chat_id, name
 
 
 async def get_ids_in_the_group(client: Client, msg: types.Message):
@@ -485,38 +620,13 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                 continue
 
     else:  # get reply to chat id
-        if msg.reply_to_story:
-            chat = msg.reply_to_story.chat
-            chat_id = chat.id
-            name = (
-                chat.title if chat.title else chat.full_name if chat.full_name else ""
-            )
-        elif msg.reply_to_message:
-            if msg.reply_to_message.from_user:
-                chat = msg.reply_to_message.from_user
-                chat_id = chat.id
-                name = (
-                    chat.full_name
-                    if chat.full_name
-                    else ""
-                    if not chat.is_deleted
-                    else "Deleted Account"
-                )
-            elif msg.reply_to_message.sender_chat:
-                chat = msg.reply_to_message.sender_chat
-                chat_id = chat.id
-                name = chat.title
-            else:
-                return
-        else:
-            chat_id = msg.chat.id
-            name = msg.chat.title
+        chat_id, name = await get_id_by_reply(msg)
 
-    if not chat_id or not name:
+    if not name:
         return
 
     try:
-        await msg.reply(text=f"{name} • `{chat_id}`", quote=True)
+        await msg.reply(text=f"{name} • `{chat_id}`" if chat_id else name, quote=True)
     except Exception:  # noqa
         await client.leave_chat(chat_id=msg.chat.id)
 
@@ -525,50 +635,38 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
     """
     get reply to another chat
     """
-    if (reply_to := msg.external_reply.origin) is not None:
-        tg_id = msg.from_user.id
-        lang = repository.get_user_language(tg_id=tg_id)
+    tg_id = msg.from_user.id
+    lang = repository.get_user_language(tg_id=tg_id)
 
-        if isinstance(reply_to, types.MessageOriginUser):  # user
-            user = reply_to.sender_user
-            text = strings.get_text(key="ID_USER", lang=lang).format(
-                user.full_name if user.full_name else "",
-                user.id,
-            )
-        elif isinstance(reply_to, types.MessageOriginChat):  # group
-            group = reply_to.sender_chat
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                group.title, group.id
-            )
-        elif isinstance(reply_to, types.MessageOriginChannel):  # channel
-            channel = reply_to.chat
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                channel.title, channel.id
-            )
-        elif isinstance(reply_to, types.MessageOriginHiddenUser):
-            # The user hides the forwarding of a message from him or Deleted Account
-            text = strings.get_text(key="ID_HIDDEN", lang=lang).format(
-                name=reply_to.sender_user_name
-            )
-        else:
-            return
+    text = await get_id_by_reply_to_another_chat(lang, msg)
 
-        await msg.reply(text=text, quote=True)
+    if not text:
+        return
+
+    await msg.reply(text=text, quote=True)
 
 
-async def get_id_with_business_connection(_: Client, msg: types.Message):
+async def get_id_with_business_connection(client: Client, msg: types.Message):
     """
     Get id with business connection.
     """
-    user = msg.from_user
-    tg_id = user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+
+    text = await get_id_by_reply(msg)
+
     # send the id of the chat without the notification
     await msg.reply(
         disable_notification=True,
-        text=strings.get_text(key="ID_USER", lang=lang).format(
-            msg.chat.full_name if msg.chat.full_name else "",
-            msg.chat.id,
+        text=text,
+        quote=True,
+        reply_markup=types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton(
+                        text="Powered by 'Get Chat ID Bot' 🪪",
+                        url=f"https://t.me/{client.me.username}?start=start",
+                    )
+                ]
+            ]
         ),
     )
 
