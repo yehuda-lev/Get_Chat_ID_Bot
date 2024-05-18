@@ -2,7 +2,7 @@ import logging
 import re
 import time
 
-from pyrogram import types, filters, enums
+from pyrogram import types, filters, enums, Client
 
 from db import repository as db_filters
 from data import config
@@ -14,17 +14,21 @@ settings = config.get_settings()
 user_id_to_state: dict[int:dict] = {}
 
 
-def status_answer(**kwargs) -> callable:
+def status_answer(params: dict = None) -> filters.Filter:
     """Check if user status is answer now"""
 
-    def get_is_answer(_, __, msg: types.Message) -> bool:
+    async def get_is_answer(flt, _client: Client, msg: types.Message) -> bool:
         tg_id = msg.from_user.id
-        exists = user_id_to_state.get(tg_id)
-        if exists:
-            return all(exists.get(key, False) == value for key, value in kwargs.items())
-        return False
+        user_statuses: dict = user_id_to_state.get(tg_id)
 
-    return get_is_answer
+        if not user_statuses:
+            return False
+
+        return all(
+            user_statuses.get(key, False) == value for key, value in flt.params.items()
+        )
+
+    return filters.create(get_is_answer, name="StatusAnswer", params=params)
 
 
 def add_listener(*, tg_id: int, data: dict):
@@ -88,31 +92,36 @@ def is_mention_users(msg: types.Message) -> bool:
     return False
 
 
-def create_user(_, __, msg: types.Message) -> bool:
-    user = msg.from_user
-    tg_id = user.id
-    name = user.full_name if user.full_name else ""
-    lang = lng if (lng := user.language_code) == "he" else "en"
+def create_user() -> filters.Filter:
+    async def func(_, __, msg: types.Message) -> bool:
+        user = msg.from_user
+        tg_id = user.id
+        name = user.full_name if user.full_name else ""
+        lang = lng if (lng := user.language_code) == "he" else "en"
 
-    if not db_filters.is_user_exists(tg_id=tg_id):
-        db_filters.create_user(
-            tg_id=tg_id,
-            name=name,
-            admin=False,
-            language_code=lang,
-            username=user.username,
-        )
+        if not db_filters.is_user_exists(tg_id=tg_id):
+            db_filters.create_user(
+                tg_id=tg_id,
+                name=name,
+                admin=False,
+                language_code=lang,
+                username=user.username,
+            )
+            return True
+
+        if not db_filters.is_active(tg_id=tg_id):
+            db_filters.update_user(tg_id=tg_id, active=True)
+
         return True
 
-    if not db_filters.is_active(tg_id=tg_id):
-        db_filters.update_user(tg_id=tg_id, active=True)
-
-    return True
+    return filters.create(func, name="CreateUser")
 
 
-def is_admin(_, __, msg: types.Message) -> bool:
-    tg_id = msg.from_user.id
-    return db_filters.is_admin(tg_id=tg_id)
+def is_admin() -> filters.Filter:
+    async def func(_, __, msg: types.Message) -> bool:
+        return db_filters.is_admin(tg_id=msg.from_user.id)
+
+    return filters.create(func, name="IsAdmin")
 
 
 def check_username(text) -> str | None:
@@ -147,27 +156,28 @@ def is_media_group_exists(_, __, msg: types.Message) -> bool:
 last_message_time = {}
 
 
-def is_spamming(tg_id: int) -> bool:
+def is_user_spamming() -> filters.Filter:
     """
     Check if the user is spamming
+    Returns: True if the user is not spamming
     """
 
-    current_time = time.time()
+    async def func(_, __, msg: types.Message) -> bool:
+        tg_id = msg.from_user.id
 
-    user_messages = last_message_time.get(tg_id, [])
+        current_time = time.time()
 
-    # Remove messages older than 1 minute
-    user_messages = [
-        timestamp for timestamp in user_messages if current_time - timestamp <= 60
-    ]
+        user_messages = last_message_time.get(tg_id, [])
 
-    # Update the message timestamps
-    user_messages.append(current_time)
-    last_message_time[tg_id] = user_messages
+        # Remove messages older than 1 minute
+        user_messages = [
+            timestamp for timestamp in user_messages if current_time - timestamp <= 60
+        ]
 
-    return len(user_messages) < int(settings.limit_spam)
+        # Update the message timestamps
+        user_messages.append(current_time)
+        last_message_time[tg_id] = user_messages
 
+        return len(user_messages) < int(settings.limit_spam)
 
-def is_user_spamming(_, __, msg) -> bool:
-    tg_id = msg.from_user.id
-    return is_spamming(tg_id)
+    return filters.create(func, name="IsUserSpamming")
