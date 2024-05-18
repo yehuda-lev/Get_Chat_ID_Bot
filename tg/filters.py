@@ -124,7 +124,7 @@ def is_admin() -> filters.Filter:
     return filters.create(func, name="IsAdmin")
 
 
-def check_username(text) -> str | None:
+def get_username(text) -> str | None:
     """
     Check if is a username
     """
@@ -137,8 +137,15 @@ def check_username(text) -> str | None:
         return None
 
 
-def is_username(_, __, msg: types.Message) -> bool:
-    return check_username(msg.text) is not None
+def is_username(_, __, msg: types.Message | types.InlineQuery) -> bool:
+    """
+    Check if the message is a username by regex
+    """
+    if isinstance(msg, types.InlineQuery):
+        text = msg.query
+    else:
+        text = msg.text
+    return get_username(text) is not None
 
 
 list_of_media_group = []

@@ -7,6 +7,19 @@ from db import repository
 _logger = logging.getLogger(__name__)
 
 
+async def get_reply_markup(client: Client) -> types.InlineKeyboardMarkup:
+    return types.InlineKeyboardMarkup(
+        [
+            [
+                types.InlineKeyboardButton(
+                    text="Powered by 'Get Chat ID Bot' 🪪",
+                    url=f"https://t.me/{client.me.username}?start=start",
+                )
+            ]
+        ]
+    )
+
+
 async def welcome(_: Client, msg: types.Message):
     """start the bot"""
     user = msg.from_user
@@ -331,20 +344,14 @@ async def send_about(_: Client, msg: types.Message):
     )
 
 
-async def get_username(client: Client, msg: types.Message):
-    """Get id from username or link"""
-    tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
-
-    username = filters.check_username(text=msg.text)
+async def get_id_by_username(lang: str, client: Client, text: str) -> str:
+    """Get id by username"""
+    username = filters.get_username(text=text)
 
     try:
         chat = await client.get_chat(username)
     except errors.BadRequest:
-        await msg.reply_text(
-            text=strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang), quote=True
-        )
-        return
+        text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
 
     else:
         if isinstance(chat, types.Chat):
@@ -352,33 +359,59 @@ async def get_username(client: Client, msg: types.Message):
                 chat.title if chat.title else chat.full_name if chat.full_name else ""
             )
             chat_id = chat.id
-            match chat.type:
-                case enums.ChatType.PRIVATE:
-                    text = strings.get_text(key="ID_USER", lang=lang).format(
-                        name, chat_id
-                    )
-                case enums.ChatType.BOT:
-                    text = strings.get_text(key="ID_USER", lang=lang).format(
-                        name, chat_id
-                    )
-                case enums.ChatType.GROUP:
-                    text = strings.get_text(
-                        key="ID_CHANNEL_OR_GROUP", lang=lang
-                    ).format(name, chat_id)
-                case enums.ChatType.CHANNEL:
-                    text = strings.get_text(
-                        key="ID_CHANNEL_OR_GROUP", lang=lang
-                    ).format(name, chat_id)
-                case enums.ChatType.SUPERGROUP:
-                    text = strings.get_text(
-                        key="ID_CHANNEL_OR_GROUP", lang=lang
-                    ).format(name, chat_id)
-                case _:
-                    return
+            if chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
+                text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+
+            elif chat.type in (
+                enums.ChatType.GROUP,
+                enums.ChatType.SUPERGROUP,
+                enums.ChatType.CHANNEL,
+            ):
+                text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+                    name, chat_id
+                )
+
         else:
             text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
 
-        await msg.reply_text(text=text, quote=True)
+    return text
+
+
+async def get_username_by_message(client: Client, msg: types.Message):
+    """Get id from username or link by message"""
+    tg_id = msg.from_user.id
+    lang = repository.get_user_language(tg_id=tg_id)
+
+    text = await get_id_by_username(lang, client, msg.text)
+
+    await msg.reply_text(text=text, quote=True)
+
+
+async def get_username_by_inline_query(client: Client, query: types.InlineQuery):
+    """
+    Get id by inline query
+    """
+
+    lang = repository.get_user_language(tg_id=query.from_user.id)
+
+    text = await get_id_by_username(lang, client, query.query)
+
+    try:
+        await query.answer(
+            results=[
+                types.InlineQueryResultArticle(
+                    title="Get Chat ID",
+                    id="1",
+                    input_message_content=types.InputTextMessageContent(
+                        message_text=text,
+                    ),
+                    reply_markup=await get_reply_markup(client),
+                ),
+            ],
+            cache_time=5,
+        )
+    except errors.BadRequest as e:
+        _logger.error(f"Can't answer to inline query {e}")
 
 
 async def added_to_group(_: Client, msg: types.Message):
@@ -658,16 +691,7 @@ async def get_id_with_business_connection(client: Client, msg: types.Message):
         disable_notification=True,
         text=text,
         quote=True,
-        reply_markup=types.InlineKeyboardMarkup(
-            [
-                [
-                    types.InlineKeyboardButton(
-                        text="Powered by 'Get Chat ID Bot' 🪪",
-                        url=f"https://t.me/{client.me.username}?start=start",
-                    )
-                ]
-            ]
-        ),
+        reply_markup=await get_reply_markup(client),
     )
 
 

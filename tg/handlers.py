@@ -80,7 +80,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.get_username,
+        get_ids.get_username_by_message,
         filters.private
         & ~filters.tg_business
         & filters.text
@@ -161,6 +161,13 @@ HANDLERS = [
     handlers.CallbackQueryHandler(
         get_ids.get_lang,
         filters.create(lambda _, __, cbd: cbd.data.startswith("lang"))
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    # inline query
+    handlers.InlineQueryHandler(
+        get_ids.get_username_by_inline_query,
+        filters.create(tg_filters.is_username)
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
