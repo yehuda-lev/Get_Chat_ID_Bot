@@ -3,26 +3,58 @@
 
 # Get_Chat_ID_Bot
 
+## Description
+
 A bot to receive the id of every Telegram chat
 
-_You can check our bot [here](https://t.me/GetChatID_IL_BOT) (in Hebrew)._
+_You can check our bot [here](https://t.me/GetChatID_IL_BOT)._
 
-## configuration:
-- Clone this repository:
-```
+
+## Setup
+
+1. Clone the repository
+
+```bash
 git clone https://github.com/yehuda-lev/Get_Chat_ID_Bot.git
 ```
-- Install requirements:
-```
-pip3 install -r requirements.txt
-```
-- Edit .env
 
-The ``api_id`` & ``api_hash`` You can get from [my.telegram.org](https://my.telegram.org). ``bot_token`` you can get by create new bot on [BotFather](https://t.me/BotFather). ``admins`` you must put an administrator ID.
+## Setting up Environment Variables
 
+To set up the environment variables for the project, follow these steps:
 
-- Run the bot:
+1. **Copy the `.env.example` file:**
+
+```bash
+cp .env.example .env
 ```
-python3 main.py
+
+1. **Edit the `.env` file:**
+   - Open the `.env` file in a text editor of your choice.
+   - Replace the placeholder values with your actual credentials. You can obtain these credentials from the following sources:
+
+   - **Telegram Credentials:**
+     - `TELEGRAM_API_ID` and `TELEGRAM_API_HASH`: Obtain from [my.telegram.org](https://my.telegram.org).
+     - `TELEGRAM_BOT_TOKEN`: Create a new bot on [BotFather](https://t.me/BotFather).
+     - `TG_GROUP_TOPIC_ID`: ID of the Telegram group where the bot will operate.
+     - `ADMINS`: A comma-separated list of Telegram user IDs that will be granted admin privileges.
+     - `LIMIT_SPAM`: the number of the messages that can be sent in a minute.
+
+2. **Save the `.env` file:**
+   - After editing, save the changes to the `.env` file.
+
+By completing these steps, your environment variables will be properly configured for the project.
+
+## Installation
+
+Clone the repository to your local machine. Then, build the Docker image using the following command:
+
+> If you want to rebuild the image, you can use the `--build` flag to force a rebuild:
+> If you want to run the bot in the background, you can use the `-d` flag:
+```bash
+docker compose up
 ```
+
+##  Credits
+This project was created by [@yehudalev](https://t.me/yehudalev).
+
 ---

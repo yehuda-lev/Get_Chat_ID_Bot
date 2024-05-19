@@ -17,6 +17,9 @@ user_id_to_state: dict[int:dict] = {}
 def status_answer(params: dict = None) -> filters.Filter:
     """Check if user status is answer now"""
 
+    if params is None:
+        params = dict()
+
     async def get_is_answer(flt, _client: Client, msg: types.Message) -> bool:
         tg_id = msg.from_user.id
         user_statuses: dict = user_id_to_state.get(tg_id)
