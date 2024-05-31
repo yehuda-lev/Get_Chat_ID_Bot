@@ -78,20 +78,14 @@ HANDLERS = [
         & tg_filters.start_command(command="about")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
-        get_ids.get_about,
-        filters.text
-        & (filters.command("about") | tg_filters.regex_start(arg="about"))
-        & filters.private
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_user_spamming),
     ),
     handlers.MessageHandler(
         payments.send_payment,
-        filters.text
-        & (filters.command("donate") | tg_filters.regex_start(arg="donate"))
-        & filters.private
-        & filters.create(tg_filters.create_user)
-        & filters.create(tg_filters.is_user_spamming),
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="donate")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
         get_ids.get_username_by_message,
@@ -163,7 +157,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.RawUpdateHandler(
-        get_ids.handle_business_connection,
+        get_ids.get_raw,
     ),
     # callback
     handlers.CallbackQueryHandler(

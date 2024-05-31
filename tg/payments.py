@@ -1,9 +1,8 @@
 import html
 from pyrogram import Client, raw, types
 
-from data import utils
 
-TOKEN = utils.get_settings().TOKEN_PAYMENT
+TOKEN = ""
 
 invoice = raw.types.Invoice(
     currency="EUR",
