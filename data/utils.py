@@ -15,7 +15,6 @@ class Settings:
     TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
     ADMINS = os.environ["ADMINS"]
     LIMIT_SPAM = os.environ["LIMIT_SPAM"]
-    TOKEN_PAYMENT = os.environ["TOKEN_PAYMENT"]
 
 
 def get_settings() -> Type[Settings]:
