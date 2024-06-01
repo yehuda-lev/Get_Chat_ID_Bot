@@ -778,16 +778,11 @@ async def get_raw(
     if isinstance(update, raw.types.UpdateNewMessage):
         if isinstance(update.message, raw.types.MessageService):
             if isinstance(update.message.action, raw.types.MessageActionPaymentSentMe):
-                # handle payments
-                await payments.handle_payment(client, update)
-
-    elif isinstance(update, raw.types.UpdateBotShippingQuery):
-        # handle shipping queries
-        await payments.handle_shipping_query(client, update)
+                # message service of payment successful
+                await payments.send_thanks_for_support(client, update)
 
     elif isinstance(update, raw.types.UpdateBotPrecheckoutQuery):
-        # handle pre checkout queries
-        await payments.handle_pre_checkout_query(client, update)
+        await payments.confirm_payment(client, update)
 
     elif isinstance(update, raw.types.UpdateBotBusinessConnect):
         # handle business connection
