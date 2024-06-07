@@ -100,14 +100,13 @@ def create_user() -> filters.Filter:
         user = msg.from_user
         tg_id = user.id
         name = user.full_name if user.full_name else ""
-        lang = lng if (lng := user.language_code) == "he" else "en"
 
         if not db_filters.is_user_exists(tg_id=tg_id):
             db_filters.create_user(
                 tg_id=tg_id,
                 name=name,
                 admin=False,
-                language_code=lang,
+                language_code=user.language_code,
                 username=user.username,
             )
             return True

@@ -1,7 +1,7 @@
 import logging
 from pyrogram import handlers, filters
 
-from tg import filters as tg_filters, get_ids, admin_command, help
+from tg import filters as tg_filters, get_ids, admin_command, help, payments
 
 _logger = logging.getLogger(__name__)
 
@@ -80,6 +80,14 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
+        payments.ask_for_payment,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="donate")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.MessageHandler(
         get_ids.get_username_by_message,
         filters.private
         & ~filters.tg_business
@@ -148,9 +156,6 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
-    handlers.RawUpdateHandler(
-        get_ids.handle_business_connection,
-    ),
     # callback
     handlers.CallbackQueryHandler(
         help.handle_callback_data_help,
@@ -170,6 +175,19 @@ HANDLERS = [
         filters.create(tg_filters.is_username)
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
+    ),
+    # payments
+    handlers.CallbackQueryHandler(
+        payments.send_payment,
+        filters.create(lambda _, __, cbd: cbd.data.startswith("stars")),
+    ),
+    handlers.PreCheckoutQueryHandler(
+        payments.confirm_payment,
+        ~filters.tg_business,
+    ),
+    handlers.MessageHandler(
+        payments.send_thanks_for_support,
+        filters.successful_payment,
     ),
     # admin command
     handlers.MessageHandler(
@@ -212,5 +230,8 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()
         & tg_filters.is_admin(),
+    ),
+    handlers.RawUpdateHandler(
+        get_ids.get_raw,
     ),
 ]

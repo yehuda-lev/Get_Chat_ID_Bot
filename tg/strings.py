@@ -210,6 +210,24 @@ TEXT = {
         "en": "🪪 The ID of the chat you came from is: `{}`",
         "he": "‏🪪 ה ID של הצ'אט ממנו באת הוא: `{}`",
     },
+    "ASK_AMOUNT_TO_PAY": {
+        "en": "Hi, thanks for wanting to donate to me 🥰\n"
+        "Choose the donation amount you want to give 👇",
+        "he": "היי, תודה שאתם רוצים לתרום לי 🥰\n" "בחרו את סכום התרומה שתרצו לתת 👇",
+    },
+    "SUPPORT_ME": {
+        "en": "Support me 🙏",
+        "he": "תמכו בי 🙏",
+    },
+    "TEXT_SUPPORT_ME": {
+        "en": "Support me with {} XTR ⭐️",
+        "he": "תמכו בי ב-{} XTR ⭐️",
+    },
+    "PAYMENT_SUCCESS": {
+        "en": "🎉 Thank you for your donation 🎉\n"
+        "I received your donation of {} XTR ⭐️",
+        "he": "🎉 תודה על התרומה שלך 🎉\n" "קיבלתי את התרומה שלך של {} XTR ⭐️",
+    },
 }
 
 
@@ -217,7 +235,7 @@ def get_text(*, key: str, lang: str) -> str:
     if default_lang is not None:
         lang = default_lang
     else:
-        lang = lang
+        lang = "he" if lang == "he" else "en"
 
     try:
         return TEXT[key][lang]

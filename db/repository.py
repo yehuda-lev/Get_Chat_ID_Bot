@@ -45,7 +45,7 @@ def create_user(
     tg_id: int,
     name: str,
     username: str = None,
-    language_code: str = "en",
+    language_code: str,
     admin: bool = False,
     active: bool = True,
 ):

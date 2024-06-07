@@ -1,8 +1,9 @@
 import logging
 from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
-from tg import filters, strings
+from tg import filters, strings, payments
 from db import repository
+
 
 _logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ async def welcome(_: Client, msg: types.Message):
     await msg.reply_text(
         text=strings.get_text(key="WELCOME", lang=lang).format(name=name),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
+        message_effect_id=5107584321108051014,  # 👍
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
             input_field_placeholder=strings.get_text(key="CHOSE_CHAT_TYPE", lang=lang),
@@ -350,7 +352,7 @@ async def get_id_by_username(lang: str, client: Client, text: str) -> str:
 
     try:
         chat = await client.get_chat(username)
-    except errors.BadRequest:
+    except errors.BadRequest:  # username not found
         text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
 
     else:
@@ -714,58 +716,67 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
 
 
 async def handle_business_connection(
-    client: Client, update: raw.types.UpdateNewMessage, users: dict, __: dict
+    client: Client, update: raw.types.UpdateBotBusinessConnect, users: dict
 ):
     """
     Handle business connection and disconnection
     """
     try:
-        if isinstance(update, raw.types.UpdateBotBusinessConnect):
-            if not repository.is_user_exists(tg_id=update.connection.user_id):
-                user = users.get(update.connection.user_id)
-                repository.create_user(
-                    tg_id=user.id,
-                    name=user.first_name,
-                    username=user.username,
-                    language_code=user.language_code,
-                )
-            else:
-                if not repository.is_active(tg_id=update.connection.user_id):
-                    repository.update_user(tg_id=update.connection.user_id, active=True)
+        if not repository.is_user_exists(tg_id=update.connection.user_id):
+            user = users.get(update.connection.user_id)
+            repository.create_user(
+                tg_id=user.id,
+                name=user.first_name,
+                username=user.username,
+                language_code=user.language_code,
+            )
+        else:
+            if not repository.is_active(tg_id=update.connection.user_id):
+                repository.update_user(tg_id=update.connection.user_id, active=True)
 
-            lang = repository.get_user_language(tg_id=update.connection.user_id)
+        lang = repository.get_user_language(tg_id=update.connection.user_id)
 
-            if not update.connection.disabled:  # user add the bot to our business
-                if update.connection.can_reply:
-                    repository.update_user(
-                        tg_id=update.connection.user_id,
-                        business_id=update.connection.connection_id,
-                    )
-
-                    await client.send_message(
-                        chat_id=update.connection.user_id,
-                        text=strings.get_text(key="BUSINESS_CONNECTION", lang=lang),
-                    )
-
-                else:  # with no permission to reply
-                    await client.send_message(
-                        chat_id=update.connection.user_id,
-                        text=strings.get_text(
-                            key="BUSINESS_CONNECTION_DISABLED", lang=lang
-                        ),
-                    )
-
-            else:  # user remove the bot from our business
+        if not update.connection.disabled:  # user add the bot to our business
+            if update.connection.can_reply:
                 repository.update_user(
-                    tg_id=update.connection.user_id, business_id=None
+                    tg_id=update.connection.user_id,
+                    business_id=update.connection.connection_id,
                 )
 
                 await client.send_message(
                     chat_id=update.connection.user_id,
-                    text=strings.get_text(key="BUSINESS_CONNECTION_REMOVED", lang=lang),
+                    text=strings.get_text(key="BUSINESS_CONNECTION", lang=lang),
+                    message_effect_id=5107584321108051014,  # 👍
                 )
+
+            else:  # with no permission to reply
+                await client.send_message(
+                    chat_id=update.connection.user_id,
+                    text=strings.get_text(
+                        key="BUSINESS_CONNECTION_DISABLED", lang=lang
+                    ),
+                )
+
+        else:  # user remove the bot from our business
+            repository.update_user(tg_id=update.connection.user_id, business_id=None)
+
+            await client.send_message(
+                chat_id=update.connection.user_id,
+                text=strings.get_text(key="BUSINESS_CONNECTION_REMOVED", lang=lang),
+            )
 
     except Exception as e:
         _logger.exception(e)
 
     raise ContinuePropagation
+
+
+async def get_raw(
+    client: Client, update: raw.types.UpdateNewMessage, users: dict, __: dict
+):
+    """
+    Handle raw updates
+    """
+    if isinstance(update, raw.types.UpdateBotBusinessConnect):
+        # handle business connection
+        await handle_business_connection(client, update, users)
