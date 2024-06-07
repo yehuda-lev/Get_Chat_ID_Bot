@@ -179,7 +179,9 @@ HANDLERS = [
     # payments
     handlers.CallbackQueryHandler(
         payments.send_payment,
-        filters.create(lambda _, __, cbd: cbd.data.startswith("stars")),
+        filters.create(lambda _, __, cbd: cbd.data.startswith("stars"))
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
     ),
     handlers.PreCheckoutQueryHandler(
         payments.confirm_payment,
@@ -187,7 +189,8 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         payments.send_thanks_for_support,
-        filters.successful_payment,
+        filters.successful_payment
+        & tg_filters.create_user(),
     ),
     # admin command
     handlers.MessageHandler(
