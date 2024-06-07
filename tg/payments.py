@@ -17,6 +17,7 @@ async def ask_for_payment(_: Client, msg: types.Message):
     await msg.reply_text(
         text=strings.get_text(key="ASK_AMOUNT_TO_PAY", lang=lang),
         quote=True,
+        message_effect_id=5044134455711629726,  # ❤️
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -66,6 +67,7 @@ async def send_payment(_: Client, cbd: types.CallbackQuery):
             types.LabeledPrice(amount=amount, label="star"),
         ],
         provider_token=None,  # telegram stars
+        message_effect_id=5044134455711629726,  # ❤️
     )
 
 
@@ -89,6 +91,7 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
             payment.total_amount
         ),
         quote=True,
+        message_effect_id=5046509860389126442,  # 🎉
     )
 
     text_to_admin = (
@@ -103,4 +106,5 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
     await client.send_message(
         chat_id=settings.admin_to_update_of_payment,
         text=text_to_admin,
+        message_effect_id=5046509860389126442,  # 🎉
     )

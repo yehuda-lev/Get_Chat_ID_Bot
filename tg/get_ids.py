@@ -31,6 +31,7 @@ async def welcome(_: Client, msg: types.Message):
     await msg.reply_text(
         text=strings.get_text(key="WELCOME", lang=lang).format(name=name),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
+        message_effect_id=5107584321108051014,  # 👍
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
             input_field_placeholder=strings.get_text(key="CHOSE_CHAT_TYPE", lang=lang),
@@ -745,6 +746,7 @@ async def handle_business_connection(
                 await client.send_message(
                     chat_id=update.connection.user_id,
                     text=strings.get_text(key="BUSINESS_CONNECTION", lang=lang),
+                    message_effect_id=5107584321108051014,  # 👍
                 )
 
             else:  # with no permission to reply
