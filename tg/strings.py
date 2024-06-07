@@ -217,7 +217,7 @@ def get_text(*, key: str, lang: str) -> str:
     if default_lang is not None:
         lang = default_lang
     else:
-        lang = lang
+        lang = "he" if lang == "he" else "en"
 
     try:
         return TEXT[key][lang]
