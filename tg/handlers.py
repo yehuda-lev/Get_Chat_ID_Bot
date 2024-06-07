@@ -156,9 +156,6 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
-    handlers.RawUpdateHandler(
-        get_ids.get_raw,
-    ),
     # callback
     handlers.CallbackQueryHandler(
         help.handle_callback_data_help,
@@ -178,6 +175,14 @@ HANDLERS = [
         filters.create(tg_filters.is_username)
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
+    ),
+    # payments
+    handlers.PreCheckoutQueryHandler(
+        payments.confirm_payment,
+    ),
+    handlers.MessageHandler(
+        payments.send_thanks_for_support,
+        filters.successful_payment,
     ),
     # admin command
     handlers.MessageHandler(
@@ -220,5 +225,8 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()
         & tg_filters.is_admin(),
+    ),
+    handlers.RawUpdateHandler(
+        get_ids.get_raw,
     ),
 ]

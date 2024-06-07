@@ -775,15 +775,6 @@ async def get_raw(
     """
     Handle raw updates
     """
-    if isinstance(update, raw.types.UpdateNewMessage):
-        if isinstance(update.message, raw.types.MessageService):
-            if isinstance(update.message.action, raw.types.MessageActionPaymentSentMe):
-                # message service of payment successful
-                await payments.send_thanks_for_support(client, update)
-
-    elif isinstance(update, raw.types.UpdateBotPrecheckoutQuery):
-        await payments.confirm_payment(client, update)
-
-    elif isinstance(update, raw.types.UpdateBotBusinessConnect):
+    if isinstance(update, raw.types.UpdateBotBusinessConnect):
         # handle business connection
         await handle_business_connection(client, update, users)
