@@ -80,7 +80,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        payments.send_payment,
+        payments.ask_for_payment,
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command(command="donate")
@@ -177,8 +177,13 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     # payments
+    handlers.CallbackQueryHandler(
+        payments.send_payment,
+        filters.create(lambda _, __, cbd: cbd.data.startswith("stars")),
+    ),
     handlers.PreCheckoutQueryHandler(
         payments.confirm_payment,
+        ~filters.tg_business,
     ),
     handlers.MessageHandler(
         payments.send_thanks_for_support,
