@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     telegram_bot_token: str
     admins: list[int]
     limit_spam: int
+    admin_to_update_of_payment: int
 
 
 @lru_cache
