@@ -22,29 +22,29 @@ async def ask_for_payment(_: Client, msg: types.Message):
             inline_keyboard=[
                 [
                     types.InlineKeyboardButton(
-                        text="⭐️ 5 XTR ️",
+                        text="⭐️ 5",
                         callback_data="stars:5",
                     ),
                     types.InlineKeyboardButton(
-                        text="⭐️ 25 XTR",
+                        text="⭐️ 25",
                         callback_data="stars:25",
                     ),
                     types.InlineKeyboardButton(
-                        text="⭐️ 100 XTR",
+                        text="⭐️ 100",
                         callback_data="stars:100",
                     ),
                 ],
                 [
                     types.InlineKeyboardButton(
-                        text="⭐️ 150 XTR",
+                        text="⭐️ 150",
                         callback_data="stars:150",
                     ),
                     types.InlineKeyboardButton(
-                        text="⭐️ 250 XTR",
+                        text="⭐️ 250",
                         callback_data="stars:250",
                     ),
                     types.InlineKeyboardButton(
-                        text="⭐️ 400 XTR",
+                        text="⭐️ 400",
                         callback_data="stars:400",
                     ),
                 ],
@@ -100,7 +100,7 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
         f"> מזהה: `{tg_id}`\n"
         f"> שם משתמש: @{msg.from_user.username}\n"
         f"> שפה: {lang}\n"
-        f"סכום: {payment.total_amount} XTR ⭐️"
+        f"סכום: {payment.total_amount} ⭐️"
     )
 
     await client.send_message(
