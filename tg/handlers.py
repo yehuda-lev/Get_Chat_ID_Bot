@@ -189,8 +189,7 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         payments.send_thanks_for_support,
-        filters.successful_payment
-        & tg_filters.create_user(),
+        filters.successful_payment & tg_filters.create_user(),
     ),
     # admin command
     handlers.MessageHandler(

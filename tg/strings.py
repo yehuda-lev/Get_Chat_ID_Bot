@@ -220,13 +220,12 @@ TEXT = {
         "he": "תמכו בי 🙏",
     },
     "TEXT_SUPPORT_ME": {
-        "en": "Support me with {} XTR ⭐️",
-        "he": "תמכו בי ב-{} XTR ⭐️",
+        "en": "Support me with {} ⭐️",
+        "he": "תמכו בי ב-{} ⭐️",
     },
     "PAYMENT_SUCCESS": {
-        "en": "🎉 Thank you for your donation 🎉\n"
-        "I received your donation of {} XTR ⭐️",
-        "he": "🎉 תודה על התרומה שלך 🎉\n" "קיבלתי את התרומה שלך של {} XTR ⭐️",
+        "en": "🎉 Thank you for your donation 🎉\n" "I received your donation of {} ⭐️",
+        "he": "🎉 תודה על התרומה שלך 🎉\n" "קיבלתי את התרומה שלך של {} ⭐️",
     },
 }
 

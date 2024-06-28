@@ -1,7 +1,7 @@
 import logging
 from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
-from tg import filters, strings, payments
+from tg import filters, strings
 from db import repository
 
 
@@ -688,11 +688,9 @@ async def get_id_with_business_connection(client: Client, msg: types.Message):
 
     text = await get_id_by_reply(msg)
 
-    # send the id of the chat without the notification
-    await msg.reply(
-        disable_notification=True,
+    # edit the message with the id
+    await msg.edit(
         text=text,
-        quote=True,
         reply_markup=await get_reply_markup(client),
     )
 
