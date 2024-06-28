@@ -21,7 +21,7 @@ def is_user_exists(*, tg_id: int) -> bool:
     """Check if user exists in DB or not"""
 
     with get_session() as session:
-        return session.query(exists().where(User.tg_id == tg_id)).scalar()
+        return session.query(exists().where(User.tg_id == tg_id)).scalar()  # noqa
 
 
 @cache.cachable(cache_name="is_active", params="tg_id")
@@ -59,10 +59,7 @@ def create_user(
     :param active: is active or not, default is True
     """
 
-    _logger.debug(
-        f"Create user: tg_id:{tg_id}, name:{name}, username:{username}, "
-        f"language_code:{language_code}, is_admin:{admin}, active:{active}"
-    )
+    _logger.debug(f"Create user: {tg_id=}, {name=}, {username=}, {language_code=}")
 
     # delete the cache
     cache.delete("is_user_exists", cache_id=cache.build_cache_id(tg_id=tg_id))
@@ -92,7 +89,7 @@ def update_user(*, tg_id: int, **kwargs):
     :param kwargs: the data to update
     """
 
-    _logger.debug(f"Update user: tg_id:{tg_id}, data:{kwargs}")
+    _logger.debug(f"Update user: {tg_id=}, {kwargs=}")
 
     # delete the cache
     cache.delete("is_user_exists", cache_id=cache.build_cache_id(tg_id=tg_id))
@@ -137,7 +134,7 @@ def is_group_exists(*, group_id: int) -> bool:
     """Check if group exists or not"""
 
     with get_session() as session:
-        return session.query(exists().where(Group.group_id == group_id)).scalar()
+        return session.query(exists().where(Group.group_id == group_id)).scalar()  # noqa
 
 
 def create_group(
@@ -157,10 +154,7 @@ def create_group(
     :param active: is active or not, default is True
     """
 
-    _logger.debug(
-        f"Create group: group_id:{group_id}, name:{name}, "
-        f"username:{username}, added_by_id:{added_by_id}, active:{active}"
-    )
+    _logger.debug(f"Create group: {group_id=}, {name=}, {username=}, {added_by_id=}")
 
     with get_session() as session:
         user = get_user(tg_id=added_by_id)
@@ -183,7 +177,7 @@ def update_group(*, group_id: int, **kwargs):
     :param kwargs: the data to update
     """
 
-    _logger.debug(f"Update group: group_id:{group_id}, data:{kwargs}")
+    _logger.debug(f"Update group: {group_id=}, {kwargs=}")
     with get_session() as session:
         session.query(Group).filter(Group.group_id == group_id).update(kwargs)
         session.commit()
@@ -265,9 +259,7 @@ def create_message_sent(*, sent_id: str, chat_id: int, message_id: int) -> Messa
     :return: :class:`MessageSent`
     """
 
-    _logger.debug(
-        f"Create message sent: sent_id:{sent_id}, chat_id:{chat_id}, message_id:{message_id}"
-    )
+    _logger.debug(f"Create message sent: {sent_id=}, {chat_id=}, {message_id=}")
 
     with get_session() as session:
         message_sent = MessageSent(
@@ -299,4 +291,4 @@ def is_message_sent_exists(*, sent_id: str) -> bool:
     """
 
     with get_session() as session:
-        return session.query(exists().where(MessageSent.sent_id == sent_id)).scalar()
+        return session.query(exists().where(MessageSent.sent_id == sent_id)).scalar()  # noqa

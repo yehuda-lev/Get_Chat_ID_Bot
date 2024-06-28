@@ -6,15 +6,17 @@ TEXT = {
         "🪪 In this bot you can get the id of any group, channel, user or bot\n\n"
         "📤 To use the bot, click on the buttons below and share the chat whose ID you want to know."
         " - In response, the bot will return the ID of the chat you shared\n\n"
-        "🇺🇸 To change the language send the /lang command\n\n"
-        "📝 For the list of available commands send the command /help\n\n"
+        "> 🇺🇸 To change the language send the /lang command\n\n"
+        "> 📝 You can get the ID in many other ways. Send the /help command\n\n"
+        "> 🤑 Want to donate to me? Send the /donate command\n\n"
         "📢 For updates on the bot subscribe to @GetChatID_Updates",
         "he": "ברוך הבא {name} 🤠\n\n"
         "\u200f🪪 בבוט זה תוכל לקבל מזהה של כל קבוצה, ערוץ, משתמש או בוט\n\n"
         "📤 בכדי להשתמש בבוט לחץ על הכפתורים למטה ושתף את הצאט שברצונך לדעת מה המזהה שלו. "
         "- בתגובה הבוט יחזיר לך את המזהה של הצאט אותו שיתפת\n\n"
-        "\u200f🇺🇸 לשינוי השפה שלח את הפקודה /lang\n\n"
-        "📝 לרשימת הפקודות הזמינות שלח את הפקודה /help\n\n"
+        "> \u200f🇺🇸 לשינוי השפה שלח את הפקודה /lang\n\n"
+        "> 📝 ניתן לקבל את המזהה בעוד הרבה דרכים נוספות. שלח את הפקודה /help\n\n"
+        "> 🤑 רוצה לתרום לי? שלח את הפקודה /donate\n\n"
         "📢 לעדכונים על הבוט הירשם ל-@GetChatID_Updates",
     },
     "USER": {"en": "👤 User", "he": "👤 משתמש"},
@@ -128,7 +130,7 @@ TEXT = {
         "Language: [Python](https://www.python.org/) \n"
         "Library: [pyrotgfork](https://telegramplayground.github.io/pyrogram/) \n"
         "Bot creator: @yehudalev 👨‍💻\n\n"
-        "Donations: [To donate to the bot creator](https://www.paypal.com/paypalme/yehudalev100)\n\n"
+        "Donations: You can support the bot creator with the /donate command\n\n"
         "The bot is open source on GitHub 🖤\n"
         "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
         "📢 For updates on the bot, subscribe to @GetChatID_Updates,",
@@ -136,7 +138,7 @@ TEXT = {
         "שפה: [Python](https://www.python.org/) \n"
         "ספרייה: [pyrotgfork](https://telegramplayground.github.io/pyrogram/) \n"
         "יוצר הבוט: @yehudalev  👨‍💻\n\n"
-        "תרומות: [לתרומה ליוצר הבוט](https://www.paypal.com/paypalme/yehudalev100)\n\n"
+        "תרומות: ניתן לתמוך ביוצר הבוט באמצעות הפקודה /donate\n\n"
         "הבוט בקוד פתוח בגיטהאב 🖤\n"
         "https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n"
         "📢 לעדכונים על הבוט הירשמו ל-@GetChatID_Updates",
