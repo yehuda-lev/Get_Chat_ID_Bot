@@ -136,6 +136,12 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
+        get_ids.get_via_bot,
+        filters.private
+        & ~filters.tg_business
+        & filters.create(lambda _, client, msg: msg.via_bot and client.me.id != msg.via_bot.id)
+    ),
+    handlers.MessageHandler(
         get_ids.get_reply_to_another_chat,
         filters.private
         & ~filters.tg_business

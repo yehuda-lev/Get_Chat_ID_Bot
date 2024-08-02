@@ -391,6 +391,17 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
         _logger.error(f"Can't answer to inline query {e}")
 
 
+async def get_via_bot(_: Client, msg: types.Message):
+    """Get id via bot"""
+
+    tg_id = msg.via_bot.id
+    name = msg.via_bot.first_name
+    lang = repository.get_user_language(tg_id=tg_id)
+    text = strings.get_text(key="ID_USER", lang=lang).format(name, tg_id)
+
+    await msg.reply(text=text, quote=True)
+
+
 async def added_to_group(_: Client, msg: types.Message):
     """
     Added the bot to the group

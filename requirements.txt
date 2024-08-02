@@ -1,4 +1,4 @@
-pyrotgfork==2.1.32.9
+pyrotgfork==2.1.33.1
 PyroTgCrypto==1.2.6a0
-SQLAlchemy==2.0.30
-pydantic-settings==2.3.1
+SQLAlchemy==2.0.31
+pydantic-settings==2.4.0
