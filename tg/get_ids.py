@@ -321,31 +321,6 @@ async def get_story(_: Client, msg: types.Message):
     await msg.reply(text=text, quote=True)
 
 
-async def send_about(_: Client, msg: types.Message):
-    """Send info about the bot"""
-    tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
-
-    await msg.reply_text(
-        text=strings.get_text(key="INFO_ABOUT", lang=lang),
-        quote=True,
-        link_preview_options=types.LinkPreviewOptions(
-            url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
-            show_above_text=True,
-        ),
-        reply_markup=types.InlineKeyboardMarkup(
-            [
-                [
-                    types.InlineKeyboardButton(
-                        text=strings.get_text(key="BUTTON_DEV", lang=lang),
-                        url=strings.get_text(key="LINK_DEV", lang=lang),
-                    )
-                ],
-            ]
-        ),
-    )
-
-
 async def get_id_by_username(lang: str, client: Client, text: str) -> str:
     """Get id by username"""
     username = filters.get_username(text=text)
@@ -767,6 +742,44 @@ async def handle_business_connection(
         _logger.exception(e)
 
     raise ContinuePropagation
+
+
+async def send_about(_: Client, msg: types.Message):
+    """Send info about the bot"""
+    tg_id = msg.from_user.id
+    lang = repository.get_user_language(tg_id=tg_id)
+
+    await msg.reply_text(
+        text=strings.get_text(key="INFO_ABOUT", lang=lang),
+        quote=True,
+        link_preview_options=types.LinkPreviewOptions(
+            url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
+            show_above_text=True,
+        ),
+        reply_markup=types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton(
+                        text=strings.get_text(key="BUTTON_DEV", lang=lang),
+                        url=strings.get_text(key="LINK_DEV", lang=lang),
+                    )
+                ],
+            ]
+        ),
+    )
+
+
+async def send_privacy_policy(_: Client, msg: types.Message):
+    """Send privacy policy"""
+
+    url = "https://telegra.ph/Privacy-Policy-for-GetChatID-IL-BOT-08-01"
+    await msg.reply(
+        text=url,
+        link_preview_options=types.LinkPreviewOptions(
+            show_above_text=True,
+            prefer_large_media=True,
+        )
+    )
 
 
 async def get_raw(

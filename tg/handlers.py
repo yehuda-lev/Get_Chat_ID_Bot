@@ -19,6 +19,7 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
+    # commands
     handlers.MessageHandler(
         get_ids.choose_lang,
         filters.private
@@ -87,6 +88,13 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
+    handlers.MessageHandler(
+        get_ids.send_privacy_policy,
+        filters.command("privacy")
+        & ~filters.tg_business
+        & tg_filters.create_user(),
+        ),
+    # other
     handlers.MessageHandler(
         get_ids.get_username_by_message,
         filters.private
