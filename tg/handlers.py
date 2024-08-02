@@ -90,7 +90,7 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         get_ids.send_privacy_policy,
-        filters.command("privacy")
+        tg_filters.start_command("privacy")
         & ~filters.tg_business
         & tg_filters.create_user(),
         ),

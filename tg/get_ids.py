@@ -43,7 +43,7 @@ async def welcome(_: Client, msg: types.Message):
                         request_users=types.KeyboardButtonRequestUsers(
                             request_id=1,
                             user_is_bot=False,
-                            max_quantity=10,
+                            max_quantity=1,  # https://t.me/tgbetachat/1939059 not works
                             request_name=True,
                         ),
                     ),
