@@ -789,7 +789,7 @@ async def send_privacy_policy(_: Client, msg: types.Message):
         link_preview_options=types.LinkPreviewOptions(
             show_above_text=True,
             prefer_large_media=True,
-        )
+        ),
     )
 
 
