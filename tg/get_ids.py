@@ -755,6 +755,54 @@ async def handle_business_connection(
     raise ContinuePropagation
 
 
+async def send_link_to_chat_by_id(_: Client, msg: types.Message):
+    """Send link to chat by id"""
+    tg_id = msg.from_user.id
+    lang = repository.get_user_language(tg_id=tg_id)
+
+    try:
+        _, chat_id = msg.text.split(" ", 1)
+    except ValueError:
+        await msg.reply("something went wrong")
+        return
+
+    if chat_id.startswith("link_"):
+        chat_id = chat_id[5:]
+    is_supergroup, link, link_android, link_ios = None, None, None, None
+    if chat_id.startswith("-100"):
+        link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
+        is_supergroup = True
+    else:
+        is_supergroup = False
+        link_android = f"tg://openmessage?user_id={chat_id}"
+        link_ios = f"tg://user?id={chat_id}"
+
+    if is_supergroup:
+        buttons = [
+            types.InlineKeyboardButton(
+                text="Link 🔗",
+                url=link,
+            )
+        ]
+    else:
+        buttons = [
+            types.InlineKeyboardButton(
+                text="Android 📱",
+                url=link_android,
+            ),
+            types.InlineKeyboardButton(
+                text="iOS 🔗",
+                url=link_ios,
+            ),
+        ]
+
+    await msg.reply(
+        text=f"Link of chat `{chat_id}`",
+        reply_markup=types.InlineKeyboardMarkup([buttons]),
+        quote=True,
+    )
+
+
 async def send_about(_: Client, msg: types.Message):
     """Send info about the bot"""
     tg_id = msg.from_user.id

@@ -94,6 +94,12 @@ HANDLERS = [
         & ~filters.tg_business
         & tg_filters.create_user(),
     ),
+    handlers.MessageHandler(
+        get_ids.send_link_to_chat_by_id,
+        tg_filters.start_command("link")
+        & ~filters.tg_business
+        & tg_filters.create_user(),
+    ),
     # other
     handlers.MessageHandler(
         get_ids.get_username_by_message,
