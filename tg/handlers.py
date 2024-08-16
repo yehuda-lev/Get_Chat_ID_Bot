@@ -90,14 +90,18 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         get_ids.send_privacy_policy,
-        tg_filters.start_command("privacy")
+        filters.private
         & ~filters.tg_business
+        & tg_filters.start_command("privacy")
+        & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
         get_ids.send_link_to_chat_by_id,
-        tg_filters.start_command("link")
+        filters.private
         & ~filters.tg_business
+        & tg_filters.start_command("link")
+        & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
     # other
