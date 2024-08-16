@@ -216,7 +216,7 @@ def get_users_business_count() -> int:
 
     with get_session() as session:
         return (
-            session.query(func.count(User.id)).filter(User.business_id != None).scalar()
+            session.query(func.count(User.id)).filter(User.business_id != None).scalar()  # noqa
         )  # noqa
 
 

@@ -93,7 +93,13 @@ HANDLERS = [
         tg_filters.start_command("privacy")
         & ~filters.tg_business
         & tg_filters.create_user(),
-        ),
+    ),
+    handlers.MessageHandler(
+        get_ids.send_link_to_chat_by_id,
+        tg_filters.start_command("link")
+        & ~filters.tg_business
+        & tg_filters.create_user(),
+    ),
     # other
     handlers.MessageHandler(
         get_ids.get_username_by_message,
@@ -139,7 +145,9 @@ HANDLERS = [
         get_ids.get_via_bot,
         filters.private
         & ~filters.tg_business
-        & filters.create(lambda _, client, msg: msg.via_bot and client.me.id != msg.via_bot.id)
+        & filters.create(
+            lambda _, client, msg: msg.via_bot and client.me.id != msg.via_bot.id
+        ),
     ),
     handlers.MessageHandler(
         get_ids.get_reply_to_another_chat,
