@@ -229,6 +229,15 @@ TEXT = {
         "en": "🎉 Thank you for your donation 🎉\n" "I received your donation of {} ⭐️",
         "he": "🎉 תודה על התרומה שלך 🎉\n" "קיבלתי את התרומה שלך של {} ⭐️",
     },
+    "SOMTHING_WENT_WRONG": {
+        "en": "Something went wrong",
+        "he": "משהו השתבש",
+    },
+    "LINK_TO_CHAT": {"en": "🔗 Link to chat `{}`", "he": "‏🔗 קישור לצ'אט \u200e`{}`"},
+    "BUTTON_GET_LINK": {
+        "en": "🔗 Link to chat",
+        "he": "🔗 קישור לצ'אט",
+    },
 }
 
 

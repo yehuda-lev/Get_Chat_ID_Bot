@@ -1,4 +1,6 @@
 import logging
+from typing import Tuple
+
 from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
 from tg import filters, strings
@@ -15,6 +17,23 @@ async def get_reply_markup(client: Client) -> types.InlineKeyboardMarkup:
                 types.InlineKeyboardButton(
                     text="Powered by 'Get Chat ID Bot' 🪪",
                     url=f"https://t.me/{client.me.username}?start=start",
+                )
+            ]
+        ]
+    )
+
+
+async def get_button_link_to_chat(
+    chat_id: int, lang: str, client: Client
+) -> types.InlineKeyboardMarkup | None:
+    if chat_id is None:
+        return chat_id
+    return types.InlineKeyboardMarkup(
+        [
+            [
+                types.InlineKeyboardButton(
+                    text=strings.get_text(key="BUTTON_GET_LINK", lang=lang),
+                    url=f"https://t.me/{client.me.username}?start=link_{chat_id}",
                 )
             ]
         ]
@@ -158,12 +177,12 @@ async def get_lang(_, query: types.CallbackQuery):
     )
 
 
-async def get_forward(_, msg: types.Message):
+async def get_forward(client: Client, msg: types.Message):
     """Get message forward"""
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
     forward = msg.forward_origin
-    # return
+    chat_id = None
 
     if isinstance(forward, types.MessageOriginUser):  # user
         user = forward.sender_user
@@ -171,16 +190,19 @@ async def get_forward(_, msg: types.Message):
             user.full_name if user.full_name else "",
             user.id,
         )
+        chat_id = user.id
     elif isinstance(forward, types.MessageOriginChat):  # group
         group = forward.sender_chat
         text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
             group.title, group.id
         )
+        chat_id = group.id
     elif isinstance(forward, types.MessageOriginChannel):  # channel
         channel = forward.chat
         text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
             channel.title, channel.id
         )
+        chat_id = channel.id
     elif isinstance(forward, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
         text = strings.get_text(key="ID_HIDDEN", lang=lang).format(
@@ -188,10 +210,14 @@ async def get_forward(_, msg: types.Message):
         )
     else:
         return
-    await msg.reply(text=text, quote=True)
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=await get_button_link_to_chat(chat_id, lang, client),
+    )
 
 
-async def get_me(_, msg: types.Message):
+async def get_me(client: Client, msg: types.Message):
     """Get id the user"""
     user = msg.from_user
     tg_id = user.id
@@ -202,13 +228,15 @@ async def get_me(_, msg: types.Message):
             user.full_name if user.full_name else "", tg_id
         ),
         quote=True,
+        reply_markup=await get_button_link_to_chat(tg_id, lang, client),
     )
 
 
-async def get_contact(_, msg: types.Message):
+async def get_contact(client: Client, msg: types.Message):
     """Get id from contact"""
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
+    chat_id = None
 
     if msg.contact.user_id:
         contact = msg.contact
@@ -217,16 +245,22 @@ async def get_contact(_, msg: types.Message):
             + ((" " + contact.last_name) if contact.last_name else ""),
             contact.user_id,
         )
+        chat_id = contact.user_id
     else:
         text = strings.get_text(key="NOT_HAVE_ID", lang=lang)
-    await msg.reply(text=text, quote=True)
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=await get_button_link_to_chat(chat_id, lang, client),
+    )
 
 
-async def get_request_peer(_: Client, msg: types.Message):
+async def get_request_peer(client: Client, msg: types.Message):
     """ "Get request peer"""
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
     reply_markup = None
+    chat_id = None
 
     if msg.users_shared:
         users = msg.users_shared.users
@@ -236,6 +270,7 @@ async def get_request_peer(_: Client, msg: types.Message):
                 user.full_name if user.full_name else "",
                 user.id,
             )
+            chat_id = user.id
 
         else:  # support of multiple users
             text = strings.get_text(key="ID_USERS", lang=lang).format(
@@ -276,6 +311,7 @@ async def get_request_peer(_: Client, msg: types.Message):
                 text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
                     chat.title, chat.id
                 )
+                chat_id = chat.id
             else:  # support of multiple chats
                 text = strings.get_text(key="ID_CHANNELS_OR_GROUPS", lang=lang).format(
                     "".join(f"\n{chat.title} • `{chat.id}`" for chat in chats)
@@ -283,10 +319,15 @@ async def get_request_peer(_: Client, msg: types.Message):
     else:
         return
 
-    await msg.reply(text=text, quote=True, reply_markup=reply_markup)
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=reply_markup
+        or await get_button_link_to_chat(chat_id, lang, client),
+    )
 
 
-async def get_story(_: Client, msg: types.Message):
+async def get_story(client: Client, msg: types.Message):
     """Get id from story"""
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
@@ -318,12 +359,19 @@ async def get_story(_: Client, msg: types.Message):
         case _:
             return
 
-    await msg.reply(text=text, quote=True)
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=await get_button_link_to_chat(chat.id, lang, client),
+    )
 
 
-async def get_id_by_username(lang: str, client: Client, text: str) -> str:
+async def get_id_by_username(
+    lang: str, client: Client, text: str
+) -> Tuple[str, int | None]:
     """Get id by username"""
     username = filters.get_username(text=text)
+    chat_id = None
 
     try:
         chat = await client.get_chat(username)
@@ -351,7 +399,7 @@ async def get_id_by_username(lang: str, client: Client, text: str) -> str:
         else:
             text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
 
-    return text
+    return text, chat_id
 
 
 async def get_username_by_message(client: Client, msg: types.Message):
@@ -359,9 +407,13 @@ async def get_username_by_message(client: Client, msg: types.Message):
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
 
-    text = await get_id_by_username(lang, client, msg.text)
+    text, chat_id = await get_id_by_username(lang, client, msg.text)
 
-    await msg.reply_text(text=text, quote=True)
+    await msg.reply_text(
+        text=text,
+        quote=True,
+        reply_markup=await get_button_link_to_chat(chat_id, lang, client),
+    )
 
 
 async def get_username_by_inline_query(client: Client, query: types.InlineQuery):
@@ -371,7 +423,7 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
 
     lang = repository.get_user_language(tg_id=query.from_user.id)
 
-    text = await get_id_by_username(lang, client, query.query)
+    text, chat_id = await get_id_by_username(lang, client, query.query)
 
     try:
         await query.answer(
@@ -391,15 +443,20 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
         _logger.error(f"Can't answer to inline query {e}")
 
 
-async def get_via_bot(_: Client, msg: types.Message):
+async def get_via_bot(client: Client, msg: types.Message):
     """Get id via bot"""
 
-    tg_id = msg.via_bot.id
+    tg_id = msg.from_user.id
     name = msg.via_bot.first_name
-    lang = repository.get_user_language(tg_id=tg_id)
-    text = strings.get_text(key="ID_USER", lang=lang).format(name, tg_id)
+    chat_id = msg.via_bot.id
+    lang = repository.get_user_language(tg_id=chat_id)
+    text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
 
-    await msg.reply(text=text, quote=True)
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=await get_button_link_to_chat(tg_id, lang, client),
+    )
 
 
 async def added_to_group(_: Client, msg: types.Message):
@@ -797,7 +854,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
         ]
 
     await msg.reply(
-        text=f"Link of chat `{chat_id}`",
+        text=strings.get_text(key="LINK_TO_CHAT", lang=lang).format(chat_id),
         reply_markup=types.InlineKeyboardMarkup([buttons]),
         quote=True,
     )
