@@ -294,9 +294,8 @@ async def get_request_peer(client: Client, msg: types.Message):
                     added_by_id=tg_id,
                 )
             else:
-                user = repository.get_user(tg_id=tg_id)
                 repository.update_group(
-                    group_id=chat.id, added_by_id=user.id, active=True
+                    group_id=chat.id, added_by_id=tg_id, active=True
                 )
 
             text = strings.get_text(key="BOT_ADDED_TO_GROUP", lang=lang).format(
@@ -513,6 +512,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
                     f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
                 )
                 repository.update_user(tg_id=update.from_user.id, active=False)
+            return
 
     # the bot has had permissions removed from a chat
     if not update.new_chat_member.user.is_self:
