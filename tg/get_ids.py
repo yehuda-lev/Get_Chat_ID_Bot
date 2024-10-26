@@ -345,31 +345,24 @@ async def get_story(client: Client, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
     chat = msg.story.chat
 
-    match chat.type:
-        case enums.ChatType.PRIVATE:  # user
-            text = strings.get_text(key="ID_USER", lang=lang).format(
-                chat.full_name if chat.full_name else "",
-                chat.id,
-            )
-        case enums.ChatType.BOT:  # bot (when it's possible to upload story with bot)
-            text = strings.get_text(key="ID_USER", lang=lang).format(
-                chat.full_name if chat.full_name else "",
-                chat.id,
-            )
-        case enums.ChatType.CHANNEL:  # channel
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                chat.title, chat.id
-            )
-        case enums.ChatType.SUPERGROUP:  # supergroup
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                chat.title, chat.id
-            )
-        case enums.ChatType.GROUP:  # group
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                chat.title, chat.id
-            )
-        case _:
-            return
+    if chat.type in [
+        enums.ChatType.PRIVATE,  # user
+        enums.ChatType.BOT,  # bot (when it's possible to upload story with bot)
+    ]:
+        text = strings.get_text(key="ID_USER", lang=lang).format(
+            chat.full_name if chat.full_name else "",
+            chat.id,
+        )
+    elif chat.type in [
+        enums.ChatType.CHANNEL,  # channel
+        enums.ChatType.SUPERGROUP,  # supergroup
+        enums.ChatType.GROUP,  # group
+    ]:
+        text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
+            chat.title, chat.id
+        )
+    else:
+        return
 
     await msg.reply(
         text=text,
