@@ -67,8 +67,13 @@ def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
             without_prefix = text[len(prefix) :]
 
             text_command = without_prefix.split(" ")
-            if len(text_command) > 1:
-                return without_prefix[(len(text_command[0]) + 1) :].startswith(command)
+            if len(text_command) > 1:  # "start link 1233455"
+                return (
+                    without_prefix[(len(text_command[0]) + 1) :].startswith(
+                        command
+                    )  # "start link 1233455
+                    or text_command[0].startswith(command)  # "link 1233455"
+                )
             else:
                 return text_command[0].startswith(command)
         return False

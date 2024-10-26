@@ -45,14 +45,6 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.welcome,
-        filters.private
-        & ~filters.tg_business
-        & tg_filters.start_command(command="start")
-        & tg_filters.is_user_spamming()
-        & tg_filters.create_user(),
-    ),
-    handlers.MessageHandler(
         get_ids.added_to_group,
         filters.private
         & ~filters.tg_business
@@ -101,6 +93,14 @@ HANDLERS = [
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command("link")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.MessageHandler(
+        get_ids.welcome,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="start")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
