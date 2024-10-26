@@ -238,6 +238,10 @@ TEXT = {
         "en": "🔗 Link to chat",
         "he": "🔗 קישור לצ'אט",
     },
+    "FORMAT_LINK": {
+        "en": "Send the command with the chat ID\n" "For example:\n> `/link 777000`",
+        "he": "שלח את הפקודה עם המזהה של הצ'אט" "\nלדוגמה:\n> `/link 777000`",
+    },
 }
 
 

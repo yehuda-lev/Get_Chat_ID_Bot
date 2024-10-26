@@ -820,7 +820,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
     try:
         _, chat_id = msg.text.split(" ", 1)
     except ValueError:
-        await msg.reply("something went wrong")
+        await msg.reply(strings.get_text(key="FORMAT_LINK", lang=lang))
         return
 
     if chat_id.startswith("link_"):
@@ -830,6 +830,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
         link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
         is_supergroup = True
     else:
+        chat_id = chat_id.replace(" ", "")
         is_supergroup = False
         link_android = f"tg://openmessage?user_id={chat_id}"
         link_ios = f"tg://user?id={chat_id}"
