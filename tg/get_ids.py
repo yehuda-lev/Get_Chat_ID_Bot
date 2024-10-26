@@ -373,7 +373,7 @@ async def get_id_by_username(
     chat_id = None
 
     try:
-        chat = await client.get_chat(username)
+        chat = await client.get_chat(username, force_full=False)
     except errors.BadRequest:  # username not found
         text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
 
