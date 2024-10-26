@@ -4,6 +4,8 @@ from __future__ import annotations
 import logging
 import datetime
 from contextlib import contextmanager
+from enum import Enum
+
 from sqlalchemy import String, create_engine, ForeignKey
 from sqlalchemy.orm import (
     Mapped,
@@ -35,6 +37,24 @@ def get_session() -> Session:
         yield new_session
     finally:
         new_session.close()
+
+
+class StatsType(Enum):
+    """Type of stats"""
+
+    BUTTON_SHARE_CHAT = "button_share_chat"
+    FORWARD_MESSAGE = "forward_message"
+    REPLY_TO_ANOTHER_CHAT = "reply_to_another_chat"
+    SEARCH_USERNAME = "search_username"
+    ID_IN_GROUP = "id_in_group"
+    SEARCH_INLINE = "search_inline"
+    VIA_BOT = "via_bot"
+    CONTACT = "contact"
+    STORY = "story"
+    BUSINESS_ID = "business_id"
+    BUSINESS_SETTINGS = "business_settings"
+    ME = "me"
+    LINK = "link"
 
 
 class BaseTable(DeclarativeBase):
@@ -83,6 +103,18 @@ class MessageSent(BaseTable):
     message_id: Mapped[int]
     chat_id: Mapped[int]
     sent_at: Mapped[datetime.datetime]
+
+
+class Stats(BaseTable):
+    """Stats details"""
+
+    __tablename__ = "stats"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    type: Mapped[StatsType] = mapped_column(String(32))
+    lang: Mapped[str | None] = mapped_column(String(5))
+
+    created_at: Mapped[datetime.datetime]
 
 
 BaseTable.metadata.create_all(engine)

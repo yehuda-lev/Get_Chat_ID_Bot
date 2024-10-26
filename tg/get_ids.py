@@ -3,8 +3,9 @@ from typing import Tuple
 
 from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
-from tg import filters, strings
+from tg import filters, strings, utils
 from db import repository
+from db.repository import StatsType
 
 
 _logger = logging.getLogger(__name__)
@@ -216,6 +217,10 @@ async def get_forward(client: Client, msg: types.Message):
         reply_markup=await get_button_link_to_chat(chat_id, lang, client),
     )
 
+    utils.create_stats(
+        type_stats=StatsType.FORWARD_MESSAGE, lang=msg.from_user.language_code
+    )
+
 
 async def get_me(client: Client, msg: types.Message):
     """Get id the user"""
@@ -230,6 +235,8 @@ async def get_me(client: Client, msg: types.Message):
         quote=True,
         reply_markup=await get_button_link_to_chat(tg_id, lang, client),
     )
+
+    utils.create_stats(type_stats=StatsType.ME, lang=msg.from_user.language_code)
 
 
 async def get_contact(client: Client, msg: types.Message):
@@ -253,6 +260,8 @@ async def get_contact(client: Client, msg: types.Message):
         quote=True,
         reply_markup=await get_button_link_to_chat(chat_id, lang, client),
     )
+
+    utils.create_stats(type_stats=StatsType.CONTACT, lang=msg.from_user.language_code)
 
 
 async def get_request_peer(client: Client, msg: types.Message):
@@ -325,6 +334,10 @@ async def get_request_peer(client: Client, msg: types.Message):
         or await get_button_link_to_chat(chat_id, lang, client),
     )
 
+    utils.create_stats(
+        type_stats=StatsType.BUTTON_SHARE_CHAT, lang=msg.from_user.language_code
+    )
+
 
 async def get_story(client: Client, msg: types.Message):
     """Get id from story"""
@@ -363,6 +376,8 @@ async def get_story(client: Client, msg: types.Message):
         quote=True,
         reply_markup=await get_button_link_to_chat(chat.id, lang, client),
     )
+
+    utils.create_stats(type_stats=StatsType.STORY, lang=msg.from_user.language_code)
 
 
 async def get_id_by_username(
@@ -414,6 +429,10 @@ async def get_username_by_message(client: Client, msg: types.Message):
         reply_markup=await get_button_link_to_chat(chat_id, lang, client),
     )
 
+    utils.create_stats(
+        type_stats=StatsType.SEARCH_USERNAME, lang=msg.from_user.language_code
+    )
+
 
 async def get_username_by_inline_query(client: Client, query: types.InlineQuery):
     """
@@ -441,6 +460,10 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
     except errors.BadRequest as e:
         _logger.error(f"Can't answer to inline query {e}")
 
+    utils.create_stats(
+        type_stats=StatsType.SEARCH_INLINE, lang=query.from_user.language_code
+    )
+
 
 async def get_via_bot(client: Client, msg: types.Message):
     """Get id via bot"""
@@ -456,6 +479,8 @@ async def get_via_bot(client: Client, msg: types.Message):
         quote=True,
         reply_markup=await get_button_link_to_chat(tg_id, lang, client),
     )
+
+    utils.create_stats(type_stats=StatsType.VIA_BOT, lang=msg.from_user.language_code)
 
 
 async def added_to_group(_: Client, msg: types.Message):
@@ -677,7 +702,7 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
             if entity.type == enums.MessageEntityType.MENTION:
                 try:
                     username = msg.text[entity.offset : entity.offset + entity.length]
-                    user = await client.get_chat(username)
+                    user = await client.get_chat(username, force_full=False)
                     name = user.full_name if user.full_name else ""
                     chat_id = user.id
                 except errors.BadRequest:
@@ -708,6 +733,9 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
     except Exception:  # noqa
         await client.leave_chat(chat_id=msg.chat.id)
 
+    lang = msg.from_user.language_code if msg.from_user else None
+    utils.create_stats(type_stats=StatsType.ID_IN_GROUP, lang=lang)
+
 
 async def get_reply_to_another_chat(_: Client, msg: types.Message):
     """
@@ -723,6 +751,10 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
 
     await msg.reply(text=text, quote=True)
 
+    utils.create_stats(
+        type_stats=StatsType.REPLY_TO_ANOTHER_CHAT, lang=msg.from_user.language_code
+    )
+
 
 async def get_id_with_business_connection(client: Client, msg: types.Message):
     """
@@ -735,6 +767,10 @@ async def get_id_with_business_connection(client: Client, msg: types.Message):
     await msg.edit(
         text=text,
         reply_markup=await get_reply_markup(client),
+    )
+
+    utils.create_stats(
+        type_stats=StatsType.BUSINESS_ID, lang=msg.from_user.language_code
     )
 
 
@@ -753,6 +789,10 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
         text=strings.get_text(key="ID_BY_MANAGE_BUSINESS", lang=lang).format(
             from_chat_id
         )
+    )
+
+    utils.create_stats(
+        type_stats=StatsType.BUSINESS_SETTINGS, lang=msg.from_user.language_code
     )
 
 
@@ -859,6 +899,8 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
         reply_markup=types.InlineKeyboardMarkup([buttons]),
         quote=True,
     )
+
+    utils.create_stats(type_stats=StatsType.LINK, lang=msg.from_user.language_code)
 
 
 async def send_about(_: Client, msg: types.Message):

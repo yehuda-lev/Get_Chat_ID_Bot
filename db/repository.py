@@ -4,7 +4,7 @@ import datetime
 import logging
 from sqlalchemy import exists, func
 
-from db.tables import get_session, User, Group, MessageSent
+from db.tables import get_session, User, Group, MessageSent, StatsType, Stats
 from data import cache_memory
 
 
@@ -292,3 +292,18 @@ def is_message_sent_exists(*, sent_id: str) -> bool:
 
     with get_session() as session:
         return session.query(exists().where(MessageSent.sent_id == sent_id)).scalar()  # noqa
+
+
+def create_stats(*, type_stats: StatsType, lang: str):
+    """Create stats"""
+
+    _logger.debug(f"Create stats: {type_stats.value}, {lang=}")
+
+    with get_session() as session:
+        stats = Stats(
+            type=type_stats.value,
+            lang=lang,
+            created_at=datetime.datetime.now(),
+        )
+        session.add(stats)
+        session.commit()
