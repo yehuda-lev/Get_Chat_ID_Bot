@@ -297,8 +297,6 @@ def is_message_sent_exists(*, sent_id: str) -> bool:
 def create_stats(*, type_stats: StatsType, lang: str):
     """Create stats"""
 
-    _logger.debug(f"Create stats: {type_stats.value}, {lang=}")
-
     with get_session() as session:
         stats = Stats(
             type=type_stats.value,
