@@ -96,14 +96,6 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
-    handlers.MessageHandler(
-        get_ids.welcome,
-        filters.private
-        & ~filters.tg_business
-        & tg_filters.start_command(command="start")
-        & tg_filters.is_user_spamming()
-        & tg_filters.create_user(),
-    ),
     # other
     handlers.MessageHandler(
         get_ids.get_username_by_message,
@@ -179,6 +171,14 @@ HANDLERS = [
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command(command="bizChat")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.MessageHandler(
+        get_ids.welcome,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="start")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
