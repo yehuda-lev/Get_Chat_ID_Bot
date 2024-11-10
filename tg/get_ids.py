@@ -533,7 +533,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
             return
 
     # the bot has had permissions removed from a chat
-    if not update.new_chat_member.user.is_self:
+    if update.new_chat_member.user is None or not update.new_chat_member.user.is_self:
         return
     if update.new_chat_member.status in {
         enums.ChatMemberStatus.MEMBER,
