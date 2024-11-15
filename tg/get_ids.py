@@ -172,7 +172,7 @@ async def get_lang(_, query: types.CallbackQuery):
     """Get language"""
     data_lang = query.data.split(":")[1]
     tg_id = query.from_user.id
-    repository.update_user(tg_id=tg_id, language_code=data_lang)
+    repository.update_user(tg_id=tg_id, lang=data_lang)
     await query.edit_message_text(
         text=strings.get_text(key="DONE", lang=data_lang).format(data_lang),
     )

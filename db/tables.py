@@ -72,6 +72,7 @@ class User(BaseTable):
     username: Mapped[str | None] = mapped_column(String(32))
     business_id: Mapped[str | None] = mapped_column(String(32))
     language_code: Mapped[str | None] = mapped_column(String(5))
+    lang: Mapped[str | None] = mapped_column(String(5))  # lang in the bot
     created_at: Mapped[datetime.datetime]
     active: Mapped[bool] = mapped_column(default=True)
     admin: Mapped[bool] = mapped_column(default=False)

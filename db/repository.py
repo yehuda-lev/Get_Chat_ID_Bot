@@ -74,6 +74,7 @@ def create_user(
             name=name,
             username=username,
             language_code=language_code,
+            lang=language_code,
             admin=admin,
             active=active,
             created_at=datetime.datetime.now(),
@@ -124,7 +125,7 @@ def get_user_language(*, tg_id: int) -> str:
     """
 
     with get_session() as session:
-        return session.query(User.language_code).filter(User.tg_id == tg_id).scalar()
+        return session.query(User.lang).filter(User.tg_id == tg_id).scalar()
 
 
 # group
