@@ -159,7 +159,17 @@ async def choose_lang(_, msg: types.Message):
                 [types.InlineKeyboardButton(text="עברית 🇮🇱", callback_data="lang:he")],
                 [
                     types.InlineKeyboardButton(
-                        text="English 🇱🇷", callback_data="lang:en"
+                        text="English 🇺🇸", callback_data="lang:en"
+                    )
+                ],
+                [
+                    types.InlineKeyboardButton(
+                        text="Русский 🇷🇺", callback_data="lang:ru"
+                    )
+                ],
+                [
+                    types.InlineKeyboardButton(
+                        text="العربية 🇸🇦", callback_data="lang:ar"
                     )
                 ],
             ]
