@@ -46,13 +46,14 @@ async def welcome(_: Client, msg: types.Message):
     """start the bot"""
     user = msg.from_user
     tg_id = user.id
-    name = user.full_name if user.full_name else ""
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply_text(
-        text=manager.get_translation(TranslationKeys.WELCOME, lang).format(name=name),
+        text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
+            name=user.mention
+        ),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
-        message_effect_id=5107584321108051014,  # 👍
+        message_effect_id=5046509860389126442,  # 🎉
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
             input_field_placeholder=manager.get_translation(
