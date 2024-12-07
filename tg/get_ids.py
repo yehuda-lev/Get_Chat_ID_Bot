@@ -3,9 +3,10 @@ from typing import Tuple
 
 from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
-from tg import filters, strings, utils
+from tg import filters, utils
 from db import repository
 from db.repository import StatsType
+from locales.translation_manager import manager, TranslationKeys
 
 
 _logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ async def get_button_link_to_chat(
         [
             [
                 types.InlineKeyboardButton(
-                    text=strings.get_text(key="BUTTON_GET_LINK", lang=lang),
+                    text=manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang),
                     url=f"https://t.me/{client.me.username}?start=link_{chat_id}",
                 )
             ]
@@ -49,17 +50,19 @@ async def welcome(_: Client, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply_text(
-        text=strings.get_text(key="WELCOME", lang=lang).format(name=name),
+        text=manager.get_translation(TranslationKeys.WELCOME, lang).format(name=name),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
         message_effect_id=5107584321108051014,  # 👍
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
-            input_field_placeholder=strings.get_text(key="CHOSE_CHAT_TYPE", lang=lang),
+            input_field_placeholder=manager.get_translation(
+                TranslationKeys.CHOSE_CHAT_TYPE, lang
+            ),
             keyboard=[
                 [
                     # user
                     types.KeyboardButton(
-                        text=strings.get_text(key="USER", lang=lang),
+                        text=manager.get_translation(TranslationKeys.USER, lang),
                         request_users=types.KeyboardButtonRequestUsers(
                             request_id=1,
                             user_is_bot=False,
@@ -69,7 +72,7 @@ async def welcome(_: Client, msg: types.Message):
                     ),
                     # bot
                     types.KeyboardButton(
-                        text=strings.get_text(key="BOT", lang=lang),
+                        text=manager.get_translation(TranslationKeys.BOT, lang),
                         request_users=types.KeyboardButtonRequestUsers(
                             request_id=2,
                             user_is_bot=True,
@@ -81,7 +84,7 @@ async def welcome(_: Client, msg: types.Message):
                 [
                     # group
                     types.KeyboardButton(
-                        text=strings.get_text(key="GROUP", lang=lang),
+                        text=manager.get_translation(TranslationKeys.GROUP, lang),
                         request_chat=types.KeyboardButtonRequestChat(
                             request_id=3,
                             chat_is_channel=False,
@@ -90,7 +93,7 @@ async def welcome(_: Client, msg: types.Message):
                     ),
                     # channel
                     types.KeyboardButton(
-                        text=strings.get_text(key="CHANNEL", lang=lang),
+                        text=manager.get_translation(TranslationKeys.CHANNEL, lang),
                         request_chat=types.KeyboardButtonRequestChat(
                             request_id=4,
                             chat_is_channel=True,
@@ -107,19 +110,21 @@ async def get_chats_manager(_: Client, msg: types.Message):
     """Get chats manager"""
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
-    text = strings.get_text(key="CHAT_MANAGER", lang=lang)
+    text = manager.get_translation(TranslationKeys.CHAT_MANAGER, lang)
 
     await msg.reply_text(
         text=text,
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
-            input_field_placeholder=strings.get_text(key="CHOSE_CHAT_TYPE", lang=lang),
+            input_field_placeholder=manager.get_translation(
+                TranslationKeys.CHOSE_CHAT_TYPE, lang
+            ),
             keyboard=[
                 [
                     # group
                     types.KeyboardButton(
-                        text=strings.get_text(key="GROUP", lang=lang),
+                        text=manager.get_translation(TranslationKeys.GROUP, lang),
                         request_chat=types.KeyboardButtonRequestChat(
                             request_id=3,
                             chat_is_channel=False,
@@ -131,7 +136,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
                     ),
                     # channel
                     types.KeyboardButton(
-                        text=strings.get_text(key="CHANNEL", lang=lang),
+                        text=manager.get_translation(TranslationKeys.CHANNEL, lang),
                         request_chat=types.KeyboardButtonRequestChat(
                             request_id=4,
                             chat_is_channel=True,
@@ -153,7 +158,7 @@ async def choose_lang(_, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply(
-        text=strings.get_text(key="CHOICE_LANG", lang=lang),
+        text=manager.get_translation(TranslationKeys.CHOICE_LANG, lang),
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [types.InlineKeyboardButton(text="עברית 🇮🇱", callback_data="lang:he")],
@@ -184,7 +189,7 @@ async def get_lang(_, query: types.CallbackQuery):
     tg_id = query.from_user.id
     repository.update_user(tg_id=tg_id, lang=data_lang)
     await query.edit_message_text(
-        text=strings.get_text(key="DONE", lang=data_lang).format(data_lang),
+        text=manager.get_translation(TranslationKeys.DONE, data_lang).format(data_lang),
     )
 
 
@@ -197,26 +202,26 @@ async def get_forward(client: Client, msg: types.Message):
 
     if isinstance(forward, types.MessageOriginUser):  # user
         user = forward.sender_user
-        text = strings.get_text(key="ID_USER", lang=lang).format(
+        text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
             user.full_name if user.full_name else "",
             user.id,
         )
         chat_id = user.id
     elif isinstance(forward, types.MessageOriginChat):  # group
         group = forward.sender_chat
-        text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-            group.title, group.id
-        )
+        text = manager.get_translation(
+            TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+        ).format(group.title, group.id)
         chat_id = group.id
     elif isinstance(forward, types.MessageOriginChannel):  # channel
         channel = forward.chat
-        text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-            channel.title, channel.id
-        )
+        text = manager.get_translation(
+            TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+        ).format(channel.title, channel.id)
         chat_id = channel.id
     elif isinstance(forward, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
-        text = strings.get_text(key="ID_HIDDEN", lang=lang).format(
+        text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
             name=forward.sender_user_name
         )
     else:
@@ -239,7 +244,7 @@ async def get_me(client: Client, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply(
-        text=strings.get_text(key="ID_USER", lang=lang).format(
+        text=manager.get_translation(TranslationKeys.ID_USER, lang).format(
             user.full_name if user.full_name else "", tg_id
         ),
         quote=True,
@@ -257,14 +262,14 @@ async def get_contact(client: Client, msg: types.Message):
 
     if msg.contact.user_id:
         contact = msg.contact
-        text = strings.get_text(key="ID_USER", lang=lang).format(
+        text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
             contact.first_name
             + ((" " + contact.last_name) if contact.last_name else ""),
             contact.user_id,
         )
         chat_id = contact.user_id
     else:
-        text = strings.get_text(key="NOT_HAVE_ID", lang=lang)
+        text = manager.get_translation(TranslationKeys.NOT_HAVE_ID, lang)
     await msg.reply(
         text=text,
         quote=True,
@@ -285,14 +290,14 @@ async def get_request_peer(client: Client, msg: types.Message):
         users = msg.users_shared.users
         if len(users) == 1:
             user = users[0]
-            text = strings.get_text(key="ID_USER", lang=lang).format(
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
                 user.full_name if user.full_name else "",
                 user.id,
             )
             chat_id = user.id
 
         else:  # support of multiple users
-            text = strings.get_text(key="ID_USERS", lang=lang).format(
+            text = manager.get_translation(TranslationKeys.ID_USERS, lang).format(
                 "".join(
                     f"\n`{user.id}` • {user.full_name if user.full_name else ''}"
                     for user in users
@@ -317,7 +322,9 @@ async def get_request_peer(client: Client, msg: types.Message):
                     group_id=chat.id, added_by_id=tg_id, active=True
                 )
 
-            text = strings.get_text(key="BOT_ADDED_TO_GROUP", lang=lang).format(
+            text = manager.get_translation(
+                TranslationKeys.BOT_ADDED_TO_GROUP, lang
+            ).format(
                 group_name=f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
                 group_id=chat.id,
             )
@@ -326,14 +333,14 @@ async def get_request_peer(client: Client, msg: types.Message):
         else:
             if len(chats) == 1:
                 chat = chats[0]
-                text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                    chat.title, chat.id
-                )
+                text = manager.get_translation(
+                    TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+                ).format(chat.title, chat.id)
                 chat_id = chat.id
             else:  # support of multiple chats
-                text = strings.get_text(key="ID_CHANNELS_OR_GROUPS", lang=lang).format(
-                    "".join(f"\n{chat.title} • `{chat.id}`" for chat in chats)
-                )
+                text = manager.get_translation(
+                    TranslationKeys.ID_CHANNELS_OR_GROUPS, lang
+                ).format("".join(f"\n{chat.title} • `{chat.id}`" for chat in chats))
     else:
         return
 
@@ -359,7 +366,7 @@ async def get_story(client: Client, msg: types.Message):
         enums.ChatType.PRIVATE,  # user
         enums.ChatType.BOT,  # bot (when it's possible to upload story with bot)
     ]:
-        text = strings.get_text(key="ID_USER", lang=lang).format(
+        text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
             chat.full_name if chat.full_name else "",
             chat.id,
         )
@@ -368,9 +375,9 @@ async def get_story(client: Client, msg: types.Message):
         enums.ChatType.SUPERGROUP,  # supergroup
         enums.ChatType.GROUP,  # group
     ]:
-        text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-            chat.title, chat.id
-        )
+        text = manager.get_translation(
+            TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+        ).format(chat.title, chat.id)
     else:
         return
 
@@ -393,7 +400,7 @@ async def get_id_by_username(
     try:
         chat = await client.get_chat(username, force_full=False)
     except errors.BadRequest:  # username not found
-        text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
+        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     else:
         if isinstance(chat, types.Chat):
@@ -402,19 +409,21 @@ async def get_id_by_username(
             )
             chat_id = chat.id
             if chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
-                text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+                text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+                    name, chat_id
+                )
 
             elif chat.type in (
                 enums.ChatType.GROUP,
                 enums.ChatType.SUPERGROUP,
                 enums.ChatType.CHANNEL,
             ):
-                text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                    name, chat_id
-                )
+                text = manager.get_translation(
+                    TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+                ).format(name, chat_id)
 
         else:
-            text = strings.get_text(key="CAN_NOT_GET_THE_ID", lang=lang)
+            text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     return text, chat_id
 
@@ -475,7 +484,7 @@ async def get_via_bot(client: Client, msg: types.Message):
     name = msg.via_bot.first_name
     chat_id = msg.via_bot.id
     lang = repository.get_user_language(tg_id=chat_id)
-    text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+    text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
 
     await msg.reply(
         text=text,
@@ -494,13 +503,15 @@ async def added_to_group(_: Client, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply(
-        text=strings.get_text(key="ADD_BOT_TO_GROUP", lang=lang),
+        text=manager.get_translation(TranslationKeys.ADD_BOT_TO_GROUP, lang),
         quote=True,
         reply_markup=types.ReplyKeyboardMarkup(
             [
                 [
                     types.KeyboardButton(
-                        text=strings.get_text(key="BUTTON_ADD_BOT_TO_GROUP", lang=lang),
+                        text=manager.get_translation(
+                            TranslationKeys.BUTTON_ADD_BOT_TO_GROUP, lang
+                        ),
                         request_chat=types.KeyboardButtonRequestChat(
                             request_id=100,
                             chat_is_channel=False,
@@ -575,7 +586,7 @@ async def get_id_by_reply_to_another_chat(
         name = user.full_name
         chat_id = user.id
         if lang:
-            text = strings.get_text(key="ID_USER", lang=lang).format(
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
                 name,
                 chat_id,
             )
@@ -584,22 +595,24 @@ async def get_id_by_reply_to_another_chat(
         name = group.title
         chat_id = group.id
         if lang:
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                name, chat_id
-            )
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
     elif isinstance(reply_to, types.MessageOriginChannel):  # channel
         channel = reply_to.chat
         name = channel.title
         chat_id = channel.id
         if lang:
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                name, chat_id
-            )
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
     elif isinstance(reply_to, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
         name = reply_to.sender_user_name
         if lang:
-            text = strings.get_text(key="ID_HIDDEN", lang=lang).format(name=name)
+            text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
+                name=name
+            )
 
     if lang:
         return text
@@ -622,15 +635,17 @@ async def get_reply_to_message(lang, msg) -> str | tuple[int, str] | None:
             else "Deleted Account"
         )
         if lang:
-            text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+                name, chat_id
+            )
     elif msg.reply_to_message.sender_chat:
         chat = msg.reply_to_message.sender_chat
         chat_id = chat.id
         name = chat.title
         if lang:
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                name, chat_id
-            )
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
     if lang:
         return text
     return chat_id, name
@@ -646,7 +661,9 @@ async def get_id_by_reply_to_story(lang, msg) -> str | tuple[int, str]:
         chat_id = story.chat.id
         name = story.chat.full_name if story.chat.full_name else ""
         if lang:
-            text = strings.get_text(key="ID_USER", lang=lang).format(name, chat_id)
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+                name, chat_id
+            )
     elif story.chat.type in (
         enums.ChatType.CHANNEL,
         enums.ChatType.GROUP,
@@ -655,9 +672,9 @@ async def get_id_by_reply_to_story(lang, msg) -> str | tuple[int, str]:
         chat_id = story.chat.id
         name = story.chat.title
         if lang:
-            text = strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                name, chat_id
-            )
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
     if lang:
         return text
     return chat_id, name
@@ -687,9 +704,9 @@ async def get_id_by_reply(msg: types.Message) -> str | tuple[int, str]:
         chat_id = msg.chat.id
         name = msg.chat.full_name or "" if lang else msg.chat.title
         if lang:
-            return strings.get_text(key="ID_CHANNEL_OR_GROUP", lang=lang).format(
-                name, chat_id
-            )
+            return manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
 
     return chat_id, name
 
@@ -789,9 +806,9 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
     except ValueError:
         return
     await msg.reply(
-        text=strings.get_text(key="ID_BY_MANAGE_BUSINESS", lang=lang).format(
-            from_chat_id
-        )
+        text=manager.get_translation(
+            TranslationKeys.ID_BY_MANAGE_BUSINESS, lang
+        ).format(from_chat_id)
     )
 
     utils.create_stats(
@@ -829,15 +846,17 @@ async def handle_business_connection(
 
                 await client.send_message(
                     chat_id=update.connection.user_id,
-                    text=strings.get_text(key="BUSINESS_CONNECTION", lang=lang),
+                    text=manager.get_translation(
+                        TranslationKeys.BUSINESS_CONNECTION, lang
+                    ),
                     message_effect_id=5107584321108051014,  # 👍
                 )
 
             else:  # with no permission to reply
                 await client.send_message(
                     chat_id=update.connection.user_id,
-                    text=strings.get_text(
-                        key="BUSINESS_CONNECTION_DISABLED", lang=lang
+                    text=manager.get_translation(
+                        TranslationKeys.BUSINESS_CONNECTION_DISABLED, lang
                     ),
                 )
 
@@ -846,7 +865,9 @@ async def handle_business_connection(
 
             await client.send_message(
                 chat_id=update.connection.user_id,
-                text=strings.get_text(key="BUSINESS_CONNECTION_REMOVED", lang=lang),
+                text=manager.get_translation(
+                    TranslationKeys.BUSINESS_CONNECTION_REMOVED, lang
+                ),
             )
 
     except Exception as e:
@@ -863,7 +884,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
     try:
         _, chat_id = msg.text.split(" ", 1)
     except ValueError:
-        await msg.reply(strings.get_text(key="FORMAT_LINK", lang=lang))
+        await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
         return
 
     if chat_id.startswith("link_"):
@@ -898,7 +919,9 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
         ]
 
     await msg.reply(
-        text=strings.get_text(key="LINK_TO_CHAT", lang=lang).format(chat_id),
+        text=manager.get_translation(TranslationKeys.LINK_TO_CHAT, lang).format(
+            chat_id
+        ),
         reply_markup=types.InlineKeyboardMarkup([buttons]),
         quote=True,
     )
@@ -912,7 +935,7 @@ async def send_about(_: Client, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply_text(
-        text=strings.get_text(key="INFO_ABOUT", lang=lang),
+        text=manager.get_translation(TranslationKeys.INFO_ABOUT, lang),
         quote=True,
         link_preview_options=types.LinkPreviewOptions(
             url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
@@ -922,8 +945,8 @@ async def send_about(_: Client, msg: types.Message):
             [
                 [
                     types.InlineKeyboardButton(
-                        text=strings.get_text(key="BUTTON_DEV", lang=lang),
-                        url=strings.get_text(key="LINK_DEV", lang=lang),
+                        text=manager.get_translation(TranslationKeys.BUTTON_DEV, lang),
+                        url=manager.get_translation(TranslationKeys.LINK_DEV, lang),
                     )
                 ],
             ]

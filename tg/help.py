@@ -3,7 +3,7 @@ from pyrogram import types, Client, errors
 
 from data import cache_memory
 from db import repository
-from tg import strings
+from locales.translation_manager import TranslationKeys, manager
 
 
 _logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ def get_keyboard(
         for item in lst:
             x.append(
                 types.InlineKeyboardButton(
-                    text=strings.get_text(key=item.upper(), lang=lang),
+                    text=manager.get_translation(item.upper(), lang),
                     callback_data=f"help:info:{keyboard_from}:{list_of_help.index(lst)}:{lst.index(item)}",
                 )
             )
@@ -116,14 +116,14 @@ def get_keyboard_menu(
         [
             [
                 types.InlineKeyboardButton(
-                    text=strings.get_text(key="SHOW_ALL", lang=lang),
+                    text=manager.get_translation(TranslationKeys.SHOW_ALL, lang),
                     callback_data=f"help:next:{keyboard_from}:0:0",
                 )
             ],
             *get_keyboard(keyboard_from=keyboard_from, tg_id=tg_id),
             [
                 types.InlineKeyboardButton(
-                    text=strings.get_text(key="ABOUT", lang=lang),
+                    text=manager.get_translation(TranslationKeys.ABOUT, lang),
                     callback_data=f"help:info:{keyboard_from}:about",
                 )
             ],
@@ -140,7 +140,7 @@ async def handle_callback_data_help(
 
     if isinstance(cbd, types.Message):
         await cbd.reply(
-            text=strings.get_text(key="INFO_MENU", lang=lang),
+            text=manager.get_translation(TranslationKeys.INFO_MENU, lang),
             reply_markup=get_keyboard_menu(keyboard_from="menu", tg_id=tg_id),
         )
 
@@ -161,21 +161,25 @@ async def handle_callback_data_help(
                 index_lst, index_item = int(data[-2]), int(data[-1])
 
                 await cbd.edit_message_text(
-                    text=strings.get_text(
-                        key=f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}",
-                        lang=lang,
+                    text=manager.get_translation(
+                        f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}",
+                        lang,
                     ),
                     reply_markup=types.InlineKeyboardMarkup(
                         [
                             [
                                 types.InlineKeyboardButton(
-                                    text=strings.get_text(key="BACK", lang=lang),
+                                    text=manager.get_translation(
+                                        TranslationKeys.BACK, lang
+                                    ),
                                     callback_data=get_back_callback_data(
                                         index_lst, index_item
                                     ),
                                 ),
                                 types.InlineKeyboardButton(
-                                    text=strings.get_text(key="NEXT", lang=lang),
+                                    text=manager.get_translation(
+                                        TranslationKeys.NEXT, lang
+                                    ),
                                     callback_data=get_next_callback_data(
                                         index_lst, index_item
                                     ),
@@ -184,13 +188,17 @@ async def handle_callback_data_help(
                             # back to menu:
                             [
                                 types.InlineKeyboardButton(
-                                    text=strings.get_text(key="MENU", lang=lang),
+                                    text=manager.get_translation(
+                                        TranslationKeys.MENU, lang
+                                    ),
                                     callback_data=f"help:menu:{keyboad_from}:menu",
                                 )
                             ],
                             [
                                 types.InlineKeyboardButton(
-                                    text=strings.get_text(key="ABOUT", lang=lang),
+                                    text=manager.get_translation(
+                                        TranslationKeys.ABOUT, lang
+                                    ),
                                     callback_data=f"help:info:{keyboad_from}:about",
                                 )
                             ],
@@ -200,28 +208,32 @@ async def handle_callback_data_help(
 
             elif data[1] == "menu":
                 await cbd.edit_message_text(
-                    text=strings.get_text(key="INFO_MENU", lang=lang),
+                    text=manager.get_translation(TranslationKeys.INFO_MENU, lang),
                     reply_markup=get_keyboard_menu(keyboad_from, tg_id),
                 )
 
             elif data[1] == "info":
                 if data[3] == "about":
                     await cbd.edit_message_text(
-                        text=strings.get_text(key="INFO_ABOUT", lang=lang),
+                        text=manager.get_translation(TranslationKeys.INFO_ABOUT, lang),
                         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
                         reply_markup=types.InlineKeyboardMarkup(
                             [
                                 [
                                     types.InlineKeyboardButton(
-                                        text=strings.get_text(
-                                            key="BUTTON_DEV", lang=lang
+                                        text=manager.get_translation(
+                                            TranslationKeys.BUTTON_DEV, lang
                                         ),
-                                        url=strings.get_text(key="LINK_DEV", lang=lang),
+                                        url=manager.get_translation(
+                                            TranslationKeys.LINK_DEV, lang
+                                        ),
                                     )
                                 ],
                                 [
                                     types.InlineKeyboardButton(
-                                        text=strings.get_text(key="MENU", lang=lang),
+                                        text=manager.get_translation(
+                                            TranslationKeys.MENU, lang
+                                        ),
                                         callback_data=f"help:menu:{keyboad_from}:menu",
                                     )
                                 ],
@@ -233,9 +245,9 @@ async def handle_callback_data_help(
                 else:
                     index_lst, index_item = int(data[-2]), int(data[-1])
                     await cbd.edit_message_text(
-                        text=strings.get_text(
-                            key=f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}",
-                            lang=lang,
+                        text=manager.get_translation(
+                            f"INFO_{get_item_from_callback_data(index_lst, index_item).upper()}",
+                            lang,
                         ),
                         reply_markup=get_keyboard_menu(
                             keyboard_from=str(keyboad_from), tg_id=tg_id

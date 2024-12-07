@@ -1,9 +1,10 @@
 import logging
 from pyrogram import Client, types
 
-from tg import strings
 from db import repository
 from data import config
+from locales.translation_manager import TranslationKeys, manager
+
 
 _logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ async def ask_for_payment(_: Client, msg: types.Message):
     lang = repository.get_user_language(tg_id=tg_id)
 
     await msg.reply_text(
-        text=strings.get_text(key="ASK_AMOUNT_TO_PAY", lang=lang),
+        text=manager.get_translation(TranslationKeys.ASK_AMOUNT_TO_PAY, lang),
         quote=True,
         message_effect_id=5159385139981059251,  # ❤️
         reply_markup=types.InlineKeyboardMarkup(
@@ -59,8 +60,10 @@ async def send_payment(_: Client, cbd: types.CallbackQuery):
     amount = int(cbd.data.split(":")[1])
 
     await cbd.message.reply_invoice(
-        title=strings.get_text(key="SUPPORT_ME", lang=lang),
-        description=strings.get_text(key="TEXT_SUPPORT_ME", lang=lang).format(amount),
+        title=manager.get_translation(TranslationKeys.SUPPORT_ME, lang),
+        description=manager.get_translation(
+            TranslationKeys.TEXT_SUPPORT_ME, lang
+        ).format(amount),
         payload=f"{tg_id}_bought",
         currency="XTR",  # telegram stars
         prices=[
@@ -87,7 +90,7 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
     payment = msg.successful_payment
 
     await msg.reply_text(
-        text=strings.get_text(key="PAYMENT_SUCCESS", lang=lang).format(
+        text=manager.get_translation(TranslationKeys.PAYMENT_SUCCESS, lang).format(
             payment.total_amount
         ),
         quote=True,
