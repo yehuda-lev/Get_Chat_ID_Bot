@@ -1,5 +1,5 @@
 {
-    "WELCOME": "Welcome {name} 🤠\n\n🪪 In this bot you can get the id of any group, channel, user or bot\n\n📤 To use the bot, click on the buttons below and share the chat whose ID you want to know. - In response, the bot will return the ID of the chat you shared\n\n> 🇺🇸 To change the language send the /lang command\n\n> 📝 You can get the ID in many other ways. Send the /help command\n\n> 🤑 Want to donate to me? Send the /donate command\n\n📢 For updates on the bot subscribe to @GetChatID_Updates",
+    "WELCOME": "🌟 **Welcome, {name}!** 🤠\n\n🪪 In this bot you can get the ID of any **group, channel, user, or bot**.\n\n🚀 **How to Get Started:**\n1️⃣ Use the interactive buttons below to share the chat you want to identify.\n2️⃣ Receive the **unique ID** of the shared chat instantly.\n\n> 💡 **Tip:** Want to explore other methods to get ID? Simply type /help for more information.\n\n> \uD83C\uDDFA\uD83C\uDDF8 To change the language send the /lang command\n\n> \uD83D\uDC96 **Support the Bot:** Found this bot useful? Help keep it running with the /donate command.\n\n📢 **Follow Us:** Get updates, tips, and news by joining @GetChatID_Updates.",
     "USER": "👤 User",
     "BOT": "🤖 Bot",
     "CHANNEL": "📢 Channel",
@@ -39,7 +39,7 @@
     "MENU": "🏘 menu",
     "INFO_MENU": "🏘 menu help",
     "ABOUT": "ℹ️ about",
-    "INFO_ABOUT": "ℹ️ **Details about the bot**\n\nLanguage: [Python](https://www.python.org/) \nLibrary: [pyrotgfork](https://telegramplayground.github.io/pyrogram/) \nBot creator: @yehudalev 👨‍💻\n\nDonations: You can support the bot creator with the /donate command\n\nThe bot is open source on GitHub 🖤\nhttps://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n📢 For updates on the bot, subscribe to @GetChatID_Updates,",
+    "INFO_ABOUT": "ℹ️ **Bot Details**\n\n> 👨‍💻 **Created By:** @yehudalev.\n\nLanguage: [Python](https://www.python.org/).\nLibrary: [pyrotgfork](https://telegramplayground.github.io/pyrogram/).\n\n**🖤 The bot is open source on GitHub**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n \uD83D\uDC96 **Support the Bot:** Found this bot useful? Help keep it running with the /donate command.\n\n\uD83D\uDCE2 **Follow Us:** Get updates, tips, and news by joining @GetChatID_Updates.",
     "BUTTON_DEV": "Send message👨‍💻",
     "LINK_DEV": "https://t.me/yehudalev",
     "CHOSE_CHAT_TYPE": "Choose chat type",
