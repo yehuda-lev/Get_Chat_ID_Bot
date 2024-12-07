@@ -18,17 +18,16 @@ list_of_help: list[list[str]] = [
 ]
 
 
-@cache.cachable(cache_name="get_keyboard", params=("keyboard_from", "tg_id"))
+@cache.cachable(cache_name="get_keyboard", params=("keyboard_from", "lang"))
 def get_keyboard(
-    *, keyboard_from: str | list, tg_id: int
+    *, keyboard_from: str | list, lang: str
 ) -> list[list[types.InlineKeyboardButton]]:
     """
     Get keyboard for help
     :param keyboard_from: str
-    :param tg_id: int
+    :param lang: str
     :return: list[list[types.InlineKeyboardButton]]
     """
-    lang = repository.get_user_language(tg_id=tg_id)
     list_of_keyboard = []
 
     for lst in list_of_help:
@@ -109,9 +108,8 @@ def get_back_callback_data(data_index_lst: int, data_index_item: int) -> str:
 
 
 def get_keyboard_menu(
-    keyboard_from: str | list, tg_id: int
+    keyboard_from: str | list, lang: str
 ) -> types.InlineKeyboardMarkup:
-    lang = repository.get_user_language(tg_id=tg_id)
     return types.InlineKeyboardMarkup(
         [
             [
@@ -120,7 +118,7 @@ def get_keyboard_menu(
                     callback_data=f"help:next:{keyboard_from}:0:0",
                 )
             ],
-            *get_keyboard(keyboard_from=keyboard_from, tg_id=tg_id),
+            *get_keyboard(keyboard_from=keyboard_from, lang=lang),
             [
                 types.InlineKeyboardButton(
                     text=manager.get_translation(TranslationKeys.ABOUT, lang),
@@ -141,7 +139,7 @@ async def handle_callback_data_help(
     if isinstance(cbd, types.Message):
         await cbd.reply(
             text=manager.get_translation(TranslationKeys.INFO_MENU, lang),
-            reply_markup=get_keyboard_menu(keyboard_from="menu", tg_id=tg_id),
+            reply_markup=get_keyboard_menu(keyboard_from="menu", lang=lang),
         )
 
     else:
@@ -209,7 +207,7 @@ async def handle_callback_data_help(
             elif data[1] == "menu":
                 await cbd.edit_message_text(
                     text=manager.get_translation(TranslationKeys.INFO_MENU, lang),
-                    reply_markup=get_keyboard_menu(keyboad_from, tg_id),
+                    reply_markup=get_keyboard_menu(keyboad_from, lang),
                 )
 
             elif data[1] == "info":
@@ -250,7 +248,7 @@ async def handle_callback_data_help(
                             lang,
                         ),
                         reply_markup=get_keyboard_menu(
-                            keyboard_from=str(keyboad_from), tg_id=tg_id
+                            keyboard_from=str(keyboad_from), lang=lang
                         ),
                     )
         except errors.MessageNotModified:
