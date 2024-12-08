@@ -73,6 +73,9 @@ async def send_payment(_: Client, cbd: types.CallbackQuery):
         message_effect_id=5159385139981059251,  # ❤️
     )
 
+    # answer the callback query to remove the "spinning circle" on the button
+    await cbd.answer()
+
 
 async def confirm_payment(_: Client, query: types.PreCheckoutQuery):
     """
