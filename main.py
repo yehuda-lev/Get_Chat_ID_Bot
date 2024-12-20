@@ -1,8 +1,9 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from pyrogram import Client, raw, __version__
+import asyncio
+from pyrogram import Client, raw, __version__, idle
 
-from tg.handlers import HANDLERS
+from tg import handlers
 from db import repository
 from data import config
 
@@ -41,12 +42,12 @@ app = Client(
 )
 
 
-def main():
+async def main():
     logging.info(
         f"The bot is up and running on Pyrogram v{__version__} (Layer {raw.all.layer})."
     )
 
-    for handler in HANDLERS:
+    for handler in handlers.HANDLERS:
         app.add_handler(handler)
 
     for admin in settings.admins:
@@ -58,8 +59,13 @@ def main():
             if not repository.is_admin(tg_id=admin):
                 repository.update_user(tg_id=admin, admin=True)
 
-    app.run()
+    await app.start()
+
+    await idle()
+
+    await app.stop()
 
 
 if __name__ == "__main__":
-    main()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
