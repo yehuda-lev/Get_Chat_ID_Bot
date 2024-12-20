@@ -733,8 +733,8 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
             elif entity.type == enums.MessageEntityType.TEXT_MENTION:
                 chat_id = entity.user.id
                 name = (
-                    entity.full_name
-                    if entity.full_name
+                    entity.user.full_name
+                    if entity.user.full_name
                     else ""
                     if not entity.user.is_deleted
                     else "Deleted Account"
