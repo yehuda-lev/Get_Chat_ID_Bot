@@ -1,8 +1,10 @@
 import logging
+import random
 from typing import Tuple
 
 from pyrogram import Client, types, enums, errors, raw, ContinuePropagation
 
+from data import clients
 from tg import filters, utils
 from db import repository
 from db.repository import StatsType
@@ -391,40 +393,51 @@ async def get_story(client: Client, msg: types.Message):
     utils.create_stats(type_stats=StatsType.STORY, lang=msg.from_user.language_code)
 
 
-async def get_id_by_username(
-    lang: str, client: Client, text: str
-) -> Tuple[str, int | None]:
-    """Get id by username"""
+async def get_id_by_username(text: str, lang: str) -> Tuple[str, int | None]:
+    """
+    Get id by username
+    Returns:
+        text: the text to send.
+        chat_id: the id of the chat, can be None.
+    """
     username = filters.get_username(text=text)
     chat_id = None
 
+    client_search: Client = random.choice((clients.bot_1, clients.bot_2))
     try:
-        chat = await client.get_chat(username, force_full=False)
+        chat = await client_search.get_chat(username, force_full=False)
     except errors.BadRequest:  # username not found
         text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+        return text, chat_id
 
-    else:
-        if isinstance(chat, types.Chat):
-            name = (
-                chat.title if chat.title else chat.full_name if chat.full_name else ""
+    except errors.FloodWait:
+        if client_search.name == clients.bot_1.name:
+            client_search = clients.bot_2
+        else:
+            client_search = clients.bot_1
+
+        try:
+            chat = await client_search.get_chat(username, force_full=False)
+        except Exception as e:  # noqa
+            _logger.error(f"Error in get_chat with {client_search.name}: {e}")
+            text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+            return text, chat_id
+
+    if isinstance(chat, types.Chat):
+        name = chat.title if chat.title else chat.full_name if chat.full_name else ""
+        chat_id = chat.id
+        if chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+                name, chat_id
             )
-            chat_id = chat.id
-            if chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
-                text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                    name, chat_id
-                )
-
-            elif chat.type in (
-                enums.ChatType.GROUP,
-                enums.ChatType.SUPERGROUP,
-                enums.ChatType.CHANNEL,
-            ):
-                text = manager.get_translation(
-                    TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-                ).format(name, chat_id)
 
         else:
-            text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
+
+    else:
+        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     return text, chat_id
 
@@ -434,7 +447,7 @@ async def get_username_by_message(client: Client, msg: types.Message):
     tg_id = msg.from_user.id
     lang = repository.get_user_language(tg_id=tg_id)
 
-    text, chat_id = await get_id_by_username(lang, client, msg.text)
+    text, chat_id = await get_id_by_username(text=msg.text, lang=lang)
 
     await msg.reply_text(
         text=text,
@@ -454,7 +467,7 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
 
     lang = repository.get_user_language(tg_id=query.from_user.id)
 
-    text, chat_id = await get_id_by_username(lang, client, query.query)
+    text, chat_id = await get_id_by_username(text=query.query, lang=lang)
 
     try:
         await query.answer(
@@ -728,6 +741,9 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                     chat_id = user.id
                 except errors.BadRequest:
                     break
+                except errors.FloodWait:
+                    _logger.error("Error in get_chat in the group")
+                    return
                 else:
                     break
             elif entity.type == enums.MessageEntityType.TEXT_MENTION:
