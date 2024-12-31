@@ -1,11 +1,11 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import asyncio
-from pyrogram import Client, raw, __version__, idle
+from pyrogram import raw, __version__, idle
 
 from tg import handlers
 from db import repository
-from data import config
+from data import config, clients
 
 
 # log config
@@ -34,21 +34,13 @@ _logger = logging.getLogger(__name__)
 settings = config.get_settings()
 
 
-app = Client(
-    name="my_bot",
-    api_id=settings.telegram_api_id,
-    api_hash=settings.telegram_api_hash,
-    bot_token=settings.telegram_bot_token,
-)
-
-
 async def main():
     logging.info(
         f"The bot is up and running on Pyrogram v{__version__} (Layer {raw.all.layer})."
     )
 
     for handler in handlers.HANDLERS:
-        app.add_handler(handler)
+        clients.bot_1.add_handler(handler)
 
     for admin in settings.admins:
         if not repository.is_user_exists(tg_id=admin):
@@ -59,11 +51,13 @@ async def main():
             if not repository.is_admin(tg_id=admin):
                 repository.update_user(tg_id=admin, admin=True)
 
-    await app.start()
+    await clients.bot_1.start()
+    await clients.bot_2.start()
 
     await idle()
 
-    await app.stop()
+    await clients.bot_1.stop()
+    await clients.bot_2.stop()
 
 
 if __name__ == "__main__":

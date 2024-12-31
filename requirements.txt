@@ -1,5 +1,4 @@
-# pyrotgfork==2.1.37
-https://github.com/TelegramPlayGround/pyrogram/archive/5b29cd9d210205cb2e065a1f4cdddb409c89ce26.zip # fix import
+pyrotgfork==2.2.1
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
 pydantic-settings==2.4.0

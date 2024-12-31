@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     telegram_api_id: int
     telegram_api_hash: str
     telegram_bot_token: str
+    telegram_bot_token_2: str
     admins: list[int]
     limit_spam: int
     admin_to_update_of_payment: int
