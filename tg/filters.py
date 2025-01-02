@@ -102,9 +102,9 @@ def is_mention_users(msg: types.Message) -> bool:
 
 def create_user() -> filters.Filter:
     async def func(_, __, msg: types.Message) -> bool:
-        user = msg.from_user
-        tg_id = user.id
-        name = user.full_name if user.full_name else ""
+        tg_user = msg.from_user
+        tg_id = tg_user.id
+        name = tg_user.full_name if tg_user.full_name else ""
 
         user = db_filters.get_user(tg_id=tg_id)
         if not user:
@@ -112,8 +112,8 @@ def create_user() -> filters.Filter:
                 tg_id=tg_id,
                 name=name,
                 admin=False,
-                language_code=user.language_code,
-                username=user.username,
+                language_code=tg_user.language_code,
+                username=tg_user.username,
             )
             return True
 
