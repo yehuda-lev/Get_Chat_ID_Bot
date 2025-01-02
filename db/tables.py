@@ -26,7 +26,7 @@ engine = create_engine(
     pool_timeout=30,
 )
 
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, expire_on_commit=False)
 
 
 @contextmanager

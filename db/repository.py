@@ -16,30 +16,6 @@ cache = cache_memory.cache_memory
 # user
 
 
-@cache.cachable(cache_name="is_user_exists", params="tg_id")
-def is_user_exists(*, tg_id: int) -> bool:
-    """Check if user exists in DB or not"""
-
-    with get_session() as session:
-        return session.query(exists().where(User.tg_id == tg_id)).scalar()  # noqa
-
-
-@cache.cachable(cache_name="is_active", params="tg_id")
-def is_active(*, tg_id: int) -> bool:
-    """Check if user active or not."""
-
-    with get_session() as session:
-        return session.query(User.active).filter(User.tg_id == tg_id).scalar()
-
-
-@cache.cachable(cache_name="is_admin", params="tg_id")
-def is_admin(*, tg_id: int) -> bool:
-    """Check if user admin or not"""
-
-    with get_session() as session:
-        return session.query(User.admin).filter(User.tg_id == tg_id).scalar()
-
-
 def create_user(
     *,
     tg_id: int,
@@ -48,7 +24,7 @@ def create_user(
     language_code: str,
     admin: bool = False,
     active: bool = True,
-):
+) -> User:
     """
     Create tg user
     :param tg_id: the user id
@@ -60,13 +36,8 @@ def create_user(
     """
 
     _logger.debug(f"Create user: {tg_id=}, {name=}, {username=}, {language_code=}")
-
     # delete the cache
-    cache.delete("is_user_exists", cache_id=cache.build_cache_id(tg_id=tg_id))
-    cache.delete("is_active", cache_id=cache.build_cache_id(tg_id=tg_id))
-    cache.delete("is_admin", cache_id=cache.build_cache_id(tg_id=tg_id))
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
-    cache.delete("get_user_language", cache_id=cache.build_cache_id(tg_id=tg_id))
 
     with get_session() as session:
         user = User(
@@ -81,6 +52,7 @@ def create_user(
         )
         session.add(user)
         session.commit()
+        return user
 
 
 def update_user(*, tg_id: int, **kwargs):
@@ -91,13 +63,8 @@ def update_user(*, tg_id: int, **kwargs):
     """
 
     _logger.debug(f"Update user: {tg_id=}, {kwargs=}")
-
     # delete the cache
-    cache.delete("is_user_exists", cache_id=cache.build_cache_id(tg_id=tg_id))
-    cache.delete("is_active", cache_id=cache.build_cache_id(tg_id=tg_id))
-    cache.delete("is_admin", cache_id=cache.build_cache_id(tg_id=tg_id))
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
-    cache.delete("get_user_language", cache_id=cache.build_cache_id(tg_id=tg_id))
 
     with get_session() as session:
         session.query(User).filter(User.tg_id == tg_id).update(kwargs)
@@ -113,19 +80,8 @@ def get_user(*, tg_id: int) -> User:
     """
 
     with get_session() as session:
-        return session.query(User).filter(User.tg_id == tg_id).one()
-
-
-@cache.cachable(cache_name="get_user_language", params="tg_id")
-def get_user_language(*, tg_id: int) -> str:
-    """
-    Get user language by tg id
-    :param tg_id: the user id
-    :return: str
-    """
-
-    with get_session() as session:
-        return session.query(User.lang).filter(User.tg_id == tg_id).scalar()
+        print("get_user")
+        return session.query(User).filter(User.tg_id == tg_id).first()
 
 
 # group
