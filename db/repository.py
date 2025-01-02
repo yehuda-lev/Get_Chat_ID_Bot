@@ -80,7 +80,6 @@ def get_user(*, tg_id: int) -> User:
     """
 
     with get_session() as session:
-        print("get_user")
         return session.query(User).filter(User.tg_id == tg_id).first()
 
 
