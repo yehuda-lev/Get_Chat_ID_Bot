@@ -106,7 +106,8 @@ def create_user() -> filters.Filter:
         tg_id = user.id
         name = user.full_name if user.full_name else ""
 
-        if not db_filters.is_user_exists(tg_id=tg_id):
+        user = db_filters.get_user(tg_id=tg_id)
+        if not user:
             db_filters.create_user(
                 tg_id=tg_id,
                 name=name,
@@ -116,7 +117,7 @@ def create_user() -> filters.Filter:
             )
             return True
 
-        if not db_filters.is_active(tg_id=tg_id):
+        if not user.active:
             db_filters.update_user(tg_id=tg_id, active=True)
 
         return True
@@ -126,7 +127,7 @@ def create_user() -> filters.Filter:
 
 def is_admin() -> filters.Filter:
     async def func(_, __, msg: types.Message) -> bool:
-        return db_filters.is_admin(tg_id=msg.from_user.id)
+        return db_filters.get_user(tg_id=msg.from_user.id).admin
 
     return filters.create(func, name="IsAdmin")
 

@@ -134,7 +134,7 @@ async def handle_callback_data_help(
     _: Client, cbd: types.CallbackQuery | types.Message
 ):
     tg_id = cbd.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     if isinstance(cbd, types.Message):
         await cbd.reply(

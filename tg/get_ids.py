@@ -48,7 +48,7 @@ async def welcome(_: Client, msg: types.Message):
     """start the bot"""
     user = msg.from_user
     tg_id = user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
@@ -112,7 +112,7 @@ async def welcome(_: Client, msg: types.Message):
 async def get_chats_manager(_: Client, msg: types.Message):
     """Get chats manager"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
     text = manager.get_translation(TranslationKeys.CHAT_MANAGER, lang)
 
     await msg.reply_text(
@@ -158,7 +158,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
 async def choose_lang(_, msg: types.Message):
     """Choose language"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.CHOICE_LANG, lang),
@@ -199,7 +199,7 @@ async def get_lang(_, query: types.CallbackQuery):
 async def get_forward(client: Client, msg: types.Message):
     """Get message forward"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
     forward = msg.forward_origin
     chat_id = None
 
@@ -244,7 +244,7 @@ async def get_me(client: Client, msg: types.Message):
     """Get id the user"""
     user = msg.from_user
     tg_id = user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ID_USER, lang).format(
@@ -260,7 +260,7 @@ async def get_me(client: Client, msg: types.Message):
 async def get_contact(client: Client, msg: types.Message):
     """Get id from contact"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
     chat_id = None
 
     if msg.contact.user_id:
@@ -285,7 +285,7 @@ async def get_contact(client: Client, msg: types.Message):
 async def get_request_peer(client: Client, msg: types.Message):
     """ "Get request peer"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
     reply_markup = None
     chat_id = None
 
@@ -362,7 +362,7 @@ async def get_request_peer(client: Client, msg: types.Message):
 async def get_story(client: Client, msg: types.Message):
     """Get id from story"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
     chat = msg.story.chat
 
     if chat.type in [
@@ -445,7 +445,7 @@ async def get_id_by_username(text: str, lang: str) -> Tuple[str, int | None]:
 async def get_username_by_message(client: Client, msg: types.Message):
     """Get id from username or link by message"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     text, chat_id = await get_id_by_username(text=msg.text, lang=lang)
 
@@ -465,7 +465,7 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
     Get id by inline query
     """
 
-    lang = repository.get_user_language(tg_id=query.from_user.id)
+    lang = repository.get_user(tg_id=query.from_user.id).lang
 
     text, chat_id = await get_id_by_username(text=query.query, lang=lang)
 
@@ -497,7 +497,7 @@ async def get_via_bot(client: Client, msg: types.Message):
     tg_id = msg.from_user.id
     name = msg.via_bot.first_name
     chat_id = msg.via_bot.id
-    lang = repository.get_user_language(tg_id=chat_id)
+    lang = repository.get_user(tg_id=chat_id).lang
     text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
 
     await msg.reply(
@@ -514,7 +514,7 @@ async def added_to_group(_: Client, msg: types.Message):
     Added the bot to the group
     """
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ADD_BOT_TO_GROUP, lang),
@@ -560,7 +560,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
             update.old_chat_member.status == enums.ChatMemberStatus.MEMBER
             and update.new_chat_member.status == enums.ChatMemberStatus.BANNED
         ):
-            if repository.is_user_exists(tg_id=update.from_user.id):
+            if not repository.get_user(tg_id=update.from_user.id):
                 _logger.debug(
                     f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
                 )
@@ -702,7 +702,7 @@ async def get_id_by_reply(msg: types.Message) -> str | tuple[int, str]:
 
     if msg.chat.type == enums.ChatType.PRIVATE:
         tg_id = msg.from_user.id
-        lang = repository.get_user_language(tg_id=tg_id)
+        lang = repository.get_user(tg_id=tg_id).lang
 
     if msg.reply_to_story:
         return await get_id_by_reply_to_story(lang, msg)
@@ -779,7 +779,7 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
     get reply to another chat
     """
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     text = await get_id_by_reply_to_another_chat(lang, msg)
 
@@ -816,7 +816,7 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
     Get id by manage business.
     """
 
-    lang = repository.get_user_language(tg_id=msg.from_user.id)
+    lang = repository.get_user(tg_id=msg.from_user.id).lang
     from_chat_id = msg.text.split("bizChat")[1]
     try:
         from_chat_id = int(from_chat_id)
@@ -843,19 +843,20 @@ async def handle_business_connection(
     """
     try:
         connection: raw.types.BotBusinessConnection = update.connection
-        if not repository.is_user_exists(tg_id=connection.user_id):
-            user = users.get(connection.user_id)
-            repository.create_user(
-                tg_id=user.id,
-                name=user.first_name,
-                username=user.username,
-                language_code=user.lang_code,
+        user = repository.get_user(tg_id=connection.user_id)
+        if not user:
+            tg_user = users.get(connection.user_id)
+            user = repository.create_user(
+                tg_id=tg_user.id,
+                name=tg_user.first_name,
+                username=tg_user.username,
+                language_code=tg_user.lang_code,
             )
         else:
-            if not repository.is_active(tg_id=connection.user_id):
+            if not user.active:
                 repository.update_user(tg_id=connection.user_id, active=True)
 
-        lang = repository.get_user_language(tg_id=connection.user_id)
+        lang = user.lang
 
         if not connection.disabled:  # user add the bot to our business
             if connection.can_reply:
@@ -899,7 +900,7 @@ async def handle_business_connection(
 async def send_link_to_chat_by_id(_: Client, msg: types.Message):
     """Send link to chat by id"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     try:
         _, chat_id = msg.text.split(" ", 1)
@@ -952,7 +953,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
 async def send_about(_: Client, msg: types.Message):
     """Send info about the bot"""
     tg_id = msg.from_user.id
-    lang = repository.get_user_language(tg_id=tg_id)
+    lang = repository.get_user(tg_id=tg_id).lang
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.INFO_ABOUT, lang),
