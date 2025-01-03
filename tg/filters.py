@@ -101,8 +101,19 @@ def is_mention_users(msg: types.Message) -> bool:
 
 
 def create_user() -> filters.Filter:
-    async def func(_, __, msg: types.Message) -> bool:
-        tg_user = msg.from_user
+    async def func(
+        _,
+        __,
+        msg: (
+            types.Message
+            | types.InlineQuery
+            | types.CallbackQuery
+            | types.BusinessConnection
+        ),
+    ) -> bool:
+        tg_user = (
+            msg.from_user if not isinstance(msg, types.BusinessConnection) else msg.user
+        )
         tg_id = tg_user.id
         name = tg_user.full_name if tg_user.full_name else ""
 

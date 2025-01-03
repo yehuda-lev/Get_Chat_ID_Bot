@@ -835,64 +835,39 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
 
 async def handle_business_connection(
     client: Client,
-    update: raw.types.UpdateBotBusinessConnect,
-    users: dict[int, raw.types.User],
+    update: types.BusinessConnection,
 ):
     """
     Handle business connection and disconnection
     """
-    try:
-        connection: raw.types.BotBusinessConnection = update.connection
-        user = repository.get_user(tg_id=connection.user_id)
-        if not user:
-            tg_user = users.get(connection.user_id)
-            user = repository.create_user(
-                tg_id=tg_user.id,
-                name=tg_user.first_name,
-                username=tg_user.username,
-                language_code=tg_user.lang_code,
-            )
-        else:
-            if not user.active:
-                repository.update_user(tg_id=connection.user_id, active=True)
+    tg_id = update.user.id
+    lang = repository.get_user(tg_id=tg_id).lang
 
-        lang = user.lang
+    repository.get_user(
+        tg_id=tg_id,
+        business_id=update.id if (update.is_enabled and update.can_reply) else None,
+    )
 
-        if not connection.disabled:  # user add the bot to our business
-            if connection.can_reply:
-                repository.update_user(
-                    tg_id=connection.user_id,
-                    business_id=connection.connection_id,
-                )
+    message_effect_id = None
+    if update.is_enabled and update.can_reply:  # user add the bot to our business
+        text = manager.get_translation(TranslationKeys.BUSINESS_CONNECTION, lang)
+        message_effect_id = 5107584321108051014  # 👍
 
-                await client.send_message(
-                    chat_id=connection.user_id,
-                    text=manager.get_translation(
-                        TranslationKeys.BUSINESS_CONNECTION, lang
-                    ),
-                    message_effect_id=5107584321108051014,  # 👍
-                )
+    elif update.is_enabled and not update.can_reply:  # with no permission to reply
+        text = manager.get_translation(
+            TranslationKeys.BUSINESS_CONNECTION_DISABLED, lang
+        )
 
-            else:  # with no permission to reply
-                await client.send_message(
-                    chat_id=connection.user_id,
-                    text=manager.get_translation(
-                        TranslationKeys.BUSINESS_CONNECTION_DISABLED, lang
-                    ),
-                )
+    else:  # user remove the bot from our business
+        text = manager.get_translation(
+            TranslationKeys.BUSINESS_CONNECTION_REMOVED, lang
+        )
 
-        else:  # user remove the bot from our business
-            repository.update_user(tg_id=connection.user_id, business_id=None)
-
-            await client.send_message(
-                chat_id=connection.user_id,
-                text=manager.get_translation(
-                    TranslationKeys.BUSINESS_CONNECTION_REMOVED, lang
-                ),
-            )
-
-    except Exception as e:
-        _logger.exception(e)
+    await client.send_message(
+        chat_id=tg_id,
+        text=text,
+        message_effect_id=message_effect_id,
+    )
 
     raise ContinuePropagation
 
@@ -986,14 +961,3 @@ async def send_privacy_policy(_: Client, msg: types.Message):
             prefer_large_media=True,
         ),
     )
-
-
-async def get_raw(
-    client: Client, update: raw.types.UpdateNewMessage, users: dict, __: dict
-):
-    """
-    Handle raw updates
-    """
-    if isinstance(update, raw.types.UpdateBotBusinessConnect):
-        # handle business connection
-        await handle_business_connection(client, update, users)

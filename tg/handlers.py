@@ -259,7 +259,8 @@ HANDLERS = [
         & tg_filters.create_user()
         & tg_filters.is_admin(),
     ),
-    handlers.RawUpdateHandler(
-        get_ids.get_raw,
+    handlers.BusinessBotConnectionHandler(
+        get_ids.handle_business_connection,
+        tg_filters.create_user(),
     ),
 ]
