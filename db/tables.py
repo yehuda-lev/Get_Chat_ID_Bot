@@ -3,15 +3,15 @@
 from __future__ import annotations
 import logging
 import datetime
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 from enum import Enum
 
-from sqlalchemy import String, create_engine, ForeignKey
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     DeclarativeBase,
-    sessionmaker,
     relationship,
 )
 
@@ -19,24 +19,18 @@ from sqlalchemy.orm import (
 _logger = logging.getLogger(__name__)
 
 
-engine = create_engine(
-    url="sqlite:///bot_db.sqlite",
-    pool_size=20,
-    max_overflow=10,
-    pool_timeout=30,
+engine = create_async_engine(
+    url="sqlite+aiosqlite:///bot_db.sqlite",
 )
 
-Session = sessionmaker(bind=engine, expire_on_commit=False)
+Session = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-@contextmanager
-def get_session() -> Session:
-    """Get session"""
-    new_session = Session()
-    try:
-        yield new_session
-    finally:
-        new_session.close()
+@asynccontextmanager
+async def get_session() -> AsyncSession:
+    """Get async session"""
+    async with Session() as session:
+        yield session
 
 
 class StatsType(Enum):
@@ -118,4 +112,4 @@ class Stats(BaseTable):
     created_at: Mapped[datetime.datetime]
 
 
-BaseTable.metadata.create_all(engine)
+# BaseTable.metadata.create_all(engine)

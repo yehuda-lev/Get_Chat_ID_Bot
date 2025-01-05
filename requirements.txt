@@ -1,4 +1,5 @@
 https://github.com/TelegramPlayGround/pyrogram/archive/f1f7cf512dd4fa8cd4b18d0b5f41d9737a98df22.zip
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
+aiosqlite==0.20.0
 pydantic-settings==2.4.0
