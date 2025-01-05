@@ -843,7 +843,7 @@ async def handle_business_connection(
     tg_id = update.user.id
     lang = repository.get_user(tg_id=tg_id).lang
 
-    repository.get_user(
+    repository.update_user(
         tg_id=tg_id,
         business_id=update.id if (update.is_enabled and update.can_reply) else None,
     )
