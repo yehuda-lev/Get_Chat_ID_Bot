@@ -180,6 +180,7 @@ async def get_all_users_active() -> list[User]:
     """
     async with get_session() as session:
         result = await session.execute(select(User).where(User.active == True))  # noqa
+        # TODO not working
         return result.scalars().all()
 
 

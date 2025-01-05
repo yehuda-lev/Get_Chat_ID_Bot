@@ -43,13 +43,13 @@ async def main():
         clients.bot_1.add_handler(handler)
 
     for admin in settings.admins:
-        if not (user := repository.get_user(tg_id=admin)):
-            repository.create_user(
+        if not (user := await repository.get_user(tg_id=admin)):
+            await repository.create_user(
                 tg_id=admin, name="admin", admin=True, language_code="he"
             )
         else:
             if not user.admin:
-                repository.update_user(tg_id=admin, admin=True)
+                await repository.update_user(tg_id=admin, admin=True)
 
     await clients.bot_1.start()
     await clients.bot_2.start()
