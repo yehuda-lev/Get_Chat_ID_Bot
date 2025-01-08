@@ -5,9 +5,12 @@ import logging
 from sqlalchemy import exists, func, select, update
 
 from db.tables import get_session, User, Group, MessageSent, StatsType, Stats
+from data import cache_memory
 
 
 _logger = logging.getLogger(__name__)
+
+cache = cache_memory.cache_memory
 
 
 # user
@@ -33,6 +36,8 @@ async def create_user(
     """
 
     _logger.debug(f"Create user: {tg_id=}, {name=}, {username=}, {language_code=}")
+    # delete cache
+    cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
 
     async with get_session() as session:
         user = User(
@@ -58,12 +63,15 @@ async def update_user(*, tg_id: int, **kwargs):
     """
 
     _logger.debug(f"Update user: {tg_id=}, {kwargs=}")
+    # delete cache
+    cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
 
     async with get_session() as session:
         await session.execute(update(User).where(User.tg_id == tg_id).values(**kwargs))
         await session.commit()
 
 
+@cache.cachable(cache_name="get_user", params="tg_id")
 async def get_user(*, tg_id: int) -> User:
     """
     Retrieve a user by Telegram ID.
@@ -73,18 +81,6 @@ async def get_user(*, tg_id: int) -> User:
 
 
 # group
-
-
-async def is_group_exists(*, group_id: int) -> bool:
-    """
-    Check if a group exists.
-    """
-
-    async with get_session() as session:
-        result = await session.scalar(
-            exists().where(Group.group_id == group_id).select()
-        )
-        return result
 
 
 async def create_group(
@@ -105,6 +101,8 @@ async def create_group(
     """
 
     _logger.debug(f"Create group: {group_id=}, {name=}, {username=}, {added_by_id=}")
+    # delete cache
+    cache.delete("get_group", cache_id=cache.build_cache_id(group_id=group_id))
 
     async with get_session() as session:
         user = await get_user(tg_id=added_by_id)
@@ -128,6 +126,9 @@ async def update_group(*, group_id: int, **kwargs):
     """
 
     _logger.debug(f"Update group: {group_id=}, {kwargs=}")
+    # delete cache
+    cache.delete("get_group", cache_id=cache.build_cache_id(group_id=group_id))
+
     async with get_session() as session:
         await session.execute(
             update(Group).where(Group.group_id == group_id).values(**kwargs)
@@ -135,6 +136,7 @@ async def update_group(*, group_id: int, **kwargs):
         await session.commit()
 
 
+@cache.cachable(cache_name="get_group", params="group_id")
 async def get_group(*, group_id: int) -> Group:
     """
     Retrieve a group by its ID.

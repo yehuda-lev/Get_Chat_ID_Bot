@@ -313,7 +313,7 @@ async def get_request_peer(client: Client, msg: types.Message):
         if request_chat.request_id == 100:  # support of added to group
             chat = chats[0]
 
-            if not await repository.is_group_exists(group_id=chat.id):
+            if not await repository.get_group(group_id=chat.id):
                 await repository.create_group(
                     group_id=chat.id,
                     name=chat.title,
