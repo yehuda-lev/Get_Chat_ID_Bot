@@ -1,4 +1,5 @@
 import logging
+import inspect
 from functools import wraps
 from typing import Any, Optional, Tuple, Dict, Hashable, Iterable, Callable, Union
 
@@ -75,7 +76,27 @@ class MemoryCache:
 
         def decorator(func):
             @wraps(func)
-            def wrapper(*args, **kwargs):
+            async def async_wrapper(*args, **kwargs):
+                nonlocal cache_name, params
+                cache_id = self._get_cache_id(params, *args, **kwargs)
+                if cache_name is None:
+                    cache_name = func.__name__
+                if always_execute:
+                    cache_data = await func(*args, **kwargs)
+                    self.set(
+                        cache_name=cache_name, cache_id=cache_id, cache_data=cache_data
+                    )
+                    return cache_data
+                cache_data = self.get(cache_name=cache_name, cache_id=cache_id)
+                if cache_data is None:
+                    cache_data = await func(*args, **kwargs)
+                    self.set(
+                        cache_name=cache_name, cache_id=cache_id, cache_data=cache_data
+                    )
+                return cache_data
+
+            @wraps(func)
+            def sync_wrapper(*args, **kwargs):
                 nonlocal cache_name, params
                 cache_id = self._get_cache_id(params, *args, **kwargs)
                 if cache_name is None:
@@ -94,7 +115,10 @@ class MemoryCache:
                     )
                 return cache_data
 
-            return wrapper
+            # Check if the function is async
+            if inspect.iscoroutinefunction(func):
+                return async_wrapper
+            return sync_wrapper
 
         return decorator
 
