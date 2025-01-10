@@ -2,7 +2,7 @@
 
 import datetime
 import logging
-from sqlalchemy import exists, func
+from sqlalchemy import exists, func, select, update
 
 from db.tables import get_session, User, Group, MessageSent, StatsType, Stats
 from data import cache_memory
@@ -16,7 +16,7 @@ cache = cache_memory.cache_memory
 # user
 
 
-def create_user(
+async def create_user(
     *,
     tg_id: int,
     name: str,
@@ -36,10 +36,10 @@ def create_user(
     """
 
     _logger.debug(f"Create user: {tg_id=}, {name=}, {username=}, {language_code=}")
-    # delete the cache
+    # delete cache
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
 
-    with get_session() as session:
+    async with get_session() as session:
         user = User(
             tg_id=tg_id,
             name=name,
@@ -51,11 +51,11 @@ def create_user(
             created_at=datetime.datetime.now(),
         )
         session.add(user)
-        session.commit()
+        await session.commit()
         return user
 
 
-def update_user(*, tg_id: int, **kwargs):
+async def update_user(*, tg_id: int, **kwargs):
     """
     Update user
     :param tg_id: the user id
@@ -63,42 +63,32 @@ def update_user(*, tg_id: int, **kwargs):
     """
 
     _logger.debug(f"Update user: {tg_id=}, {kwargs=}")
-    # delete the cache
+    # delete cache
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
 
-    with get_session() as session:
-        session.query(User).filter(User.tg_id == tg_id).update(kwargs)
-        session.commit()
+    async with get_session() as session:
+        await session.execute(update(User).where(User.tg_id == tg_id).values(**kwargs))
+        await session.commit()
 
 
 @cache.cachable(cache_name="get_user", params="tg_id")
-def get_user(*, tg_id: int) -> User:
+async def get_user(*, tg_id: int) -> User:
     """
-    Get user by tg id
-    :param tg_id: the user id
-    :return: :class:`Group`
+    Retrieve a user by Telegram ID.
     """
-
-    with get_session() as session:
-        return session.query(User).filter(User.tg_id == tg_id).first()
+    async with get_session() as session:
+        return await session.scalar(select(User).where(User.tg_id == tg_id))
 
 
 # group
 
 
-def is_group_exists(*, group_id: int) -> bool:
-    """Check if group exists or not"""
-
-    with get_session() as session:
-        return session.query(exists().where(Group.group_id == group_id)).scalar()  # noqa
-
-
-def create_group(
+async def create_group(
     *,
     group_id: int,
     name: str,
-    username: str = None,
-    added_by_id: int,
+    username: str | None = None,
+    added_by_id: int | None = None,
     active: bool = True,
 ):
     """
@@ -111,9 +101,14 @@ def create_group(
     """
 
     _logger.debug(f"Create group: {group_id=}, {name=}, {username=}, {added_by_id=}")
+    # delete cache
+    cache.delete("get_group", cache_id=cache.build_cache_id(group_id=group_id))
 
-    with get_session() as session:
-        user = get_user(tg_id=added_by_id)
+    async with get_session() as session:
+        if added_by_id:
+            user = await get_user(tg_id=added_by_id)
+        else:
+            user = None
         group = Group(
             group_id=group_id,
             name=name,
@@ -123,10 +118,10 @@ def create_group(
             active=active,
         )
         session.add(group)
-        session.commit()
+        await session.commit()
 
 
-def update_group(*, group_id: int, **kwargs):
+async def update_group(*, group_id: int, **kwargs):
     """
     Update group
     :param group_id: the group id
@@ -134,90 +129,105 @@ def update_group(*, group_id: int, **kwargs):
     """
 
     _logger.debug(f"Update group: {group_id=}, {kwargs=}")
-    with get_session() as session:
-        session.query(Group).filter(Group.group_id == group_id).update(kwargs)
-        session.commit()
+    # delete cache
+    cache.delete("get_group", cache_id=cache.build_cache_id(group_id=group_id))
+
+    async with get_session() as session:
+        await session.execute(
+            update(Group).where(Group.group_id == group_id).values(**kwargs)
+        )
+        await session.commit()
 
 
-def get_group(*, group_id: int) -> Group:
+@cache.cachable(cache_name="get_group", params="group_id")
+async def get_group(*, group_id: int) -> Group:
     """
-    Get group by group id
-    :param group_id: the group id
-    :return: :class:`Group`,
+    Retrieve a group by its ID.
     """
-
-    with get_session() as session:
-        return session.query(Group).filter(Group.group_id == group_id).one()
+    async with get_session() as session:
+        return await session.scalar(select(Group).where(Group.group_id == group_id))
 
 
 # stats
 
 
-def get_all_users_count() -> int:
-    """Get all users count"""
-
-    with get_session() as session:
-        return session.query(func.count(User.id)).scalar()
-
-
-def get_users_count_active() -> int:
-    """Get all active users count"""
-
-    with get_session() as session:
-        return session.query(func.count(User.id)).filter(User.active == True).scalar()  # noqa
-
-
-def get_users_business_count() -> int:
-    """Get all business users count"""
-
-    with get_session() as session:
-        return (
-            session.query(func.count(User.id)).filter(User.business_id != None).scalar()  # noqa
-        )  # noqa
-
-
-def get_all_users_active() -> list[User]:
-    """Get all active users"""
-
-    with get_session() as session:
-        return session.query(User).filter(User.active == True).all()  # noqa
-
-
-def get_all_groups_count() -> int:
-    """Get all groups count"""
-
-    with get_session() as session:
-        return session.query(func.count(Group.id)).scalar()
-
-
-def get_groups_count_active() -> int:
-    """Get all active groups count"""
-
-    with get_session() as session:
-        return session.query(func.count(Group.id)).filter(Group.active == True).scalar()  # noqa
-
-
-def get_all_groups_active() -> list[Group]:
-    """Get all active groups"""
-
-    with get_session() as session:
-        return session.query(Group).filter(Group.active == True).all()  # noqa
-
-
-# message_sent
-
-
-def create_message_sent(*, sent_id: str, chat_id: int, message_id: int) -> MessageSent:
-    """Create message sent
-    :param sent_id: the sent id
-    :param chat_id: the chat id
-    :param message_id: the message id
-    :return: :class:`MessageSent`
+async def get_all_users_count() -> int:
     """
+    Get the total number of users.
+    """
+    async with get_session() as session:
+        return await session.scalar(select(func.count(User.id)))
 
+
+async def get_users_count_active() -> int:
+    """
+    Get the total number of active users.
+    """
+    async with get_session() as session:
+        return await session.scalar(
+            select(func.count(User.id)).where(User.active == True)  # noqa
+        )
+
+
+async def get_users_business_count() -> int:
+    """
+    Get the total number of business users.
+    """
+    async with get_session() as session:
+        return await session.scalar(
+            select(func.count(User.id)).where(User.business_id != None)  # noqa
+        )
+
+
+async def get_all_users_active() -> list[User]:
+    """
+    Get all active users.
+    """
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.active == True))  # noqa
+        # TODO not working
+        return result.scalars().all()
+
+
+async def get_all_groups_count() -> int:
+    """
+    Get the total number of groups.
+    """
+    async with get_session() as session:
+        return await session.scalar(select(func.count(Group.id)))
+
+
+async def get_groups_count_active() -> int:
+    """
+    Get the total number of active groups.
+    """
+    async with get_session() as session:
+        return await session.scalar(
+            select(func.count(Group.id)).where(Group.active == True)  # noqa
+        )
+
+
+async def get_all_groups_active() -> list[Group]:
+    """
+    Get all active groups.
+    """
+    async with get_session() as session:
+        result = await session.execute(select(Group).where(Group.active == True))  # noqa
+        return result.scalars().all()
+
+
+# message sent
+
+
+async def create_message_sent(
+    *, sent_id: str, chat_id: int, message_id: int
+) -> MessageSent:
+    """
+    Create a message sent record.
+    """
     _logger.debug(f"Create message sent: {sent_id=}, {chat_id=}, {message_id=}")
 
-    with get_session() as session:
+    async with get_session() as session:
         message_sent = MessageSent(
             sent_id=sent_id,
             chat_id=chat_id,
@@ -225,39 +235,41 @@ def create_message_sent(*, sent_id: str, chat_id: int, message_id: int) -> Messa
             sent_at=datetime.datetime.now(),
         )
         session.add(message_sent)
-        session.commit()
+        await session.commit()
         return message_sent
 
 
-def get_messages_sent(*, sent_id: str) -> list[MessageSent]:
-    """Get messages sent by sent_id
-    :param sent_id: the sent id
-    :return: list of :class:`MessageSent`
+async def get_messages_sent(*, sent_id: str) -> list[MessageSent]:
     """
-
-    with get_session() as session:
-        return session.query(MessageSent).filter(MessageSent.sent_id == sent_id).all()
-
-
-def is_message_sent_exists(*, sent_id: str) -> bool:
+    Get messages sent by a specific sent_id.
     """
-    Check if message sent exists
-    :param sent_id: the sent id
-    :return: bool
+    async with get_session() as session:
+        result = await session.execute(
+            select(MessageSent).where(MessageSent.sent_id == sent_id)
+        )
+        return result.scalars().all()
+
+
+async def is_message_sent_exists(*, sent_id: str) -> bool:
     """
+    Check if a message sent record exists.
+    """
+    async with get_session() as session:
+        result = await session.scalar(
+            exists().where(MessageSent.sent_id == sent_id).select()
+        )
+        return result
 
-    with get_session() as session:
-        return session.query(exists().where(MessageSent.sent_id == sent_id)).scalar()  # noqa
 
-
-def create_stats(*, type_stats: StatsType, lang: str):
-    """Create stats"""
-
-    with get_session() as session:
+async def create_stats(*, type_stats: StatsType, lang: str):
+    """
+    Create a statistics record.
+    """
+    async with get_session() as session:
         stats = Stats(
             type=type_stats.value,
             lang=lang,
             created_at=datetime.datetime.now(),
         )
         session.add(stats)
-        session.commit()
+        await session.commit()

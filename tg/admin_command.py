@@ -17,12 +17,12 @@ async def stats(_: Client, msg: types.Message):  # command /stats
     """
     Get the stats of the bot.
     """
-    users = repository.get_all_users_count()
-    users_active = repository.get_users_count_active()
-    business = repository.get_users_business_count()
+    users = await repository.get_all_users_count()
+    users_active = await repository.get_users_count_active()
+    business = await repository.get_users_business_count()
 
-    groups = repository.get_all_groups_count()
-    groups_active = repository.get_groups_count_active()
+    groups = await repository.get_all_groups_count()
+    groups_active = await repository.get_groups_count_active()
 
     text = (
         f"**סטטיסטיקות על הבוט**\n"
@@ -97,10 +97,10 @@ async def send_broadcast(_: Client, msg: types.Message):
     # users, chats = None, None
     match send_to:
         case "users":
-            users = repository.get_all_users_active()
+            users = await repository.get_all_users_active()
             chats = None
         case "groups":
-            chats = repository.get_all_groups_active()
+            chats = await repository.get_all_groups_active()
             users = None
         case _:
             return
@@ -114,7 +114,7 @@ async def send_broadcast(_: Client, msg: types.Message):
 
     while True:
         sent_id = "".join(random.choices(string.ascii_letters + string.digits, k=10))
-        if not repository.is_message_sent_exists(sent_id=sent_id):
+        if not await repository.is_message_sent_exists(sent_id=sent_id):
             break
 
     await msg.reply(
@@ -135,7 +135,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                     msg_sent = await msg.copy(chat_id=user.tg_id)
                 sent += 1
 
-                repository.create_message_sent(
+                await repository.create_message_sent(
                     sent_id=sent_id, chat_id=user.tg_id, message_id=msg_sent.id
                 )
 
@@ -161,7 +161,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 time.sleep(e.value)
 
             except errors.InputUserDeactivated:
-                repository.update_user(tg_id=user.tg_id, active=False)
+                await repository.update_user(tg_id=user.tg_id, active=False)
                 text_log = (
                     f"user {user.tg_id}, name: {user.name} "
                     f"language_code: {user.language_code}, username: {user.username} is Deactivated\n"
@@ -172,7 +172,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 continue
 
             except errors.UserIsBlocked:
-                repository.update_user(tg_id=user.tg_id, active=False)
+                await repository.update_user(tg_id=user.tg_id, active=False)
                 text_log = f"user {user.tg_id}, name: {user.name} language_code: {user.language_code}, username: {user.username} Blocked your bot\n"
                 log_obj.write(text_log)
                 _logger.debug(text_log)
@@ -180,7 +180,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 continue
 
             except errors.PeerIdInvalid:
-                repository.update_user(tg_id=user.tg_id, active=False)
+                await repository.update_user(tg_id=user.tg_id, active=False)
                 text_log = f"user {user.tg_id}, name: {user.name} language_code: {user.language_code}, username: {user.username} IdInvalid\n"
                 log_obj.write(text_log)
                 _logger.debug(text_log)
@@ -188,7 +188,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 continue
 
             except errors.BadRequest as e:
-                repository.update_user(tg_id=user.tg_id, active=False)
+                await repository.update_user(tg_id=user.tg_id, active=False)
                 text_log = f"BadRequest: {e} : user {user.tg_id}, name: {user.name} language_code: {user.language_code}, username: {user.username}"
                 log_obj.write(text_log)
                 _logger.debug(text_log)
@@ -207,7 +207,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                     msg_sent = await msg.copy(chat_id=chat.group_id)
                 sent += 1
 
-                repository.create_message_sent(
+                await repository.create_message_sent(
                     sent_id=sent_id, chat_id=chat.group_id, message_id=msg_sent.id
                 )
 
@@ -230,7 +230,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 time.sleep(e.value)
 
             except errors.BadRequest as e:
-                repository.update_group(group_id=chat.group_id, active=False)
+                await repository.update_group(group_id=chat.group_id, active=False)
                 text_log = f"BadRequest: {e}, chat_id: {chat.group_id}, name: {chat.name}, username: {chat.username}"
                 log_obj.write(text_log)
                 _logger.debug(text_log)
@@ -274,11 +274,11 @@ async def delete_sent_messages(client: Client, msg: types.Message):
         await msg.reply("לא נמצא מזהה של ההודעות שנשלחו")
         return
 
-    if not repository.is_message_sent_exists(sent_id=sent_id):
+    if not await repository.is_message_sent_exists(sent_id=sent_id):
         await msg.reply("המזהה אינו תקין")
         return
 
-    sent_messages = repository.get_messages_sent(sent_id=sent_id)
+    sent_messages = await repository.get_messages_sent(sent_id=sent_id)
     await msg.reply(f"מוחק {len(sent_messages)} הודעות שנשלחו")
 
     count = 0

@@ -13,7 +13,7 @@ settings = config.get_settings()
 
 async def ask_for_payment(_: Client, msg: types.Message):
     tg_id = msg.from_user.id
-    lang = repository.get_user(tg_id=tg_id).lang
+    lang = (await repository.get_user(tg_id=tg_id)).lang
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.ASK_AMOUNT_TO_PAY, lang),
@@ -56,7 +56,7 @@ async def ask_for_payment(_: Client, msg: types.Message):
 
 async def send_payment(_: Client, cbd: types.CallbackQuery):
     tg_id = cbd.from_user.id
-    lang = repository.get_user(tg_id=tg_id).lang
+    lang = (await repository.get_user(tg_id=tg_id)).lang
     amount = int(cbd.data.split(":")[1])
 
     await cbd.message.reply_invoice(
@@ -89,7 +89,7 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
     send message to user that payment is successful, and thank you for support...
     """
     tg_id = msg.from_user.id
-    lang = repository.get_user(tg_id=tg_id).lang
+    lang = (await repository.get_user(tg_id=tg_id)).lang
     payment = msg.successful_payment
 
     await msg.reply_text(

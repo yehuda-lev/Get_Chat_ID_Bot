@@ -1,4 +1,5 @@
 pyrotgfork==2.2.4
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
+aiosqlite==0.20.0
 pydantic-settings==2.4.0
