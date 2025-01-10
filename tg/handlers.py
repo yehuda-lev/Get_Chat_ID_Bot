@@ -177,6 +177,11 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
+    handlers.BusinessBotConnectionHandler(
+        get_ids.handle_business_connection,
+        tg_filters.create_user(),
+    ),
+    # welcome
     handlers.MessageHandler(
         get_ids.welcome,
         filters.private
@@ -261,9 +266,5 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()
         & tg_filters.is_admin(),
-    ),
-    handlers.BusinessBotConnectionHandler(
-        get_ids.handle_business_connection,
-        tg_filters.create_user(),
     ),
 ]
