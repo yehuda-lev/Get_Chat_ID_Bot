@@ -7,7 +7,12 @@ from contextlib import asynccontextmanager
 from enum import Enum
 
 from sqlalchemy import String, ForeignKey
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    create_async_engine,
+    async_sessionmaker,
+    AsyncEngine,
+)
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
@@ -84,8 +89,10 @@ class Group(BaseTable):
     username: Mapped[str | None] = mapped_column(String(32))
     created_at: Mapped[datetime.datetime]
     active: Mapped[bool] = mapped_column(default=True)
-    added_by_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    added_by: Mapped[User] = relationship("User", back_populates="groups")
+    added_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("user.id"), nullable=True
+    )
+    added_by: Mapped[User | None] = relationship("User", back_populates="groups")
 
 
 class MessageSent(BaseTable):
@@ -112,4 +119,13 @@ class Stats(BaseTable):
     created_at: Mapped[datetime.datetime]
 
 
-# BaseTable.metadata.create_all(engine)
+async def create_tables(engine: AsyncEngine):
+    """Create all tables defined in the Base metadata."""
+    async with engine.begin() as conn:
+        await conn.run_sync(BaseTable.metadata.create_all)
+
+
+import asyncio
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(create_tables(engine))

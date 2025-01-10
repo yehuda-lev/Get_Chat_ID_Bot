@@ -87,8 +87,8 @@ async def create_group(
     *,
     group_id: int,
     name: str,
-    username: str = None,
-    added_by_id: int,
+    username: str | None = None,
+    added_by_id: int | None = None,
     active: bool = True,
 ):
     """
@@ -105,7 +105,10 @@ async def create_group(
     cache.delete("get_group", cache_id=cache.build_cache_id(group_id=group_id))
 
     async with get_session() as session:
-        user = await get_user(tg_id=added_by_id)
+        if added_by_id:
+            user = await get_user(tg_id=added_by_id)
+        else:
+            user = None
         group = Group(
             group_id=group_id,
             name=name,
