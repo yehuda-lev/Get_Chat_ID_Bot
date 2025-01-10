@@ -136,6 +136,26 @@ def create_user() -> filters.Filter:
     return filters.create(func, name="CreateUser")
 
 
+def create_group() -> filters.Filter:
+    async def func(_, __, msg: types.Message) -> bool:
+        chat = msg.chat
+        chat_id = chat.id
+        name = chat.title if chat.title else ""
+
+        group = await db_filters.get_group(group_id=chat_id)
+        if not group:
+            await db_filters.create_group(
+                group_id=chat_id,
+                name=name,
+                username=chat.username,
+            )
+            return True
+
+        return True
+
+    return filters.create(func, name="CreateGroup")
+
+
 def is_admin() -> filters.Filter:
     async def func(_, __, msg: types.Message) -> bool:
         return (await db_filters.get_user(tg_id=msg.from_user.id)).admin

@@ -54,7 +54,10 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         get_ids.get_ids_in_the_group,
-        filters.group & ~filters.tg_business & filters.command("id"),
+        filters.group
+        & ~filters.tg_business  # not needed, but maybe in the future
+        & filters.command("id")
+        & tg_filters.create_group(),
     ),
     handlers.MessageHandler(
         help.handle_callback_data_help,
