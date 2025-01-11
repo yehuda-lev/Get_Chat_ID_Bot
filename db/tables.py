@@ -74,7 +74,13 @@ class User(BaseTable):
     business_id: Mapped[str | None] = mapped_column(String(32))
     language_code: Mapped[str | None] = mapped_column(String(5))
     lang: Mapped[str | None] = mapped_column(String(5))  # lang in the bot
+
     created_at: Mapped[datetime.datetime]
+    created_by: Mapped[str | None] = mapped_column(nullable=True)
+    # updated_at: Mapped[datetime.datetime] = mapped_column(
+    #     default=datetime.datetime.now, onupdate=datetime.datetime.now
+    # )
+
     active: Mapped[bool] = mapped_column(default=True)
     admin: Mapped[bool] = mapped_column(default=False)
     groups: Mapped[list[Group]] = relationship(back_populates="added_by", lazy="joined")

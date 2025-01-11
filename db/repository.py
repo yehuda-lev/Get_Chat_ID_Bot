@@ -22,6 +22,7 @@ async def create_user(
     name: str,
     username: str = None,
     language_code: str,
+    created_by: str | None = None,
     admin: bool = False,
     active: bool = True,
 ) -> User:
@@ -31,8 +32,11 @@ async def create_user(
     :param name: the name of user
     :param username: the username of user
     :param language_code: the language code of user
+    :param created_by: the word the user joined the bot (stats)
     :param admin: is admin or not, default is False
     :param active: is active or not, default is True
+
+    :Returns: User
     """
 
     _logger.debug(f"Create user: {tg_id=}, {name=}, {username=}, {language_code=}")
@@ -46,6 +50,7 @@ async def create_user(
             username=username,
             language_code=language_code,
             lang=language_code,
+            created_by=created_by,
             admin=admin,
             active=active,
             created_at=datetime.datetime.now(),
