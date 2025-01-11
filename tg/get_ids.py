@@ -497,7 +497,7 @@ async def get_via_bot(client: Client, msg: types.Message):
     tg_id = msg.from_user.id
     name = msg.via_bot.first_name
     chat_id = msg.via_bot.id
-    lang = (await repository.get_user(tg_id=chat_id)).lang
+    lang = (await repository.get_user(tg_id=tg_id)).lang
     text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
 
     await msg.reply(
