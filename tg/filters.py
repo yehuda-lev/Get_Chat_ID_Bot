@@ -89,7 +89,7 @@ def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
 def is_mention_users(msg: types.Message) -> bool:
     """
     Check if the message contains a mention
-    """ ""
+    """
     if msg.entities:
         return any(
             x

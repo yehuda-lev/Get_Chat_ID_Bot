@@ -1,9 +1,9 @@
-*.session
-*.session-journal
+*.session*
 venv
 .idea
 *pycache*
 *.env
 *.txt
-config.json
+*.json
 *.sqlite
+*.log

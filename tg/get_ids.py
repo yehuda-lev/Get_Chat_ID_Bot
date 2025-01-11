@@ -879,23 +879,29 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
 
     try:
         _, chat_id = msg.text.split(" ", 1)
+
+        if chat_id.startswith("link_"):
+            chat_id = chat_id[5:]
+        else:
+            raise ValueError
     except ValueError:
         await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
         return
 
-    if chat_id.startswith("link_"):
-        chat_id = chat_id[5:]
-    is_supergroup, link, link_android, link_ios = None, None, None, None
-    if chat_id.startswith("-100"):
+    is_group, link, link_android, link_ios = None, None, None, None
+    if chat_id.startswith("-100"):  # supergroup or channel
         link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
-        is_supergroup = True
+        is_group = True
+    elif chat_id.startswith("-"):  # group
+        link = f"https://t.me/{chat_id[1:]}/1{''.join('0' for _ in range(7))}"
+        is_group = True
     else:
         chat_id = chat_id.replace(" ", "")
-        is_supergroup = False
+        is_group = False
         link_android = f"tg://openmessage?user_id={chat_id}"
         link_ios = f"tg://user?id={chat_id}"
 
-    if is_supergroup:
+    if is_group:
         buttons = [
             types.InlineKeyboardButton(
                 text="Link 🔗",

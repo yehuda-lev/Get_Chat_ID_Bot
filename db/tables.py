@@ -1,6 +1,8 @@
 # This file contains the database tables and their relationships
 
 from __future__ import annotations
+
+import asyncio
 import logging
 import datetime
 from contextlib import asynccontextmanager
@@ -124,8 +126,6 @@ async def create_tables(engine: AsyncEngine):
     async with engine.begin() as conn:
         await conn.run_sync(BaseTable.metadata.create_all)
 
-
-import asyncio
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(create_tables(engine))

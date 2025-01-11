@@ -1,4 +1,4 @@
-pyrotgfork==2.2.4
+https://github.com/TelegramPlayGround/pyrogram/archive/887f22136dc8c8bfd3d95eeaa30958ede1132eff.zip
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
 aiosqlite==0.20.0

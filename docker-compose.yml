@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   get-chat-id-bot:
     build:
