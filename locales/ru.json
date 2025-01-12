@@ -59,5 +59,20 @@
     "SOMTHING_WENT_WRONG": "Что-то пошло не так",
     "LINK_TO_CHAT": "🔗 Ссылка на чат `{}`",
     "BUTTON_GET_LINK": "🔗 Ссылка на чат",
-    "FORMAT_LINK": "Отправьте команду с ID чата\nНапример:\n> `/link 777000`"
+    "FORMAT_LINK": "Отправьте команду с ID чата\nНапример:\n> `/link 777000`",
+
+    "BOT_NAME": "🪪 Получить ID чата | Get Chat ID",
+    "BOT_ABOUT": "🪪 Быстро получите ID любого чата!\n\n📣 Обновления бота - @GetChatID_Updates",
+    "BOT_DESCRIPTION": "🪪 Быстро получите ID любой группы, канала, пользователя или бота.\n\n✨ Легко делитесь чатами, выполняйте поиск в строке, пересылайте сообщения и работайте с группами и бизнес-ботами.\n\n💖 Бот с открытым исходным кодом - https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n📣 Обновления бота - @GetChatID_Updates",
+
+    "START_COMMAND": "Запустите бота ✅ | Start the bot ✅",
+    "LANG_COMMAND": "Изменить язык 🇺🇸/🇷🇺 | Change the language 🇺🇸/🇷🇺",
+    "HELP_COMMAND": "Получить помощь ℹ️ | Get help ℹ️",
+    "ME_COMMAND": "Получите свой ID 👤 | Get your ID 👤",
+    "ADD_COMMAND": "Добавьте бота в группу 👥 | Add the bot to the group 👥",
+    "ADMIN_COMMAND": "Получите ID групп, которыми вы управляете 👮 | Get the ID of the groups you manage 👮",
+    "ABOUT_COMMAND": "О боте ℹ️ | About the bot ℹ️",
+    "LINK_COMMAND": "Получите ссылку на чат 🔗 | Get the link to the chat 🔗",
+    "SEARCH_COMMAND": "Поиск по имени пользователя 🔍 | Search by username 🔍",
+    "DONATE_COMMAND": "Поддержите бота 🙏 | Support the bot 🙏"
 }

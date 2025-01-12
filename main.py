@@ -1,9 +1,9 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import asyncio
-from pyrogram import raw, __version__, idle
+from pyrogram import raw, __version__, idle, types
 
-from tg import handlers
+from tg import handlers, utils
 from db import repository
 from data import config, clients
 
@@ -54,6 +54,8 @@ async def main():
 
     await clients.bot_1.start()
     await clients.bot_2.start()
+
+    await utils.set_bot_info(clients.bot_1)
 
     await idle()
 

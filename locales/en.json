@@ -59,5 +59,20 @@
     "SOMTHING_WENT_WRONG": "Something went wrong",
     "LINK_TO_CHAT": "🔗 Link to chat `{}`",
     "BUTTON_GET_LINK": "🔗 Link to chat",
-    "FORMAT_LINK": "Send the command with the chat ID\nFor example:\n> `/link 777000`"
+    "FORMAT_LINK": "Send the command with the chat ID\nFor example:\n> `/link 777000`",
+
+    "BOT_NAME": "Get Chat ID",
+    "BOT_ABOUT": "\uD83E\uDEAA Get the chat id of every chat quickly!\n\n\uD83D\uDCE3 Channel updates - @GetChatID_Updates",
+    "BOT_DESCRIPTION": "Quickly get the ID of any group, channel, user, or bot \uD83E\uDEAA\n\nEasily share chats, perform inline searches, forward messages, and work with groups and business bots. ✨\n\nThe bot is an open source - https://github.com/yehuda-lev/Get_Chat_ID_Bot \uD83D\uDDA4\n\nChannel updates - @GetChatID_Updates \uD83D\uDCE3",
+
+    "START_COMMAND": "Start the bot ✅",
+    "LANG_COMMAND": "Change the language 🇺🇸/🇮🇱",
+    "HELP_COMMAND": "Get help ℹ️",
+    "ME_COMMAND": "Get your ID 👤",
+    "ADD_COMMAND": "Add the bot to the group 👥",
+    "ADMIN_COMMAND": "Get the ID of the groups you manage 👮",
+    "ABOUT_COMMAND": "About the bot ℹ️",
+    "LINK_COMMAND": "Get the link to the chat 🔗",
+    "SEARCH_COMMAND": "Search by username 🔍",
+    "DONATE_COMMAND": "Support the bot 🙏"
 }

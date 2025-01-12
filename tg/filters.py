@@ -119,9 +119,12 @@ def create_user() -> filters.Filter:
 
         user = await db_filters.get_user(tg_id=tg_id)
         if not user:
-
             try:
-                created_by = ((msg.text or msg.caption).split(" ", maxsplit=1)[1]if isinstance(msg, types.Message) else None)
+                created_by = (
+                    (msg.text or msg.caption).split(" ", maxsplit=1)[1]
+                    if isinstance(msg, types.Message)
+                    else None
+                )
             except IndexError:
                 created_by = None
 
