@@ -14,36 +14,6 @@ from locales.translation_manager import manager, TranslationKeys
 _logger = logging.getLogger(__name__)
 
 
-async def get_reply_markup(client: Client) -> types.InlineKeyboardMarkup:
-    return types.InlineKeyboardMarkup(
-        [
-            [
-                types.InlineKeyboardButton(
-                    text="Powered by 'Get Chat ID Bot' 🪪",
-                    url=f"https://t.me/{client.me.username}?start=start",
-                )
-            ]
-        ]
-    )
-
-
-async def get_button_link_to_chat(
-    chat_id: int, lang: str, client: Client
-) -> types.InlineKeyboardMarkup | None:
-    if chat_id is None:
-        return chat_id
-    return types.InlineKeyboardMarkup(
-        [
-            [
-                types.InlineKeyboardButton(
-                    text=manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang),
-                    url=f"https://t.me/{client.me.username}?start=link_{chat_id}",
-                )
-            ]
-        ]
-    )
-
-
 async def welcome(_: Client, msg: types.Message):
     """start the bot"""
     user = msg.from_user
@@ -193,6 +163,36 @@ async def get_lang(_, query: types.CallbackQuery):
     await repository.update_user(tg_id=tg_id, lang=data_lang)
     await query.edit_message_text(
         text=manager.get_translation(TranslationKeys.DONE, data_lang).format(data_lang),
+    )
+
+
+async def get_reply_markup(client: Client, by: str) -> types.InlineKeyboardMarkup:
+    return types.InlineKeyboardMarkup(
+        [
+            [
+                types.InlineKeyboardButton(
+                    text="Powered by 'Get Chat ID Bot' 🪪",
+                    url=f"https://t.me/{client.me.username}?start=start_{by}",
+                )
+            ]
+        ]
+    )
+
+
+async def get_button_link_to_chat(
+    chat_id: int, lang: str, client: Client
+) -> types.InlineKeyboardMarkup | None:
+    if chat_id is None:
+        return chat_id
+    return types.InlineKeyboardMarkup(
+        [
+            [
+                types.InlineKeyboardButton(
+                    text=manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang),
+                    url=f"https://t.me/{client.me.username}?start=link_{chat_id}",
+                )
+            ]
+        ]
     )
 
 
@@ -478,7 +478,7 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
                     input_message_content=types.InputTextMessageContent(
                         message_text=text,
                     ),
-                    reply_markup=await get_reply_markup(client),
+                    reply_markup=await get_reply_markup(client, by="inline_query"),
                 ),
             ],
             cache_time=5,
@@ -560,7 +560,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
             update.old_chat_member.status == enums.ChatMemberStatus.MEMBER
             and update.new_chat_member.status == enums.ChatMemberStatus.BANNED
         ):
-            if not repository.get_user(tg_id=update.from_user.id):
+            if not await repository.get_user(tg_id=update.from_user.id):
                 _logger.debug(
                     f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
                 )
@@ -766,7 +766,11 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         return
 
     try:
-        await msg.reply(text=f"{name} • `{chat_id}`" if chat_id else name, quote=True)
+        await msg.reply(
+            text=f"{name} • `{chat_id}`" if chat_id else name,
+            quote=True,
+            reply_markup=await get_reply_markup(client, by="group"),
+        )
     except Exception:  # noqa
         await client.leave_chat(chat_id=msg.chat.id)
 
@@ -803,7 +807,7 @@ async def get_id_with_business_connection(client: Client, msg: types.Message):
     # edit the message with the id
     await msg.edit(
         text=text,
-        reply_markup=await get_reply_markup(client),
+        reply_markup=await get_reply_markup(client, by="business_connection"),
     )
 
     utils.create_stats(
