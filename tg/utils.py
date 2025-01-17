@@ -17,19 +17,19 @@ def create_stats(type_stats: tables.StatsType, lang: str):
         repository.create_stats(type_stats=type_stats, lang=lang),
     )
 
+list_langs = [
+    "en",
+    "he",
+    "ar",
+    "ru",
+    "zh"
+]
 
-async def set_bot_info(client: Client):
+async def set_bot_info(client: Client, langs: list[str]):
     """
     Set name and bio, description and commands for the bot
     """
-    list_langs = [
-        # "en",
-        # "he",
-        # "ar",
-        # "ru",
-        "zh-hans"
-    ]
-    for text_lang in list_langs:
+    for text_lang in langs:
         if text_lang == "en":
             lang = ""  # default language
         else:

@@ -55,8 +55,6 @@ async def main():
     await clients.bot_1.start()
     await clients.bot_2.start()
 
-    # await utils.set_bot_info(clients.bot_1)
-
     await idle()
 
     await clients.bot_1.stop()
