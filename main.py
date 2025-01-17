@@ -1,9 +1,9 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import asyncio
-from pyrogram import raw, __version__, idle, types
+from pyrogram import raw, __version__, idle
 
-from tg import handlers, utils
+from tg import handlers
 from db import repository
 from data import config, clients
 
