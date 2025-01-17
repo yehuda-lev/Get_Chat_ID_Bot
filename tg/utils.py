@@ -18,13 +18,9 @@ def create_stats(type_stats: tables.StatsType, lang: str):
         repository.create_stats(type_stats=type_stats, lang=lang),
     )
 
-list_langs = [
-    "en",
-    "he",
-    "ar",
-    "ru",
-    "zh"
-]
+
+list_langs = ["en", "he", "ar", "ru", "zh"]
+
 
 async def set_bot_info(client: Client, langs: list[str]):
     """

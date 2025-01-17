@@ -897,8 +897,6 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
 
         if chat_id.startswith("link_"):
             chat_id = chat_id[5:]
-        else:
-            raise ValueError
     except ValueError:
         await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
         return
