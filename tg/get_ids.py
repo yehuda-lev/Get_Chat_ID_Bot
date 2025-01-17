@@ -134,7 +134,6 @@ async def choose_lang(_, msg: types.Message):
         text=manager.get_translation(TranslationKeys.CHOICE_LANG, lang),
         reply_markup=types.InlineKeyboardMarkup(
             [
-                [types.InlineKeyboardButton(text="עברית 🇮🇱", callback_data="lang:he")],
                 [
                     types.InlineKeyboardButton(
                         text="English 🇺🇸", callback_data="lang:en"
@@ -143,12 +142,18 @@ async def choose_lang(_, msg: types.Message):
                 [
                     types.InlineKeyboardButton(
                         text="Русский 🇷🇺", callback_data="lang:ru"
-                    )
+                    ),
+                    types.InlineKeyboardButton(
+                        text="עברית 🇮🇱", callback_data="lang:he"
+                    ),
                 ],
                 [
                     types.InlineKeyboardButton(
                         text="العربية 🇸🇦", callback_data="lang:ar"
-                    )
+                    ),
+                    types.InlineKeyboardButton(
+                        text="中文 🇨🇳", callback_data="lang:zh-Hans"
+                    ),
                 ],
             ]
         ),
@@ -162,7 +167,13 @@ async def get_lang(_, query: types.CallbackQuery):
     tg_id = query.from_user.id
     await repository.update_user(tg_id=tg_id, lang=data_lang)
     await query.edit_message_text(
-        text=manager.get_translation(TranslationKeys.DONE, data_lang).format(data_lang),
+        text=manager.get_translation(TranslationKeys.DONE, data_lang).format(
+            data_lang.replace("en", "English 🇺🇸")
+            .replace("ru", "Русский 🇷🇺")
+            .replace("he", "עברית 🇮🇱")
+            .replace("ar", "العربية 🇸🇦")
+            .replace("zh-Hans", "中文 🇨🇳")
+        ),
     )
 
 

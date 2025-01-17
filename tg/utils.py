@@ -22,7 +22,13 @@ async def set_bot_info(client: Client):
     """
     Set name and bio, description and commands for the bot
     """
-    list_langs = ["en", "he", "ar", "ru"]
+    list_langs = [
+        # "en",
+        # "he",
+        # "ar",
+        # "ru",
+        "zh-Hans"
+    ]
     for text_lang in list_langs:
         if text_lang == "en":
             lang = ""  # default language
