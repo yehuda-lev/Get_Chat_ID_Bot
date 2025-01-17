@@ -1,6 +1,7 @@
 import logging
 import asyncio
 
+import httpx
 from pyrogram import types, Client, raw
 
 from db import repository, tables
@@ -97,3 +98,46 @@ async def set_bot_info(client: Client, langs: list[str]):
         )
 
         await asyncio.sleep(2)
+
+
+async def paste_rs(code: str) -> tuple[bool, str]:
+    """
+    Paste code to paste.rs
+    """
+    url = "https://paste.rs"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, content=code)
+        if response.status_code == 201:  # Created
+            return True, f"{response.text.strip()}.py3"
+        return False, response.text
+
+
+async def paste_kaizoku(code: str) -> tuple[bool, str]:
+    """
+    Paste code to paste.kaizoku.cyou
+    """
+    headers = {
+        "accept": "*/*",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+        "content-type": "application/json",
+    }
+    url = "https://paste.kaizoku.cyou/api/v2/pastes"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url=url, headers=headers, json={"content": code})
+        if response.status_code == 201:
+            return True, f"https://paste.kaizoku.cyou/{response.json()['id']}"
+        else:
+            return False, response.text
+
+
+async def pate_code(code: str) -> str:
+    paste = await paste_kaizoku(code)
+    if paste[0]:
+        return paste[1]
+    else:
+        paste = await paste_rs(code)
+        if paste[0]:
+            return paste[1]
+        else:
+            return paste[1]
