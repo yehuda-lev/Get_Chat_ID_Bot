@@ -1,7 +1,14 @@
 import logging
 from pyrogram import handlers, filters
 
-from tg import filters as tg_filters, get_ids, admin_command, help, payments
+from tg import (
+    filters as tg_filters,
+    get_ids,
+    admin_command,
+    help,
+    payments,
+    code_runner,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -226,6 +233,17 @@ HANDLERS = [
         filters.successful_payment & tg_filters.create_user(),
     ),
     # admin command
+    handlers.MessageHandler(
+        code_runner.python_exec,
+        filters=(
+            ~filters.me
+            & ~filters.tg_business
+            & filters.private
+            & filters.command(["py", "rpy"], prefixes="/")
+            & tg_filters.is_admin()
+            & ~filters.forwarded
+        ),
+    ),
     handlers.MessageHandler(
         admin_command.stats,
         filters.private
