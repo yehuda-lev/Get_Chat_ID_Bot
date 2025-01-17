@@ -27,7 +27,7 @@ async def set_bot_info(client: Client):
         # "he",
         # "ar",
         # "ru",
-        "zh-Hans"
+        "zh-hans"
     ]
     for text_lang in list_langs:
         if text_lang == "en":

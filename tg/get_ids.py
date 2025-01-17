@@ -152,7 +152,7 @@ async def choose_lang(_, msg: types.Message):
                         text="العربية 🇸🇦", callback_data="lang:ar"
                     ),
                     types.InlineKeyboardButton(
-                        text="中文 🇨🇳", callback_data="lang:zh-Hans"
+                        text="中文 🇨🇳", callback_data="lang:zh-hans"
                     ),
                 ],
             ]
@@ -172,7 +172,7 @@ async def get_lang(_, query: types.CallbackQuery):
             .replace("ru", "Русский 🇷🇺")
             .replace("he", "עברית 🇮🇱")
             .replace("ar", "العربية 🇸🇦")
-            .replace("zh-Hans", "中文 🇨🇳")
+            .replace("zh-hans", "中文 🇨🇳")
         ),
     )
 
