@@ -1,5 +1,5 @@
 {
-    "WELCOME": "🌟 **欢迎, {name}!** 🤠\n\n🪪 在这个机器人中，您可以获取任何 **群组、频道、用户或机器人的 ID**。\n\n🚀 **快速开始指南:**\n1️⃣ 使用下方按钮分享您想要识别的聊天。\n2️⃣ 立即收到所分享聊天的 **ID**。\n\n<blockquote expandable> 💡 **提示:** 想探索其他获取 ID 的方式？只需输入 /help 查看更多信息。\n\n 🇺🇸 **语言:**\n 若要更改语言，请发送 /lang 命令\n\n 💖 **支持机器人:** 觉得这个机器人有用？请用 /donate 命令帮助我们保持服务运行。 </blockquote>\n\n📢 **关注我们:** 加入 @GetChatID_Updates 获取更新、提示和新闻。",
+    "WELCOME": "🌟 **欢迎, {name}!** 🤠\n\n🪪 在这个机器人中，您可以获取任何 **群组、频道、用户或机器人的 ID**。\n\n🚀 **快速开始指南:**\n1️⃣ 使用下方按钮分享您想要识别的聊天。\n2️⃣ 立即收到所分享聊天的 **ID**。\n\n<blockquote expandable> 💡 **提示:** 想探索其他获取 ID 的方式？只需输入 /help 查看更多信息。\n\n \uD83C\uDF10 **语言:**\n 机器人支持的语言是：{langs} \n 若要更改语言，请发送 /lang 命令\n\n 💖 **支持机器人:** 觉得这个机器人有用？请用 /donate 命令帮助我们保持服务运行。 </blockquote>\n\n📢 **关注我们:** 加入 @GetChatID_Updates 获取更新、提示和新闻。",
     "USER": "👤 用户",
     "BOT": "🤖 机器人",
     "CHANNEL": "📢 频道",
@@ -30,7 +30,7 @@
     "INFO_REQUEST_ADMIN": "**👮‍ 请求管理员**\n\n发送命令 /admin 获取您管理的所有聊天的 ID。",
     "ME": "👤 我的 ID",
     "INFO_ME": "**👤 获取您的 ID**\n\n发送命令 /me 获取您的 ID。",
-    "LANGUAGE": "🇺🇸 语言",
+    "LANGUAGE": "中文 \uD83C\uDDE8\uD83C\uDDF3",
     "INFO_LANGUAGE": "**🇺🇸 语言**\n\n要更改语言，请发送 /lang 命令。",
     "INFO_GROUP": "**👥 群组**\n\n将机器人添加到群组并发送命令 `/add`，然后通过命令 `/id` 获取群组成员的 ID。",
     "SHOW_ALL": "📕 显示全部",

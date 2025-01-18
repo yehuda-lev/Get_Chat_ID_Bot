@@ -1,5 +1,5 @@
 {
-    "WELCOME": "🌟 **Welcome, {name}!** 🤠\n\n🪪 In this bot you can get the ID of any **group, channel, user, or bot**.\n\n🚀 **How to Get Started:**\n1️⃣ Use the buttons below to share the chat you want to identify.\n2️⃣ Receive the **ID** of the shared chat instantly.\n\n<blockquote expandable> 💡 **Tip:** Want to explore other ways to get IDs? Simply type /help for more information.\n\n 🇺🇸 **Language:**\n To change the language, send the /lang command\n\n 💖 **Support the Bot:** Found this bot useful? Help keep it running with the /donate command. </blockquote>\n\n📢 **Follow Us:** Get updates, tips, and news by joining @GetChatID_Updates.",
+    "WELCOME": "🌟 **Welcome, {name}!** 🤠\n\n🪪 In this bot you can get the ID of any **group, channel, user, or bot**.\n\n🚀 **How to Get Started:**\n1️⃣ Use the buttons below to share the chat you want to identify.\n2️⃣ Receive the **ID** of the shared chat instantly.\n\n<blockquote expandable> 💡 **Tip:** Want to explore other ways to get IDs? Simply type /help for more information.\n\n \uD83C\uDF10 **Language:**\n The languages supported by the bot are: {langs}\n To change the language, send the /lang command\n\n 💖 **Support the Bot:** Found this bot useful? Help keep it running with the /donate command. </blockquote>\n\n📢 **Follow Us:** Get updates, tips, and news by joining @GetChatID_Updates.",
     "USER": "👤 User",
     "BOT": "🤖 Bot",
     "CHANNEL": "📢 Channel",
@@ -30,7 +30,7 @@
     "INFO_REQUEST_ADMIN": "**👮‍ Request Admin**\n\nSend the command /admin to get all the chats you have name management.",
     "ME": "👤 me",
     "INFO_ME": "**👤 Get your ID**\n\nSend the command /me to get your ID",
-    "LANGUAGE": "🇺🇸 language",
+    "LANGUAGE": "English 🇺🇸",
     "INFO_LANGUAGE": "**🇺🇸 Language**\n\nTo change the language send the /lang command.",
     "INFO_GROUP": "**👥 Group**\n\nAdd the bot to the group with the command `/add` and get the id of the group members with the command `/id`",
     "SHOW_ALL": "📕 show all",

@@ -1,6 +1,5 @@
 import logging
 import random
-from typing import Tuple
 
 from pyrogram import Client, types, enums, errors, ContinuePropagation
 
@@ -22,7 +21,11 @@ async def welcome(_: Client, msg: types.Message):
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
-            name=user.mention
+            name=user.mention(user.full_name),
+            langs=" ".join(
+                manager.get_translation(TranslationKeys.LANGUAGE, _lang).split(" ")[1]
+                for _lang in utils.list_langs
+            ),
         ),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
         message_effect_id=5046509860389126442,  # 🎉
@@ -136,28 +139,15 @@ async def choose_lang(_, msg: types.Message):
             [
                 [
                     types.InlineKeyboardButton(
-                        text="English 🇺🇸", callback_data="lang:en"
-                    ),
-                    types.InlineKeyboardButton(
-                        text="עברית 🇮🇱", callback_data="lang:he"
-                    ),
-                ],
-                [
-                    types.InlineKeyboardButton(
-                        text="Русский 🇷🇺", callback_data="lang:ru"
-                    ),
-                    types.InlineKeyboardButton(
-                        text="العربية 🇸🇦", callback_data="lang:ar"
-                    ),
-                ],
-                [
-                    types.InlineKeyboardButton(
-                        text="中文 🇨🇳", callback_data="lang:zh-hans"
-                    ),
-                    types.InlineKeyboardButton(
-                        text="हिन्दी 🇮🇳", callback_data="lang:hi"
-                    ),
-                ],
+                        text=manager.get_translation(TranslationKeys.LANGUAGE, _lang),
+                        callback_data=f"lang:{_lang}",
+                    )
+                    for _lang in langs
+                ]
+                for langs in [
+                    utils.list_langs[i : i + 2]
+                    for i in range(0, len(utils.list_langs), 2)
+                ]
             ]
         ),
         quote=True,
@@ -171,12 +161,7 @@ async def get_lang(_, query: types.CallbackQuery):
     await repository.update_user(tg_id=tg_id, lang=data_lang)
     await query.edit_message_text(
         text=manager.get_translation(TranslationKeys.DONE, data_lang).format(
-            data_lang.replace("en", "English 🇺🇸")
-            .replace("ru", "Русский 🇷🇺")
-            .replace("he", "עברית 🇮🇱")
-            .replace("ar", "العربية 🇸🇦")
-            .replace("zh-hans", "中文 🇨🇳")
-            .replace("hi", "हिन्दी 🇮🇳")
+            manager.get_translation(TranslationKeys.LANGUAGE, data_lang)
         ),
     )
 
@@ -408,7 +393,7 @@ async def get_story(client: Client, msg: types.Message):
     utils.create_stats(type_stats=StatsType.STORY, lang=msg.from_user.language_code)
 
 
-async def get_id_by_username(text: str, lang: str) -> Tuple[str, int | None]:
+async def get_id_by_username(text: str, lang: str) -> tuple[str, int | None]:
     """
     Get id by username
     Returns:
