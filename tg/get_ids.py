@@ -137,11 +137,6 @@ async def choose_lang(_, msg: types.Message):
                 [
                     types.InlineKeyboardButton(
                         text="English 🇺🇸", callback_data="lang:en"
-                    )
-                ],
-                [
-                    types.InlineKeyboardButton(
-                        text="Русский 🇷🇺", callback_data="lang:ru"
                     ),
                     types.InlineKeyboardButton(
                         text="עברית 🇮🇱", callback_data="lang:he"
@@ -149,10 +144,18 @@ async def choose_lang(_, msg: types.Message):
                 ],
                 [
                     types.InlineKeyboardButton(
-                        text="العربية 🇸🇦", callback_data="lang:ar"
+                        text="Русский 🇷🇺", callback_data="lang:ru"
                     ),
                     types.InlineKeyboardButton(
+                        text="العربية 🇸🇦", callback_data="lang:ar"
+                    ),
+                ],
+                [
+                    types.InlineKeyboardButton(
                         text="中文 🇨🇳", callback_data="lang:zh-hans"
+                    ),
+                    types.InlineKeyboardButton(
+                        text="हिन्दी 🇮🇳", callback_data="lang:hi"
                     ),
                 ],
             ]
@@ -173,6 +176,7 @@ async def get_lang(_, query: types.CallbackQuery):
             .replace("he", "עברית 🇮🇱")
             .replace("ar", "العربية 🇸🇦")
             .replace("zh-hans", "中文 🇨🇳")
+            .replace("hi", "हिन्दी 🇮🇳")
         ),
     )
 
