@@ -30,7 +30,7 @@
     "INFO_REQUEST_ADMIN": "**👮‍ Solicitar administrador**Envíe el comando /admin para obtener todos los chats que tiene administración de nombres.",
     "ME": "👤 yo",
     "INFO_ME": "**👤 Obtén tu ID**Envía el comando /me para obtener tu ID",
-    "LANGUAGE": "Español (España) 🇪🇸",
+    "LANGUAGE": "Español 🇪🇸",
     "INFO_LANGUAGE": "**🇺🇸 Idioma**Para cambiar el idioma envíe el comando /lang.",
     "INFO_GROUP": "**👥 Grupo**Agregue el bot al grupo con el comando `/add` y obtenga la identificación de los miembros del grupo con el comando `/id`",
     "SHOW_ALL": "📕 mostrar todo",

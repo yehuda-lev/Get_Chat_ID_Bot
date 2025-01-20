@@ -78,6 +78,6 @@
     { "Code": "el", "NativeName": "Ελληνικά", "EnglishName": "Greek", "Flag": "🇬🇷" },
     { "Code": "es-419", "NativeName": "Español (Latinoamérica)", "EnglishName": "Spanish (Latin America)", "Flag": "🌎" },
     { "Code": "es-us", "NativeName": "Español (Estados Unidos)", "EnglishName": "Spanish (United States)", "Flag": "🇺🇸" },
-    { "Code": "es", "NativeName": "Español (España)", "EnglishName": "Spanish (Spain)", "Flag": "🇪🇸" },
+    { "Code": "es", "NativeName": "Español", "EnglishName": "Spanish (Spain)", "Flag": "🇪🇸" },
     { "Code": "sv", "NativeName": "Svenska", "EnglishName": "Swedish", "Flag": "🇸🇪" }
 ]
