@@ -1,4 +1,4 @@
-https://github.com/TelegramPlayGround/pyrogram/archive/887f22136dc8c8bfd3d95eeaa30958ede1132eff.zip
+https://github.com/TelegramPlayGround/pyrogram/archive/bc31f57f2250540315c59e5a84a895d3ea59d567.zip
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
 aiosqlite==0.20.0
