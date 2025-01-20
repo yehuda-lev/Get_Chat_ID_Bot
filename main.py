@@ -12,6 +12,7 @@ from data import config, clients
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 logging.getLogger("aiosqlite").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 root_logger = logging.getLogger()
 root_logger.setLevel(level=logging.DEBUG)
