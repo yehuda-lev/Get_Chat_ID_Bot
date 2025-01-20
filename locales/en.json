@@ -8,7 +8,7 @@
     "ID_USERS": "🪪 The ID of: \n{}",
     "ID_CHANNEL_OR_GROUP": "🪪 The ID of {} is: `{}`",
     "ID_CHANNELS_OR_GROUPS": "🪪 The ID of: \n{}",
-    "ID_HIDDEN": "🪪 The ID is hidden. \n{name}",
+    "ID_HIDDEN": "🪪 The ID is hidden. \n{}",
     "CHOICE_LANG": "🤳 Select your language.",
     "DONE": "The selected language is {}",
     "NOT_HAVE_ID": "❌ The contact you sent has no ID",

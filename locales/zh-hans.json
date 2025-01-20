@@ -8,7 +8,7 @@
     "ID_USERS": "🪪 这些用户的 ID 是:\n{}",
     "ID_CHANNEL_OR_GROUP": "🪪 {name} 的 ID 是: `{}`",
     "ID_CHANNELS_OR_GROUPS": "🪪 这些频道或群组的 ID 是:\n{}",
-    "ID_HIDDEN": "🪪 ID 被隐藏。\n{name}",
+    "ID_HIDDEN": "🪪 ID 被隐藏。\n{}",
     "CHOICE_LANG": "🤳 选择您的语言。",
     "DONE": "已选择的语言是 {}",
     "NOT_HAVE_ID": "❌ 您发送的联系人没有 ID",
