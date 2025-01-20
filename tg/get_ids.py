@@ -21,8 +21,8 @@ async def welcome(_: Client, msg: types.Message):
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
-            name=user.mention(user.full_name),
-            langs=" ".join(
+            user.mention(user.full_name),
+            " ".join(
                 manager.get_translation(TranslationKeys.LANGUAGE, _lang).split(" ")[1]
                 for _lang in utils.list_langs
             ),
@@ -328,8 +328,8 @@ async def get_request_peer(client: Client, msg: types.Message):
             text = manager.get_translation(
                 TranslationKeys.BOT_ADDED_TO_GROUP, lang
             ).format(
-                group_name=f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
-                group_id=chat.id,
+                f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
+                chat.id,
             )
             reply_markup = types.ReplyKeyboardRemove()
 
