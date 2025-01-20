@@ -225,7 +225,7 @@ async def get_forward(client: Client, msg: types.Message):
     elif isinstance(forward, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
         text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
-            name=forward.sender_user_name
+            forward.sender_user_name
         )
     else:
         return
@@ -625,7 +625,7 @@ async def get_id_by_reply_to_another_chat(
         name = reply_to.sender_user_name
         if lang:
             text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
-                name=name
+                name
             )
 
     if lang:
