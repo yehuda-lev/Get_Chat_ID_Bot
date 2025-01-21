@@ -51,7 +51,7 @@ Clone the repository to your local machine. Then, build the Docker image using t
 > If you want to run the bot in the background, you can use the `-d` flag:
 
 ```bash
-docker compose up
+    docker compose up
 ```
 
 
