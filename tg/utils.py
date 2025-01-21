@@ -19,7 +19,7 @@ def create_stats(type_stats: tables.StatsType, lang: str):
     )
 
 
-list_langs = ["en", "he", "ar", "ru", "zh-hans", "hi"]
+list_langs = ["en", "he", "ar", "ru", "zh-hans", "hi", "es", "fr"]
 
 
 async def set_bot_info(client: Client, langs: list[str]):

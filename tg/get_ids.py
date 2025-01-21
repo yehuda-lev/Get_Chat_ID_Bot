@@ -21,8 +21,8 @@ async def welcome(_: Client, msg: types.Message):
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
-            name=user.mention(user.full_name),
-            langs=" ".join(
+            user.mention(user.full_name),
+            " ".join(
                 manager.get_translation(TranslationKeys.LANGUAGE, _lang).split(" ")[1]
                 for _lang in utils.list_langs
             ),
@@ -225,7 +225,7 @@ async def get_forward(client: Client, msg: types.Message):
     elif isinstance(forward, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
         text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
-            name=forward.sender_user_name
+            forward.sender_user_name
         )
     else:
         return
@@ -328,8 +328,8 @@ async def get_request_peer(client: Client, msg: types.Message):
             text = manager.get_translation(
                 TranslationKeys.BOT_ADDED_TO_GROUP, lang
             ).format(
-                group_name=f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
-                group_id=chat.id,
+                f"[{chat.title}](t.me/c/{str(chat.id).replace('-100', '')}/1000000000)",
+                chat.id,
             )
             reply_markup = types.ReplyKeyboardRemove()
 
@@ -624,9 +624,7 @@ async def get_id_by_reply_to_another_chat(
         # The user hides the forwarding of a message from him or Deleted Account
         name = reply_to.sender_user_name
         if lang:
-            text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
-                name=name
-            )
+            text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(name)
 
     if lang:
         return text
