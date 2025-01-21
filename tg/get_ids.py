@@ -624,9 +624,7 @@ async def get_id_by_reply_to_another_chat(
         # The user hides the forwarding of a message from him or Deleted Account
         name = reply_to.sender_user_name
         if lang:
-            text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
-                name
-            )
+            text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(name)
 
     if lang:
         return text

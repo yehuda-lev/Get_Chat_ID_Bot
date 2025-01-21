@@ -17,7 +17,9 @@ if len(sys.argv) < 2:
 
 lang_code = sys.argv[1].lower()
 
-with open("./languages.json", "r", encoding="utf-8") as f:
+with open(
+    os.path.join(os.path.dirname(__file__), "languages.json"), "r", encoding="utf-8"
+) as f:
     langs = json.load(f)
     filtered = [lang for lang in langs if lang["Code"].lower() == lang_code]
 
@@ -66,7 +68,9 @@ async def translate(string: str) -> str:
 
 
 async def main():
-    with open("./en.json", "r", encoding="utf-8") as f:
+    with open(
+        os.path.join(os.path.dirname(__file__), "en.json"), "r", encoding="utf-8"
+    ) as f:
         original: dict = json.loads(f.read())
 
     to_write = {}
@@ -85,12 +89,16 @@ async def main():
             to_write[k] = await translate(v)
         print(f"[{k}] Translated Successfully to [{lang_data['EnglishName']}].")
 
-    with open(f"./{lang_code}.json", "w+", encoding="utf-8") as f:
+    with open(
+        os.path.join(os.path.dirname(__file__), f"{lang_code}.json"),
+        "w+",
+        encoding="utf-8",
+    ) as f:
         f.write(json.dumps(to_write, indent=4, ensure_ascii=False))
 
     print(f"Generated successfully to [./{lang_code}.json]")
 
-    with open("../tg/utils.py", "r") as file:
+    with open(os.path.join(os.path.dirname(__file__), "../tg/utils.py"), "r") as file:
         lines = file.readlines()
 
     for i, line in enumerate(lines):
@@ -110,7 +118,7 @@ async def main():
             break
 
     # Write the updated content back to the file
-    with open("../tg/utils.py", "w") as file:
+    with open(os.path.join(os.path.dirname(__file__), "../tg/utils.py"), "w") as file:
         file.writelines(lines)
 
     print(f"Added '{lang_code}' to the list and updated tg/utils.py.")
