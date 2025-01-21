@@ -5,8 +5,9 @@ Thank you for considering contributing to this project! We appreciate your effor
 ---
 
 ## 🚀 Quick Links
-- [Contributing a New Language](#contributing-a-new-language)
-- [Contributing New Features](#contributing-new-features)
+- [Contributing a New Language](#-contributing-a-new-language)
+- [Contributing New Features](#-contributing-new-features)
+- [Getting Help](#-getting-help)
 
 ---
 
