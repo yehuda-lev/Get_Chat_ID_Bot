@@ -2,6 +2,9 @@ import json
 import sys
 import asyncio
 import os
+import logging
+from pathlib import Path
+from argparse import ArgumentParser
 
 try:
     from trengine import AsyncEngine
@@ -9,119 +12,116 @@ except ImportError:
     print(
         "Module 'trengine' not found. Please install it using 'pip install trengine' and try again."
     )
+    sys.exit(1)
 
-if len(sys.argv) < 2:
-    raise ValueError(
-        "Usage: python generator.py <iso_code> | e.g: python generator.py es"
+logging.basicConfig(level=logging.INFO)
+
+
+def parse_args():
+    parser = ArgumentParser(
+        description="Generate translations for a given language code."
     )
+    parser.add_argument("iso_code", help="ISO code of the language (e.g., 'es')")
+    return parser.parse_args()
 
-lang_code = sys.argv[1].lower()
 
-with open(
-    os.path.join(os.path.dirname(__file__), "languages.json"), "r", encoding="utf-8"
-) as f:
-    langs = json.load(f)
+def load_languages():
+    with open(Path(__file__).parent / "languages.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def get_language_data(lang_code, langs):
     filtered = [lang for lang in langs if lang["Code"].lower() == lang_code]
-
     if not filtered:
         raise ValueError(f"Language code: {lang_code} not found.")
-
-    lang_data = filtered[0]
-
-translator = AsyncEngine()
+    return filtered[0]
 
 
-async def translate(string: str) -> str:
+async def translate(translator, string, lang_code):
     engines = [translator.google, translator.hozory, translator.tdict, translator.tr]
-
     text, source_lang, to_lang = string, "en", lang_code
 
     for engine in engines:
         try:
-            if engine == translator.google:
-                args = {
-                    "text": text,
-                    "to_language": to_lang,
-                    "source_language": source_lang,
-                }
-            elif engine == translator.hozory:
+            args = {
+                "text": text,
+                "to_language": to_lang,
+                "source_language": source_lang,
+            }
+            if engine == translator.hozory:
                 args = {"text": text, "target": to_lang}
-            elif engine == translator.tdict:
-                args = {"text": text, "to_language": to_lang}
-            else:
-                args = {
-                    "text": text,
-                    "translated_lang": to_lang,
-                    "source_lang": source_lang,
-                }
-
             result = await engine.translate(**args)
-
-            if isinstance(result, str):
-                return result
-            else:
-                return result.translated_text
+            return result if isinstance(result, str) else result.translated_text
         except Exception as e:
-            print(f"{e.__class__.__name__}: Retrying with other translator.")
-
+            logging.warning(f"{e.__class__.__name__}: Retrying with other translator.")
     raise RuntimeError("All translation engines failed.")
 
 
 async def main():
-    with open(
-        os.path.join(os.path.dirname(__file__), "en.json"), "r", encoding="utf-8"
-    ) as f:
-        original: dict = json.loads(f.read())
+    args = parse_args()
+    lang_code = args.iso_code.lower()
+    langs = load_languages()
+    lang_data = get_language_data(lang_code, langs)
+
+    translator = AsyncEngine()
+
+    with open(Path(__file__).parent / "en.json", "r", encoding="utf-8") as f:
+        original = json.load(f)
 
     to_write = {}
 
-    for k, v in original.items():
+    async def process_translation(k, v):
         if k == "LANGUAGE":
-            v = "{} {}".format(lang_data["NativeName"], lang_data["Flag"])
-
-            to_write[k] = v
+            return "{} {}".format(lang_data["NativeName"], lang_data["Flag"])
         elif k == "LINK_DEV":
-            to_write[k] = v
+            return v
         elif k == "LANG_COMMAND":
-            v = v.replace("🇮🇱", lang_data["Flag"])
+            return v.replace("🇮🇱", lang_data["Flag"])
+        return (
+            "\n".join(
+                [
+                    await translate(translator, line, lang_code) if line else line
+                    for line in v.splitlines()
+                ]
+            )
+            if "\n" in v
+            else await translate(translator, v, lang_code)
+        )
 
-        if k not in to_write:
-            to_write[k] = await translate(v)
-        print(f"[{k}] Translated Successfully to [{lang_data['EnglishName']}].")
+    tasks = [process_translation(k, v) for k, v in original.items()]
+    results = await asyncio.gather(*tasks)
 
-    with open(
-        os.path.join(os.path.dirname(__file__), f"{lang_code}.json"),
-        "w+",
-        encoding="utf-8",
-    ) as f:
-        f.write(json.dumps(to_write, indent=4, ensure_ascii=False))
+    print(results)
 
-    print(f"Generated successfully to [./{lang_code}.json]")
+    for (k, _), result in zip(original.items(), results):
+        to_write[k] = result
+        logging.info(f"[{k}] Translated Successfully to [{lang_data['EnglishName']}].")
 
-    with open(os.path.join(os.path.dirname(__file__), "../tg/utils.py"), "r") as file:
+    with open(Path(__file__).parent / f"{lang_code}.json", "w", encoding="utf-8") as f:
+        json.dump(to_write, f, indent=4, ensure_ascii=False)
+
+    logging.info(f"Generated successfully to [./{lang_code}.json]")
+
+    utils_path = Path(__file__).parent.parent / "tg" / "utils.py"
+    with open(utils_path, "r") as file:
         lines = file.readlines()
 
     for i, line in enumerate(lines):
         if line.strip().startswith("list_langs = ["):
-            # Extract the existing list
             start = line.index("[")
             end = line.index("]")
             existing_list = line[start + 1 : end].strip()
-
-            # Split the elements and add the new language if not present
             langs = [lang.strip().strip('"') for lang in existing_list.split(",")]
-            langs.append(lang_code)
-
-            # Rebuild the line
+            if lang_code not in langs:
+                langs.append(lang_code)
             updated_list = ", ".join(f'"{lang}"' for lang in langs)
             lines[i] = f"list_langs = [{updated_list}]\n"
             break
 
-    # Write the updated content back to the file
-    with open(os.path.join(os.path.dirname(__file__), "../tg/utils.py"), "w") as file:
+    with open(utils_path, "w") as file:
         file.writelines(lines)
 
-    print(f"Added '{lang_code}' to the list and updated tg/utils.py.")
+    logging.info(f"Added '{lang_code}' to the list and updated tg/utils.py.")
     os.system("ruff format")
 
 
