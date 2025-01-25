@@ -19,12 +19,21 @@ def create_stats(type_stats: tables.StatsType, lang: str):
     )
 
 
-list_langs = ["en", "he", "ar", "ru", "zh-hans", "hi", "es", "fr"]
+list_langs = [
+    "en",
+    "he",
+    "ar",
+    "ru",
+    "zh-hans",
+    "hi",
+    # "es",  # todo add "\n" in the texts
+    # "fr", # todo add "\n" in the texts
+]
 
 
 async def set_bot_info(client: Client, langs: list[str]):
     """
-    Set name and bio, description and commands for the bot
+    Set name, bio and description for the bot
     """
     for text_lang in langs:
         if text_lang == "en":
@@ -46,6 +55,17 @@ async def set_bot_info(client: Client, langs: list[str]):
         )
 
         await asyncio.sleep(2)
+
+
+async def set_bot_commands(client: Client, langs: list[str]):
+    """
+    Set commands for the bot
+    """
+    for text_lang in langs:
+        if text_lang == "en":
+            lang = ""  # default language
+        else:
+            lang = text_lang
 
         await client.set_bot_commands(
             commands=[

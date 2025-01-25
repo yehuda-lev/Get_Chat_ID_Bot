@@ -60,7 +60,7 @@ code_result = (
 async def python_exec(client: Client, msg: types.Message):
     if msg.from_user and msg.from_user.id != client.me.id:  # if send command to bot
         msg_to_edit = await msg.reply_text(
-            f"**✨ Executing...**",
+            "**✨ Executing...**",
             quote=True,
         )
     else:
@@ -95,7 +95,7 @@ async def python_exec(client: Client, msg: types.Message):
     # fix character \u00A0
     code = code.replace("\u00a0", "").strip()
 
-    await msg_to_edit.edit_text(f"**🔃 Executing...**")
+    await msg_to_edit.edit_text("**🔃 Executing...**")
 
     try:
         start_time = time.perf_counter()
@@ -132,7 +132,7 @@ async def python_exec(client: Client, msg: types.Message):
                 language="Python",
                 pre_language="python",
                 code=html.escape(code),
-                result=f"**❌ Timeout Error!**",
+                result="**❌ Timeout Error!**",
             ),
             link_preview_options=types.LinkPreviewOptions(is_disabled=True),
         )
