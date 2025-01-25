@@ -65,14 +65,14 @@
     "BOT_ABOUT": "🪪 קבל את המזהה של כל צ'אט במהירות!\n\n📣 עדכונים על הבוט - @GetChatID_Updates",
     "BOT_DESCRIPTION": "🪪 קבל במהירות את המזהה של כל קבוצה, ערוץ, משתמש או בוט.\n\n✨ שתף צ'אט בקלות, בצע חיפושים אינליין, העבר הודעות ועבוד עם קבוצות ובוטים עסקיים.\n\n💖 הבוט בקוד פתוח - https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n📣 עדכונים על הבוט - @GetChatID_Updates",
 
-    "START_COMMAND": "הפעל את הבוט ✅ | Start the bot ✅",
-    "LANG_COMMAND": "שנה את השפה 🇺🇸/🇮🇱 | Change the language 🇺🇸/🇮🇱",
-    "HELP_COMMAND": "קבל עזרה ℹ️ | Get help ℹ️",
-    "ME_COMMAND": "קבל את המזהה שלך 👤 | Get your ID 👤",
-    "ADD_COMMAND": "הוסף את הבוט לקבוצה 👥 | Add the bot to the group 👥",
-    "ADMIN_COMMAND": "קבל את המזהה של הקבוצות שאתה מנהל 👮 | Get the ID of the groups you manage 👮",
-    "ABOUT_COMMAND": "אודות הבוט ℹ️ | About the bot ℹ️",
-    "LINK_COMMAND": "קבל את הקישור לצ'אט 🔗 | Get the link to the chat 🔗",
-    "SEARCH_COMMAND": "חפש לפי שם משתמש 🔍 | Search by username 🔍",
-    "DONATE_COMMAND": "תמוך בבוט 🙏 | Support the bot 🙏"
+    "START_COMMAND": "הפעל את הבוט | Start the bot ✅",
+    "LANG_COMMAND": "שנה את השפה | Change the language 🇺🇸/🇮🇱",
+    "HELP_COMMAND": "קבל עזרה | Get help ℹ️",
+    "ME_COMMAND": "קבל את המזהה שלך | Get your ID 👤",
+    "ADD_COMMAND": "הוסף את הבוט לקבוצה | Add the bot to the group 👥",
+    "ADMIN_COMMAND": "קבל את המזהה של הקבוצות שאתה מנהל | Get the ID of the groups you manage 👮",
+    "ABOUT_COMMAND": "אודות הבוט | About the bot ℹ️",
+    "LINK_COMMAND": "קבל את הקישור לצ'אט | Get the link to the chat 🔗",
+    "SEARCH_COMMAND": "חפש לפי שם משתמש | Search by username 🔍",
+    "DONATE_COMMAND": "תמוך בבוט | Support the bot 🙏"
 }

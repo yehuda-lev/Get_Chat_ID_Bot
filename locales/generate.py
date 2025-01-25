@@ -37,7 +37,7 @@ def get_language_data(lang_code, langs):
     return filtered[0]
 
 
-async def translate(translator, string, lang_code):
+async def translate(translator: AsyncEngine, string: str, lang_code: str):
     engines = [translator.google, translator.hozory, translator.tdict, translator.tr]
     text, source_lang, to_lang = string, "en", lang_code
 
@@ -91,7 +91,7 @@ async def main():
     tasks = [process_translation(k, v) for k, v in original.items()]
     results = await asyncio.gather(*tasks)
 
-    print(results)
+    logging.info(results)
 
     for (k, _), result in zip(original.items(), results):
         to_write[k] = result
