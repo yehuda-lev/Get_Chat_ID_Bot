@@ -20,6 +20,7 @@
     "INFO_FORWARD": "**⏩ 转发消息**\n\n将任意消息转发到机器人（带引用转发），机器人将返回消息发送源的聊天 ID。",
     "STORY": "📝 动态",
     "INFO_STORY": "**📝 动态**\n\n分享一个动态，获取其 ID。",
+    "ASK_INLINE_QUERY": "🔍单击下面的按钮以使用用户名搜索聊天ID\n您可以将用户名直接发送到机器人。",
     "SEARCH_USERNAME": "🔍 用户名",
     "INFO_SEARCH_USERNAME": "**🔍 按用户名搜索**\n\n发送用户名到机器人，机器人将返回与该用户名对应的聊天 ID。",
     "REPLY_TO_ANOTHER_CHAT": "↩️ 回复",
@@ -60,9 +61,11 @@
     "LINK_TO_CHAT": "🔗 聊天链接 `{}`",
     "BUTTON_GET_LINK": "🔗 获取聊天链接",
     "FORMAT_LINK": "发送命令与聊天 ID 一起\n例如:\n> `/link 777000`",
-    "BOT_NAME": "获取聊天 ID",
+
+    "BOT_NAME": "获取聊天 ID 🪪 | Get Chat ID",
     "BOT_ABOUT": "🪪 快速获取任何聊天的 ID！\n\n📢 频道更新 - @GetChatID_Updates",
     "BOT_DESCRIPTION": "快速获取任何群组、频道、用户或机器人的 ID 🪪\n\n轻松分享聊天、执行内联搜索、转发消息，以及管理群组和业务机器人。✨\n\n机器人是开源的 - https://github.com/yehuda-lev/Get_Chat_ID_Bot 🖤\n\n频道更新 - @GetChatID_Updates 📢",
+
     "START_COMMAND": "启动机器人 ✅",
     "LANG_COMMAND": "更改语言 🇺🇸/🇮🇱",
     "HELP_COMMAND": "获取帮助 ℹ️",
