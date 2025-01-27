@@ -26,8 +26,8 @@ list_langs = [
     "ru",
     "zh-hans",
     "hi",
-    # "es",  # todo add "\n" in the texts
-    # "fr", # todo add "\n" in the texts
+    "es",
+    "fr",
 ]
 
 
