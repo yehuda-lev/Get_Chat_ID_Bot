@@ -56,6 +56,7 @@ class StatsType(Enum):
     BUSINESS_SETTINGS = "business_settings"
     ME = "me"
     LINK = "link"
+    ASK_INLINE_QUERY = "ask_inline_query"
 
 
 class BaseTable(DeclarativeBase):

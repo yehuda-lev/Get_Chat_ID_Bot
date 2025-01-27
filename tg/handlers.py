@@ -106,6 +106,14 @@ HANDLERS = [
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
+    handlers.MessageHandler(
+        get_ids.ask_inline_query,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command("search")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
     # other
     handlers.MessageHandler(
         get_ids.get_username_by_message,

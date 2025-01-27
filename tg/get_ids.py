@@ -460,6 +460,31 @@ async def get_username_by_message(client: Client, msg: types.Message):
     )
 
 
+async def ask_inline_query(_: Client, msg: types.Message):
+    """
+    Ask inline query
+    """
+    tg_id = msg.from_user.id
+    lang = (await repository.get_user(tg_id=tg_id)).lang
+
+    await msg.reply(
+        text=manager.get_translation(TranslationKeys.ASK_INLINE_QUERY, lang),
+        quote=True,
+        reply_markup=types.InlineKeyboardMarkup(
+            [
+                [
+                    types.InlineKeyboardButton(
+                        text="🔍 📥", switch_inline_query_current_chat=""
+                    )
+                ],
+                [types.InlineKeyboardButton(text="🔍 📤", switch_inline_query="")],
+            ],
+        ),
+    )
+
+    utils.create_stats(type_stats=StatsType.ASK_INLINE_QUERY, lang=msg.from_user.language_code)
+
+
 async def get_username_by_inline_query(client: Client, query: types.InlineQuery):
     """
     Get id by inline query
