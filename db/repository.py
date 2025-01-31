@@ -156,32 +156,51 @@ async def get_group(*, group_id: int) -> Group:
 # stats
 
 
-async def get_all_users_count() -> int:
+async def get_users_count_by_filters(
+    *,
+    active: bool = None,
+    admin: bool = None,
+    business: bool = None,
+    language_code: str | None = None,
+    created_start: datetime.datetime | None = None,
+    created_end: datetime.datetime | None = None,
+) -> int:
     """
-    Get the total number of users.
+    Get the number of users based on filters.
     """
     async with get_session() as session:
-        return await session.scalar(select(func.count(User.id)))
-
-
-async def get_users_count_active() -> int:
-    """
-    Get the total number of active users.
-    """
-    async with get_session() as session:
-        return await session.scalar(
-            select(func.count(User.id)).where(User.active == True)  # noqa
+        query = (
+            select(func.count(User.id))
+            .where((User.active == active) if active else True)
+            .where((User.admin == admin) if admin else True)
+            .where((User.business_id != None) if business else True)
+            .where((User.language_code == language_code) if language_code else True)
+            .where((User.created_at >= created_start) if created_start else True)
+            .where((User.created_at <= created_end) if created_end else True)
         )
+        return await session.scalar(query)
 
 
-async def get_users_business_count() -> int:
+async def get_groups_count_by_filters(
+    *,
+    active: bool = None,
+    created_start: datetime.datetime | None = None,
+    created_end: datetime.datetime | None = None,
+) -> int:
     """
-    Get the total number of business users.
+    Get the number of groups based on filters.
     """
     async with get_session() as session:
-        return await session.scalar(
-            select(func.count(User.id)).where(User.business_id != None)  # noqa
+        query = (
+            select(func.count(Group.id))
+            .where((Group.active == active) if active else True)
+            .where((Group.created_at >= created_start) if created_start else True)
+            .where((Group.created_at <= created_end) if created_end else True)
         )
+        return await session.scalar(query)
+
+
+# data
 
 
 async def get_all_users_active() -> list[User]:
@@ -192,24 +211,6 @@ async def get_all_users_active() -> list[User]:
         result = await session.execute(select(User).where(User.active == True))  # noqa
         # TODO not working
         return result.scalars().all()
-
-
-async def get_all_groups_count() -> int:
-    """
-    Get the total number of groups.
-    """
-    async with get_session() as session:
-        return await session.scalar(select(func.count(Group.id)))
-
-
-async def get_groups_count_active() -> int:
-    """
-    Get the total number of active groups.
-    """
-    async with get_session() as session:
-        return await session.scalar(
-            select(func.count(Group.id)).where(Group.active == True)  # noqa
-        )
 
 
 async def get_all_groups_active() -> list[Group]:

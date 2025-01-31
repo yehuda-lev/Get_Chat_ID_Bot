@@ -8,6 +8,7 @@ from tg import (
     help,
     payments,
     code_runner,
+    stats,
 )
 
 _logger = logging.getLogger(__name__)
@@ -253,7 +254,7 @@ HANDLERS = [
         ),
     ),
     handlers.MessageHandler(
-        admin_command.stats,
+        stats.stats,
         filters.private
         & ~filters.tg_business
         & filters.command("stats")
