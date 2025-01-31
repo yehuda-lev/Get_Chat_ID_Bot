@@ -10,8 +10,8 @@ _logger = logging.getLogger(__name__)
 
 
 async def stats_of_the_bot(
-    start_date: datetime.date | None = None,
-    end_date: datetime.date | None = None,
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
     language_code: str | None = None,
 ) -> str:
     """
@@ -52,3 +52,45 @@ async def stats_of_the_bot(
         f"פעילות: {groups_active}\n"
         f"לא פעילות: {groups - groups_active}\n"
     )
+
+
+async def data_stats_of_the_bot(
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
+    language_code: str | None = None,
+) -> str:
+    """
+    Get the data stats of the bot
+    """
+
+    stats_data = {}
+    top_stats_data: dict[str, list[tuple[str, int]]] = {}
+    for type_stats in repository.StatsType:
+        stats = await repository.get_stats_count(
+            type_stats=type_stats,
+            language_code=language_code,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        stats_data[type_stats.name] = stats
+
+        if language_code is None:
+            top_stats = await repository.get_stats_top_langs(
+                type_stats=type_stats,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            top_stats_data[type_stats.name] = top_stats
+
+    text = "**סטטיסטיקות על המידע של הבוט**\n"
+    for stats, count in stats_data.items():
+        text += f"**{stats}:** {count}\n"
+
+    if top_stats_data:
+        text += "\n**כמות השפות המובילות:**\n"
+        for stats, value in top_stats_data.items():
+            text += f"**{stats}:**\n"
+            for lang, count in value:
+                text += f"    {lang}: {count}\n"
+
+    return text

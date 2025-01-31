@@ -288,8 +288,8 @@ async def get_stats_count(
     *,
     type_stats: StatsType,
     language_code: str | None = None,
-    date_start: datetime.datetime | None = None,
-    date_end: datetime.datetime | None = None,
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
 ) -> int:
     """
     Get the number of statistics records.
@@ -299,8 +299,8 @@ async def get_stats_count(
             select(func.count(Stats.id))
             .where(Stats.type == type_stats.value)
             .where((Stats.lang == language_code) if language_code else True)
-            .where((Stats.created_at >= date_start) if date_start else True)
-            .where((Stats.created_at <= date_end) if date_end else True)
+            .where((Stats.created_at >= start_date) if start_date else True)
+            .where((Stats.created_at <= end_date) if end_date else True)
         )
         return await session.scalar(query)
 
@@ -309,8 +309,8 @@ async def get_stats_top_langs(
     *,
     type_stats: StatsType,
     limit: int = 5,
-    date_start: datetime.datetime | None = None,
-    date_end: datetime.datetime | None = None,
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
 ) -> list[tuple[str, int]]:
     """
     Get the top languages for a specific type of statistics.
@@ -319,8 +319,8 @@ async def get_stats_top_langs(
         query = (
             select(Stats.lang, func.count(Stats.id))
             .where(Stats.type == type_stats.value)
-            .where((Stats.created_at >= date_start) if date_start else True)
-            .where((Stats.created_at <= date_end) if date_end else True)
+            .where((Stats.created_at >= start_date) if start_date else True)
+            .where((Stats.created_at <= end_date) if end_date else True)
             .group_by(Stats.lang)
             .order_by(func.count(Stats.id).desc())
             .limit(limit)
