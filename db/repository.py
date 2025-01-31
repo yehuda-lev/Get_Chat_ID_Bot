@@ -156,7 +156,7 @@ async def get_group(*, group_id: int) -> Group:
 # stats
 
 
-async def get_users_count_by_filters(
+async def get_users_count(
     *,
     active: bool = None,
     admin: bool = None,
@@ -181,7 +181,7 @@ async def get_users_count_by_filters(
         return await session.scalar(query)
 
 
-async def get_groups_count_by_filters(
+async def get_groups_count(
     *,
     active: bool = None,
     created_start: datetime.datetime | None = None,
