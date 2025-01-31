@@ -253,8 +253,9 @@ HANDLERS = [
             & ~filters.forwarded
         ),
     ),
+    # stats
     handlers.MessageHandler(
-        stats.stats,
+        stats.ask_stats_time,
         filters.private
         & ~filters.tg_business
         & filters.command("stats")
@@ -262,6 +263,21 @@ HANDLERS = [
         & tg_filters.create_user()
         & tg_filters.is_admin(),
     ),
+    handlers.CallbackQueryHandler(
+        stats.ask_stats_language,
+        filters.create(lambda _, __, msg: msg.data.startswith("ask_stats"))
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user()
+        & tg_filters.is_admin(),
+    ),
+    handlers.CallbackQueryHandler(
+        stats.get_stats,
+        filters.create(lambda _, __, msg: msg.data.startswith("get_stats"))
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user()
+        & tg_filters.is_admin(),
+    ),
+    # broadcast
     handlers.MessageHandler(
         admin_command.ask_for_who_to_send,
         filters.private
