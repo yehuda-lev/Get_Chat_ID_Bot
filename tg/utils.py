@@ -15,7 +15,7 @@ def create_stats(type_stats: tables.StatsType, lang: str):
     """Create stats"""
 
     asyncio.create_task(
-        repository.create_stats(type_stats=type_stats, lang=lang),
+        repository.create_stats(type_stats=type_stats, language_code=lang),
     )
 
 
