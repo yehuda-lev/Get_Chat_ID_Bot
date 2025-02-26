@@ -4,7 +4,7 @@ import datetime
 import logging
 from sqlalchemy import exists, func, select, update
 
-from db.tables import get_session, User, Group, MessageSent, StatsType, Stats
+from db.tables import get_session, User, Group, MessageSent, StatsType, Stats, FeatureEnum, Feature
 from data import cache_memory
 
 
@@ -83,6 +83,48 @@ async def get_user(*, tg_id: int) -> User:
     """
     async with get_session() as session:
         return await session.scalar(select(User).where(User.tg_id == tg_id))
+
+
+# feature
+
+
+async def create_feature(*, user_id: int, type: FeatureEnum):
+    """
+    Create feature
+    :param user_id: the user id
+    :param type: the type of feature
+    """
+
+    _logger.debug(f"Create feature: {user_id=}, {type=}")
+
+    # delete cache
+    cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=user_id))
+
+    async with get_session() as session:
+        user = await get_user(tg_id=user_id)
+        feature = Feature(user=user, type=type.value)
+        session.add(feature)
+        await session.commit()
+
+
+async def update_feature(*, user_id: int, type: FeatureEnum, **kwargs):
+    """
+    Update feature
+    :param user_id: the user id
+    :param type: the type of feature
+    :param kwargs: the data to update
+    """
+
+    _logger.debug(f"Update feature: {user_id=}, {type=}, {kwargs=}")
+
+    # delete cache
+    cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=user_id))
+
+    async with get_session() as session:
+        await session.execute(
+            update(Feature).where(Feature.user_id == user_id).where(Feature.type == type).values(**kwargs)
+        )
+        await session.commit()
 
 
 # group

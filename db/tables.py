@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import enum
 import logging
 import datetime
 from contextlib import asynccontextmanager
-from enum import Enum
 
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.ext.asyncio import (
@@ -40,7 +40,7 @@ async def get_session() -> AsyncSession:
         yield session
 
 
-class StatsType(Enum):
+class StatsType(enum.Enum):
     """Type of stats"""
 
     BUTTON_SHARE_CHAT = "button_share_chat"
@@ -57,6 +57,13 @@ class StatsType(Enum):
     ME = "me"
     LINK = "link"
     ASK_INLINE_QUERY = "ask_inline_query"
+
+
+class FeatureEnum(enum.Enum):
+    """Feature enum"""
+
+    COPY_BUTTON = "COPY_BUTTON"
+    MULTIPLE_CHATS = "MULTIPLE_CHATS"
 
 
 class BaseTable(DeclarativeBase):
@@ -85,6 +92,31 @@ class User(BaseTable):
     active: Mapped[bool] = mapped_column(default=True)
     admin: Mapped[bool] = mapped_column(default=False)
     groups: Mapped[list[Group]] = relationship(back_populates="added_by", lazy="joined")
+    features: Mapped[list[Feature]] = relationship(back_populates="user", lazy="joined")
+
+
+    def has_feature(self, feature: FeatureEnum) -> bool:
+        """Check if user has the feature"""
+        return any(f.type == feature.value and f.active for f in self.features)
+
+
+
+class Feature(BaseTable):
+    """Feature details"""
+
+    __tablename__ = "feature"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    type: Mapped[FeatureEnum] = mapped_column(String(32))
+    active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.datetime.now, onupdate=datetime.datetime.now
+    )
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user: Mapped[User] = relationship("User", back_populates="features")
+
 
 
 class Group(BaseTable):
