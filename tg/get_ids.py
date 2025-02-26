@@ -180,12 +180,13 @@ def get_reply_markup(client: Client, by: str) -> types.InlineKeyboardMarkup:
 
 
 def get_button_link_to_chat(
-    chat_id: int, lang: str, client: Client
+    chat_id: int, lang: str, client: Client, inline_buttons: list[list[types.InlineKeyboardButton] | None] = None
 ) -> types.InlineKeyboardMarkup | None:
     if chat_id is None:
         return chat_id
     return types.InlineKeyboardMarkup(
         [
+            *(inline_buttons if inline_buttons else []),
             [
                 types.InlineKeyboardButton(
                     text=manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang),
@@ -294,7 +295,9 @@ async def get_contact(client: Client, msg: types.Message):
 async def get_request_peer(client: Client, msg: types.Message):
     """ "Get request peer"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
+    inline_keyboard: list[list[types.InlineKeyboardButton] | None] = []
     reply_markup = None
     chat_id = None
 
@@ -302,11 +305,23 @@ async def get_request_peer(client: Client, msg: types.Message):
         users = msg.users_shared.users
         if len(users) == 1:
             user = users[0]
-            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                user.full_name if user.full_name else "",
-                user.id,
-            )
+            name = user.full_name if user.full_name else ""
             chat_id = user.id
+
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+                name, chat_id,
+            )
+
+            # button copy chat id
+            if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
+                inline_keyboard.append(
+                    [
+                        types.InlineKeyboardButton(
+                            text=name,
+                            copy_text=types.CopyTextButton(text=str(chat_id)),
+                        )
+                    ]
+                )
 
         else:  # support of multiple users
             text = manager.get_translation(TranslationKeys.ID_USERS, lang).format(
@@ -315,6 +330,18 @@ async def get_request_peer(client: Client, msg: types.Message):
                     for user in users
                 )
             )
+
+            # button copy chat id
+            if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
+                inline_keyboard.append(
+                    [
+                        types.InlineKeyboardButton(
+                            text=user.full_name if user.full_name else "",
+                            copy_text=types.CopyTextButton(text=str(user.id)),
+                        )
+                        for user in users
+                    ]
+                )
     elif msg.chat_shared:
         request_chat = msg.chat_shared
         chats = request_chat.chats
@@ -345,21 +372,46 @@ async def get_request_peer(client: Client, msg: types.Message):
         else:
             if len(chats) == 1:
                 chat = chats[0]
+                name = chat.title
+                chat_id = chat.id
                 text = manager.get_translation(
                     TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-                ).format(chat.title, chat.id)
-                chat_id = chat.id
+                ).format(name, chat_id)
+
+                # button copy chat id
+                if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
+                    inline_keyboard.append(
+                        [
+                            types.InlineKeyboardButton(
+                                text=name,
+                                copy_text=types.CopyTextButton(text=str(chat_id)),
+                            )
+                        ]
+                    )
+
             else:  # support of multiple chats
                 text = manager.get_translation(
                     TranslationKeys.ID_CHANNELS_OR_GROUPS, lang
                 ).format("".join(f"\n{chat.title} • `{chat.id}`" for chat in chats))
+
+                # button copy chat id
+                if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
+                    inline_keyboard.append(
+                        [
+                            types.InlineKeyboardButton(
+                                text=chat.title,
+                                copy_text=types.CopyTextButton(text=str(chat.id)),
+                            )
+                            for chat in chats
+                        ]
+                    )
     else:
         return
 
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=reply_markup or get_button_link_to_chat(chat_id, lang, client),
+        reply_markup=reply_markup or get_button_link_to_chat(chat_id, lang, client, inline_keyboard),
     )
 
     utils.create_stats(
