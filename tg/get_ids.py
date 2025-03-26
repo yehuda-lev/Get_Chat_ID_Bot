@@ -934,7 +934,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
         chat_id = chat_id.replace(" ", "")
         is_group = False
         link_android = f"tg://openmessage?user_id={chat_id}"
-        link_ios = f"tg://user?id={chat_id}"
+        link_ios = f"https://t.me/@id{chat_id}"
 
     if is_group:
         buttons = [
