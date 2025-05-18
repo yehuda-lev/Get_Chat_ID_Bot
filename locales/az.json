@@ -57,7 +57,7 @@
   "SUPPORT_ME": "Məni dəstəklə 🙏",
   "TEXT_SUPPORT_ME": "{} üzərindən dəstək ol ⭐️",
   "PAYMENT_SUCCESS": "🎉 Təşəkkür edirəm! 🎉\n{} ⭐️ məbləğində ianəni aldım!",
-  "SOMTHING_WENT_WRONG": "Bir problem baş verdi",
+  "SOMETHING_WENT_WRONG": "Bir problem baş verdi",
   "LINK_TO_CHAT": "🔗 Çata keçid `{}`",
   "BUTTON_GET_LINK": "🔗 Çat linki",
   "FORMAT_LINK": "Çatın ID-si ilə komanda göndər:\nMəsələn:\n> `/link 777000`",
