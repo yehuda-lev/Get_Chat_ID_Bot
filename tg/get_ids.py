@@ -169,19 +169,6 @@ async def get_lang(_, query: types.CallbackQuery):
     )
 
 
-def get_reply_markup(client: Client, by: str) -> types.InlineKeyboardMarkup:
-    return types.InlineKeyboardMarkup(
-        [
-            [
-                types.InlineKeyboardButton(
-                    text="Powered by 'Get Chat ID Bot' 🪪",
-                    url=f"https://t.me/{client.me.username}?start=start_{by}",
-                )
-            ]
-        ]
-    )
-
-
 def get_buttons(
     chat_id: int | None,
     name: str | None,
@@ -731,7 +718,7 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
 
 async def get_id_by_reply_to_another_chat(
     lang: str, msg: types.Message
-) -> str | tuple[int, str]:
+) -> tuple[str | None, int | None, str | None]:
     """
     Get id by reply to another chat,
     if the message sent in a group than return the id and name of the group,
@@ -772,12 +759,10 @@ async def get_id_by_reply_to_another_chat(
         if lang:
             text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(name)
 
-    if lang:
-        return text
-    return chat_id, name
+    return text, chat_id, name
 
 
-async def get_reply_to_message(lang, msg) -> str | tuple[int, str] | None:
+async def get_reply_to_message(lang, msg) -> tuple[str | None, int | None, str | None]:
     """
     Get reply to message
     """
@@ -804,12 +789,13 @@ async def get_reply_to_message(lang, msg) -> str | tuple[int, str] | None:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
             ).format(name, chat_id)
-    if lang:
-        return text
-    return chat_id, name
+
+    return text, chat_id, name
 
 
-async def get_id_by_reply_to_story(lang, msg) -> str | tuple[int, str]:
+async def get_id_by_reply_to_story(
+    lang, msg
+) -> tuple[str | None, int | None, str | None]:
     """
     Get id by reply to story
     """
@@ -833,21 +819,16 @@ async def get_id_by_reply_to_story(lang, msg) -> str | tuple[int, str]:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
             ).format(name, chat_id)
-    if lang:
-        return text
-    return chat_id, name
+
+    return text, chat_id, name
 
 
-async def get_id_by_reply(msg: types.Message) -> str | tuple[int, str]:
+async def get_id_by_reply(
+    lang: str | None, msg: types.Message
+) -> tuple[str | None, int | None, str | None]:
     """
     Get id by all reply types
     """
-    lang = None
-
-    if msg.chat.type == enums.ChatType.PRIVATE:
-        tg_id = msg.from_user.id
-        lang = (await repository.get_user(tg_id=tg_id)).lang
-
     if msg.reply_to_story:
         return await get_id_by_reply_to_story(lang, msg)
 
@@ -866,14 +847,18 @@ async def get_id_by_reply(msg: types.Message) -> str | tuple[int, str]:
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
             ).format(name, chat_id)
 
-    return chat_id, name
+        return None, chat_id, name
 
 
 async def get_ids_in_the_group(client: Client, msg: types.Message):
     """
     get ids in the group
     """
-    chat_id, name = None, None
+    chat_id, name, lang, db_user = None, None, None, None
+    if msg.from_user:
+        tg_id = msg.from_user.id
+        db_user = await repository.get_user(tg_id=tg_id)
+        lang = db_user.lang if db_user else msg.from_user.language_code
 
     if filters.is_mention_users(msg):  # get is mention users
         for entity in msg.entities:
@@ -904,7 +889,7 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                 continue
 
     else:  # get reply to chat id
-        chat_id, name = await get_id_by_reply(msg)
+        text, chat_id, name = await get_id_by_reply(lang, msg)
 
     if not name:
         return
@@ -913,12 +898,17 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         await msg.reply(
             text=f"{name} • `{chat_id}`" if chat_id else name,
             quote=True,
-            reply_markup=get_reply_markup(client, by="group"),
+            reply_markup=get_buttons(
+                chat_id=chat_id,
+                name=name,
+                lang=lang,
+                user=db_user,
+                by="group",
+            ),
         )
     except Exception:  # noqa
         await client.leave_chat(chat_id=msg.chat.id)
 
-    lang = msg.from_user.language_code if msg.from_user else None
     utils.create_stats(type_stats=StatsType.ID_IN_GROUP, lang=lang)
 
 
@@ -927,44 +917,60 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
     get reply to another chat
     """
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
-    text = await get_id_by_reply_to_another_chat(lang, msg)
+    text, chat_id, name = await get_id_by_reply_to_another_chat(lang, msg)
 
     if not text:
         return
 
-    await msg.reply(text=text, quote=True)
-
-    utils.create_stats(
-        type_stats=StatsType.REPLY_TO_ANOTHER_CHAT, lang=msg.from_user.language_code
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=get_buttons(
+            chat_id=chat_id,
+            name=name,
+            lang=lang,
+            user=db_user,
+        ),
     )
 
+    utils.create_stats(type_stats=StatsType.REPLY_TO_ANOTHER_CHAT, lang=lang)
 
-async def get_id_with_business_connection(client: Client, msg: types.Message):
+
+async def get_id_with_business_connection(_: Client, msg: types.Message):
     """
     Get id with business connection.
     """
+    tg_id = msg.from_user.id
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
-    text = await get_id_by_reply(msg)
+    text, chat_id, name = await get_id_by_reply(lang, msg)
 
     # edit the message with the id
     await msg.edit(
         text=text,
-        reply_markup=get_reply_markup(client, by="business_connection"),
+        reply_markup=get_buttons(
+            chat_id=chat_id,
+            name=name,
+            lang=lang,
+            user=db_user,
+            by="business_connection",
+        ),
     )
 
-    utils.create_stats(
-        type_stats=StatsType.BUSINESS_ID, lang=msg.from_user.language_code
-    )
+    utils.create_stats(type_stats=StatsType.BUSINESS_ID, lang=lang)
 
 
 async def get_id_by_manage_business(_: Client, msg: types.Message):
     """
     Get id by manage business.
     """
-
-    lang = (await repository.get_user(tg_id=msg.from_user.id)).lang
+    tg_id = msg.from_user.id
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
     from_chat_id = msg.text.split("bizChat")[1]
     try:
         from_chat_id = int(from_chat_id)
@@ -973,7 +979,14 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
     await msg.reply(
         text=manager.get_translation(
             TranslationKeys.ID_BY_MANAGE_BUSINESS, lang
-        ).format(from_chat_id)
+        ).format(from_chat_id),
+        quote=True,
+        reply_markup=get_buttons(
+            chat_id=from_chat_id,
+            name=msg.text,
+            lang=lang,
+            user=db_user,
+        ),
     )
 
     utils.create_stats(
@@ -989,7 +1002,8 @@ async def handle_business_connection(
     Handle business connection and disconnection
     """
     tg_id = update.user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     await repository.update_user(
         tg_id=tg_id,
@@ -1023,7 +1037,8 @@ async def handle_business_connection(
 async def send_link_to_chat_by_id(_: Client, msg: types.Message):
     """Send link to chat by id"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     try:
         _, chat_id = msg.text.split(" ", 1)
