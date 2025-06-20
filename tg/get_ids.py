@@ -17,7 +17,8 @@ async def welcome(_: Client, msg: types.Message):
     """start the bot"""
     user = msg.from_user
     tg_id = user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
@@ -85,7 +86,8 @@ async def welcome(_: Client, msg: types.Message):
 async def get_chats_manager(_: Client, msg: types.Message):
     """Get chats manager"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
     text = manager.get_translation(TranslationKeys.CHAT_MANAGER, lang)
 
     await msg.reply_text(
@@ -131,7 +133,8 @@ async def get_chats_manager(_: Client, msg: types.Message):
 async def choose_lang(_, msg: types.Message):
     """Choose language"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.CHOICE_LANG, lang),
@@ -179,70 +182,113 @@ def get_reply_markup(client: Client, by: str) -> types.InlineKeyboardMarkup:
     )
 
 
-def get_button_link_to_chat(
-    chat_id: int, lang: str, client: Client, inline_buttons: list[list[types.InlineKeyboardButton] | None] = None
+def get_buttons(
+    chat_id: int | None,
+    name: str | None,
+    lang: str,
+    user: repository.User | None = None,
+    inline_buttons: list[list[types.InlineKeyboardButton] | None] = None,
+    reply_markup: types.InlineKeyboardMarkup | None = None,
+    by: str | None = None,
 ) -> types.InlineKeyboardMarkup | None:
     if chat_id is None:
-        return chat_id
+        return (
+            None
+            if not inline_buttons or not reply_markup
+            else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
+        )
+
+    if user and user.has_feature(
+        repository.FeatureEnum.COPY_BUTTON
+    ):  # if user has copy button feature
+        if not inline_buttons:
+            inline_buttons = []
+        inline_buttons.append(
+            [
+                types.InlineKeyboardButton(
+                    text=name,
+                    copy_text=types.CopyTextButton(text=str(chat_id)),
+                )
+            ]
+        )
+
     return types.InlineKeyboardMarkup(
         [
             *(inline_buttons if inline_buttons else []),
             [
                 types.InlineKeyboardButton(
-                    text=manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang),
-                    url=f"https://t.me/{client.me.username}?start=link_{chat_id}",
+                    text=(
+                        manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang)
+                        if not by
+                        else "Powered by 'Get Chat ID Bot' 🪪"
+                    ),
+                    url=f"https://t.me/{clients.bot_1.me.username}?start={f'link_{chat_id}' if not by else f'start_{by}'}",
                 )
-            ]
+            ],
         ]
     )
 
 
-async def get_forward(client: Client, msg: types.Message):
+async def get_forward(_: Client, msg: types.Message):
     """Get message forward"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
+    inline_keyboard: list[list[types.InlineKeyboardButton] | None] = []
     forward = msg.forward_origin
     chat_id, reply_markup = None, None
 
-    if isinstance(forward, types.MessageOriginUser):  # user
-        user = forward.sender_user
-        text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            user.full_name if user.full_name else "",
-            user.id,
-        )
-        chat_id = user.id
-    elif isinstance(forward, types.MessageOriginChat):  # group
-        group = forward.sender_chat
-        text = manager.get_translation(
-            TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-        ).format(group.title, group.id)
-        chat_id = group.id
-    elif isinstance(forward, types.MessageOriginChannel):  # channel
-        channel = forward.chat
-        text = manager.get_translation(
-            TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-        ).format(channel.title, channel.id)
-        chat_id = channel.id
+    if isinstance(
+        forward,
+        (types.MessageOriginUser, types.MessageOriginChat, types.MessageOriginChannel),
+    ):
+        if isinstance(forward, types.MessageOriginUser):
+            chat = forward.sender_user
+            chat_id = chat.id
+            name = chat.full_name if chat.full_name else ""
+            text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+                name,
+                chat_id,
+            )
+        else:
+            chat = (
+                forward.sender_chat
+                if isinstance(forward, types.MessageOriginChat)
+                else forward.chat
+            )
+            chat_id = chat.id
+            name = chat.title if chat.title else ""
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(
+                name,
+                chat_id,
+            )
+
     elif isinstance(forward, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
-        text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(
-            forward.sender_user_name
-        )
-        reply_markup = types.InlineKeyboardMarkup(
+        name = forward.sender_user_name
+        text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(name)
+        inline_keyboard.append(
             [
-                [
-                    types.InlineKeyboardButton(
-                        text="🆘", url="https://t.me/GetChatID_Updates/29"
-                    )
-                ]
+                types.InlineKeyboardButton(
+                    text="🆘", url="https://t.me/GetChatID_Updates/29"
+                )
             ]
         )
     else:
         return
+
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=reply_markup or get_button_link_to_chat(chat_id, lang, client),
+        reply_markup=get_buttons(
+            chat_id=chat_id,
+            name=name,
+            lang=lang,
+            user=db_user,
+            inline_buttons=inline_keyboard,
+        ),
     )
 
     utils.create_stats(
@@ -250,18 +296,18 @@ async def get_forward(client: Client, msg: types.Message):
     )
 
 
-async def get_me(client: Client, msg: types.Message):
+async def get_me(_: Client, msg: types.Message):
     """Get id the user"""
     user = msg.from_user
     tg_id = user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
+    name = user.full_name if user.full_name else ""
 
     await msg.reply(
-        text=manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            user.full_name if user.full_name else "", tg_id
-        ),
+        text=manager.get_translation(TranslationKeys.ID_USER, lang).format(name, tg_id),
         quote=True,
-        reply_markup=get_button_link_to_chat(tg_id, lang, client),
+        reply_markup=get_buttons(chat_id=tg_id, name=name, lang=lang, user=db_user),
     )
 
     utils.create_stats(type_stats=StatsType.ME, lang=msg.from_user.language_code)
@@ -270,23 +316,27 @@ async def get_me(client: Client, msg: types.Message):
 async def get_contact(client: Client, msg: types.Message):
     """Get id from contact"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
-    chat_id = None
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
+    chat_id, name = None, None
 
     if msg.contact.user_id:
         contact = msg.contact
-        text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            contact.first_name
-            + ((" " + contact.last_name) if contact.last_name else ""),
-            contact.user_id,
+        name = contact.first_name + (
+            (" " + contact.last_name) if contact.last_name else ""
         )
         chat_id = contact.user_id
+        text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+            name,
+            chat_id,
+        )
+
     else:
         text = manager.get_translation(TranslationKeys.NOT_HAVE_ID, lang)
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_button_link_to_chat(chat_id, lang, client),
+        reply_markup=get_buttons(chat_id=chat_id, name=name, lang=lang, user=db_user),
     )
 
     utils.create_stats(type_stats=StatsType.CONTACT, lang=msg.from_user.language_code)
@@ -300,6 +350,7 @@ async def get_request_peer(client: Client, msg: types.Message):
     inline_keyboard: list[list[types.InlineKeyboardButton] | None] = []
     reply_markup = None
     chat_id = None
+    name = None
 
     if msg.users_shared:
         users = msg.users_shared.users
@@ -309,19 +360,9 @@ async def get_request_peer(client: Client, msg: types.Message):
             chat_id = user.id
 
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                name, chat_id,
+                name,
+                chat_id,
             )
-
-            # button copy chat id
-            if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
-                inline_keyboard.append(
-                    [
-                        types.InlineKeyboardButton(
-                            text=name,
-                            copy_text=types.CopyTextButton(text=str(chat_id)),
-                        )
-                    ]
-                )
 
         else:  # support of multiple users
             text = manager.get_translation(TranslationKeys.ID_USERS, lang).format(
@@ -378,17 +419,6 @@ async def get_request_peer(client: Client, msg: types.Message):
                     TranslationKeys.ID_CHANNEL_OR_GROUP, lang
                 ).format(name, chat_id)
 
-                # button copy chat id
-                if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
-                    inline_keyboard.append(
-                        [
-                            types.InlineKeyboardButton(
-                                text=name,
-                                copy_text=types.CopyTextButton(text=str(chat_id)),
-                            )
-                        ]
-                    )
-
             else:  # support of multiple chats
                 text = manager.get_translation(
                     TranslationKeys.ID_CHANNELS_OR_GROUPS, lang
@@ -411,7 +441,14 @@ async def get_request_peer(client: Client, msg: types.Message):
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=reply_markup or get_button_link_to_chat(chat_id, lang, client, inline_keyboard),
+        reply_markup=get_buttons(
+            chat_id=chat_id,
+            name=name,
+            lang=lang,
+            user=db_user,
+            inline_buttons=inline_keyboard,
+            reply_markup=reply_markup,
+        ),
     )
 
     utils.create_stats(
@@ -422,38 +459,44 @@ async def get_request_peer(client: Client, msg: types.Message):
 async def get_story(client: Client, msg: types.Message):
     """Get id from story"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
     chat = msg.story.chat
+    chat_id = chat.id
 
     if chat.type in [
         enums.ChatType.PRIVATE,  # user
         enums.ChatType.BOT,  # bot (when it's possible to upload story with bot)
     ]:
+        name = chat.full_name if chat.full_name else ""
         text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            chat.full_name if chat.full_name else "",
-            chat.id,
+            name,
+            chat_id,
         )
     elif chat.type in [
         enums.ChatType.CHANNEL,  # channel
         enums.ChatType.SUPERGROUP,  # supergroup
         enums.ChatType.GROUP,  # group
     ]:
+        name = chat.title
         text = manager.get_translation(
             TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-        ).format(chat.title, chat.id)
+        ).format(name, chat_id)
     else:
         return
 
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_button_link_to_chat(chat.id, lang, client),
+        reply_markup=get_buttons(chat_id=chat_id, name=name, lang=lang, user=db_user),
     )
 
     utils.create_stats(type_stats=StatsType.STORY, lang=msg.from_user.language_code)
 
 
-async def get_id_by_username(text: str, lang: str) -> tuple[str, int | None]:
+async def get_id_by_username(
+    text: str, lang: str
+) -> tuple[str, int | None, str | None]:
     """
     Get id by username
     Returns:
@@ -461,14 +504,14 @@ async def get_id_by_username(text: str, lang: str) -> tuple[str, int | None]:
         chat_id: the id of the chat, can be None.
     """
     username = filters.get_username(text=text)
-    chat_id = None
+    chat_id, name = None, None
 
     client_search: Client = random.choice((clients.bot_1, clients.bot_2))
     try:
         chat = await client_search.get_chat(username, force_full=False)
     except errors.BadRequest:  # username not found
         text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
-        return text, chat_id
+        return text, chat_id, name
 
     except errors.FloodWait:
         if client_search.name == clients.bot_1.name:
@@ -481,7 +524,7 @@ async def get_id_by_username(text: str, lang: str) -> tuple[str, int | None]:
         except Exception as e:  # noqa
             _logger.error(f"Error in get_chat with {client_search.name}: {e}")
             text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
-            return text, chat_id
+            return text, chat_id, name
 
     if isinstance(chat, types.Chat):
         name = chat.title if chat.title else chat.full_name if chat.full_name else ""
@@ -499,20 +542,21 @@ async def get_id_by_username(text: str, lang: str) -> tuple[str, int | None]:
     else:
         text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
-    return text, chat_id
+    return text, chat_id, name
 
 
-async def get_username_by_message(client: Client, msg: types.Message):
+async def get_username_by_message(_: Client, msg: types.Message):
     """Get id from username or link by message"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
-    text, chat_id = await get_id_by_username(text=msg.text, lang=lang)
+    text, chat_id, name = await get_id_by_username(text=msg.text, lang=lang)
 
     await msg.reply_text(
         text=text,
         quote=True,
-        reply_markup=get_button_link_to_chat(chat_id, lang, client),
+        reply_markup=get_buttons(chat_id=chat_id, name=name, lang=lang, user=db_user),
     )
 
     utils.create_stats(
@@ -525,7 +569,8 @@ async def ask_inline_query(_: Client, msg: types.Message):
     Ask inline query
     """
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ASK_INLINE_QUERY, lang),
@@ -547,14 +592,15 @@ async def ask_inline_query(_: Client, msg: types.Message):
     )
 
 
-async def get_username_by_inline_query(client: Client, query: types.InlineQuery):
+async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
     """
     Get id by inline query
     """
 
-    lang = (await repository.get_user(tg_id=query.from_user.id)).lang
+    db_user = await repository.get_user(tg_id=query.from_user.id)
+    lang = db_user.lang
 
-    text, chat_id = await get_id_by_username(text=query.query, lang=lang)
+    text, chat_id, name = await get_id_by_username(text=query.query, lang=lang)
 
     try:
         await query.answer(
@@ -565,7 +611,13 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
                     input_message_content=types.InputTextMessageContent(
                         message_text=text,
                     ),
-                    reply_markup=get_reply_markup(client, by="inline_query"),
+                    reply_markup=get_buttons(
+                        chat_id=chat_id,
+                        name=name,
+                        lang=lang,
+                        user=db_user,
+                        by="inline_query",
+                    ),
                 ),
             ],
             cache_time=5,
@@ -578,19 +630,25 @@ async def get_username_by_inline_query(client: Client, query: types.InlineQuery)
     )
 
 
-async def get_via_bot(client: Client, msg: types.Message):
+async def get_via_bot(_: Client, msg: types.Message):
     """Get id via bot"""
 
     tg_id = msg.from_user.id
     name = msg.via_bot.first_name
     chat_id = msg.via_bot.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
     text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
 
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_button_link_to_chat(tg_id, lang, client),
+        reply_markup=get_buttons(
+            chat_id=chat_id,
+            name=name,
+            lang=lang,
+            user=db_user,
+        ),
     )
 
     utils.create_stats(type_stats=StatsType.VIA_BOT, lang=msg.from_user.language_code)
@@ -601,7 +659,8 @@ async def added_to_group(_: Client, msg: types.Message):
     Added the bot to the group
     """
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ADD_BOT_TO_GROUP, lang),
@@ -1021,7 +1080,8 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
 async def send_about(_: Client, msg: types.Message):
     """Send info about the bot"""
     tg_id = msg.from_user.id
-    lang = (await repository.get_user(tg_id=tg_id)).lang
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.INFO_ABOUT, lang),

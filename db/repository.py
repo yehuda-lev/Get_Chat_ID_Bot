@@ -4,7 +4,16 @@ import datetime
 import logging
 from sqlalchemy import exists, func, select, update
 
-from db.tables import get_session, User, Group, MessageSent, StatsType, Stats, FeatureEnum, Feature
+from db.tables import (
+    get_session,
+    User,
+    Group,
+    MessageSent,
+    StatsType,
+    Stats,
+    FeatureEnum,
+    Feature,
+)
 from data import cache_memory
 
 
@@ -122,7 +131,10 @@ async def update_feature(*, user_id: int, type: FeatureEnum, **kwargs):
 
     async with get_session() as session:
         await session.execute(
-            update(Feature).where(Feature.user_id == user_id).where(Feature.type == type).values(**kwargs)
+            update(Feature)
+            .where(Feature.user_id == user_id)
+            .where(Feature.type == type)
+            .values(**kwargs)
         )
         await session.commit()
 

@@ -94,11 +94,9 @@ class User(BaseTable):
     groups: Mapped[list[Group]] = relationship(back_populates="added_by", lazy="joined")
     features: Mapped[list[Feature]] = relationship(back_populates="user", lazy="joined")
 
-
     def has_feature(self, feature: FeatureEnum) -> bool:
         """Check if user has the feature"""
         return any(f.type == feature.value and f.active for f in self.features)
-
 
 
 class Feature(BaseTable):
@@ -116,7 +114,6 @@ class Feature(BaseTable):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     user: Mapped[User] = relationship("User", back_populates="features")
-
 
 
 class Group(BaseTable):
