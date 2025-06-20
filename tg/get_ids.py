@@ -185,8 +185,8 @@ def get_buttons(
             else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
         )
 
-    if user and user.has_feature(
-        repository.FeatureEnum.COPY_BUTTON
+    if (
+        user and user.feature and user.feature.copy_button
     ):  # if user has copy button feature
         if not inline_buttons:
             inline_buttons = []
@@ -360,7 +360,7 @@ async def get_request_peer(client: Client, msg: types.Message):
             )
 
             # button copy chat id
-            if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
+            if db_user.feature and db_user.feature.copy_button:
                 inline_keyboard.append(
                     [
                         types.InlineKeyboardButton(
@@ -412,7 +412,7 @@ async def get_request_peer(client: Client, msg: types.Message):
                 ).format("".join(f"\n{chat.title} • `{chat.id}`" for chat in chats))
 
                 # button copy chat id
-                if db_user.has_feature(repository.FeatureEnum.COPY_BUTTON):
+                if db_user.feature and db_user.feature.copy_button:
                     inline_keyboard.append(
                         [
                             types.InlineKeyboardButton(

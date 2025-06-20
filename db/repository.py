@@ -11,7 +11,6 @@ from db.tables import (
     MessageSent,
     StatsType,
     Stats,
-    FeatureEnum,
     Feature,
 )
 from data import cache_memory
@@ -97,44 +96,37 @@ async def get_user(*, tg_id: int) -> User:
 # feature
 
 
-async def create_feature(*, user_id: int, type: FeatureEnum):
+async def create_feature(*, user_id: int):
     """
     Create feature
     :param user_id: the user id
-    :param type: the type of feature
     """
-
-    _logger.debug(f"Create feature: {user_id=}, {type=}")
 
     # delete cache
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=user_id))
 
     async with get_session() as session:
         user = await get_user(tg_id=user_id)
-        feature = Feature(user=user, type=type.value)
+        feature = Feature(user=user)
         session.add(feature)
         await session.commit()
 
 
-async def update_feature(*, user_id: int, type: FeatureEnum, **kwargs):
+async def update_feature(*, user_id: int, **kwargs):
     """
     Update feature
     :param user_id: the user id
-    :param type: the type of feature
     :param kwargs: the data to update
     """
 
-    _logger.debug(f"Update feature: {user_id=}, {type=}, {kwargs=}")
+    _logger.debug(f"Update feature: {user_id=}, {kwargs=}")
 
     # delete cache
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=user_id))
 
     async with get_session() as session:
         await session.execute(
-            update(Feature)
-            .where(Feature.user_id == user_id)
-            .where(Feature.type == type)
-            .values(**kwargs)
+            update(Feature).where(Feature.user_id == user_id).values(**kwargs)
         )
         await session.commit()
 
