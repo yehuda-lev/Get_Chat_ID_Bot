@@ -135,92 +135,6 @@ async def get_chats_manager(_: Client, msg: types.Message):
     )
 
 
-async def choose_lang(_, msg: types.Message):
-    """Choose language"""
-    tg_id = msg.from_user.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
-
-    await msg.reply(
-        text=manager.get_translation(TranslationKeys.CHOICE_LANG, lang),
-        reply_markup=types.InlineKeyboardMarkup(
-            [
-                [
-                    types.InlineKeyboardButton(
-                        text=manager.get_translation(TranslationKeys.LANGUAGE, _lang),
-                        callback_data=f"lang:{_lang}",
-                    )
-                    for _lang in langs
-                ]
-                for langs in [
-                    utils.list_langs[i : i + 2]
-                    for i in range(0, len(utils.list_langs), 2)
-                ]
-            ]
-        ),
-        quote=True,
-    )
-
-
-async def get_lang(_, query: types.CallbackQuery):
-    """Get language"""
-    data_lang = query.data.split(":")[1]
-    tg_id = query.from_user.id
-    await repository.update_user(tg_id=tg_id, lang=data_lang)
-    await query.edit_message_text(
-        text=manager.get_translation(TranslationKeys.DONE, data_lang).format(
-            manager.get_translation(TranslationKeys.LANGUAGE, data_lang)
-        ),
-    )
-
-
-def get_buttons(
-    chat_id: int | None,
-    name: str | None,
-    lang: str,
-    user: repository.User | None = None,
-    inline_buttons: list[list[types.InlineKeyboardButton] | None] = None,
-    reply_markup: types.InlineKeyboardMarkup | None = None,
-    by: str | None = None,
-) -> types.InlineKeyboardMarkup | None:
-    if chat_id is None:
-        return (
-            None
-            if not inline_buttons and not reply_markup
-            else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
-        )
-
-    if (
-        user and user.feature and user.feature.copy_button
-    ):  # if user has copy button feature
-        if not inline_buttons:
-            inline_buttons = []
-        inline_buttons.append(
-            [
-                types.InlineKeyboardButton(
-                    text=name,
-                    copy_text=types.CopyTextButton(text=str(chat_id)),
-                )
-            ]
-        )
-
-    return types.InlineKeyboardMarkup(
-        [
-            *(inline_buttons if inline_buttons else []),
-            [
-                types.InlineKeyboardButton(
-                    text=(
-                        manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang)
-                        if not by
-                        else "Powered by 'Get Chat ID Bot' 🪪"
-                    ),
-                    url=f"https://t.me/{clients.bot_1.me.username}?start={f'link_{chat_id}' if not by else f'start_{by}'}",
-                )
-            ],
-        ]
-    )
-
-
 async def get_forward(_: Client, msg: types.Message):
     """Get message forward"""
     tg_id = msg.from_user.id
@@ -274,7 +188,7 @@ async def get_forward(_: Client, msg: types.Message):
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_buttons(
+        reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
             lang=lang,
@@ -299,7 +213,9 @@ async def get_me(_: Client, msg: types.Message):
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ID_USER, lang).format(name, tg_id),
         quote=True,
-        reply_markup=get_buttons(chat_id=tg_id, name=name, lang=lang, user=db_user),
+        reply_markup=utils.get_buttons(
+            chat_id=tg_id, name=name, lang=lang, user=db_user
+        ),
     )
 
     utils.create_stats(type_stats=StatsType.ME, lang=msg.from_user.language_code)
@@ -328,7 +244,9 @@ async def get_contact(_: Client, msg: types.Message):
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_buttons(chat_id=chat_id, name=name, lang=lang, user=db_user),
+        reply_markup=utils.get_buttons(
+            chat_id=chat_id, name=name, lang=lang, user=db_user
+        ),
     )
 
     utils.create_stats(type_stats=StatsType.CONTACT, lang=msg.from_user.language_code)
@@ -452,7 +370,7 @@ async def get_request_peer(_: Client, msg: types.Message):
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_buttons(
+        reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
             lang=lang,
@@ -499,10 +417,39 @@ async def get_story(_: Client, msg: types.Message):
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_buttons(chat_id=chat_id, name=name, lang=lang, user=db_user),
+        reply_markup=utils.get_buttons(
+            chat_id=chat_id, name=name, lang=lang, user=db_user
+        ),
     )
 
     utils.create_stats(type_stats=StatsType.STORY, lang=msg.from_user.language_code)
+
+
+async def get_via_bot(_: Client, msg: types.Message):
+    """Get id via bot"""
+
+    tg_id = msg.from_user.id
+    name = msg.via_bot.first_name
+    chat_id = msg.via_bot.id
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
+    text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
+
+    await msg.reply(
+        text=text,
+        quote=True,
+        reply_markup=utils.get_buttons(
+            chat_id=chat_id,
+            name=name,
+            lang=lang,
+            user=db_user,
+        ),
+    )
+
+    utils.create_stats(type_stats=StatsType.VIA_BOT, lang=msg.from_user.language_code)
+
+
+# search username
 
 
 async def get_id_by_username(
@@ -567,7 +514,9 @@ async def get_username_by_message(_: Client, msg: types.Message):
     await msg.reply_text(
         text=text,
         quote=True,
-        reply_markup=get_buttons(chat_id=chat_id, name=name, lang=lang, user=db_user),
+        reply_markup=utils.get_buttons(
+            chat_id=chat_id, name=name, lang=lang, user=db_user
+        ),
     )
 
     utils.create_stats(
@@ -622,7 +571,7 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
                     input_message_content=types.InputTextMessageContent(
                         message_text=text,
                     ),
-                    reply_markup=get_buttons(
+                    reply_markup=utils.get_buttons(
                         chat_id=chat_id,
                         name=name,
                         lang=lang,
@@ -641,103 +590,7 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
     )
 
 
-async def get_via_bot(_: Client, msg: types.Message):
-    """Get id via bot"""
-
-    tg_id = msg.from_user.id
-    name = msg.via_bot.first_name
-    chat_id = msg.via_bot.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
-    text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
-
-    await msg.reply(
-        text=text,
-        quote=True,
-        reply_markup=get_buttons(
-            chat_id=chat_id,
-            name=name,
-            lang=lang,
-            user=db_user,
-        ),
-    )
-
-    utils.create_stats(type_stats=StatsType.VIA_BOT, lang=msg.from_user.language_code)
-
-
-async def added_to_group(_: Client, msg: types.Message):
-    """
-    Added the bot to the group
-    """
-    tg_id = msg.from_user.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
-
-    await msg.reply(
-        text=manager.get_translation(TranslationKeys.ADD_BOT_TO_GROUP, lang),
-        quote=True,
-        reply_markup=types.ReplyKeyboardMarkup(
-            [
-                [
-                    types.KeyboardButton(
-                        text=manager.get_translation(
-                            TranslationKeys.BUTTON_ADD_BOT_TO_GROUP, lang
-                        ),
-                        request_chat=types.KeyboardButtonRequestChat(
-                            request_id=100,
-                            chat_is_channel=False,
-                            request_title=True,
-                            request_username=True,
-                            user_administrator_rights=types.ChatPrivileges(
-                                can_manage_chat=True,
-                                can_promote_members=True,
-                                can_invite_users=True,
-                            ),
-                            bot_administrator_rights=types.ChatPrivileges(
-                                can_manage_chat=True
-                            ),
-                        ),
-                    )
-                ]
-            ],
-            resize_keyboard=True,
-        ),
-    )
-
-
-async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
-    """
-    When the bot has had permissions removed from a chat or user blocked the bot.
-    """
-    if not update.new_chat_member:
-        return
-    # user blocked the bot
-    if update.from_user.id == update.chat.id:
-        if (
-            update.old_chat_member.status == enums.ChatMemberStatus.MEMBER
-            and update.new_chat_member.status == enums.ChatMemberStatus.BANNED
-        ):
-            if not await repository.get_user(tg_id=update.from_user.id):
-                _logger.debug(
-                    f"The bot has been stopped by the user: {update.from_user.id}, {update.from_user.first_name}"
-                )
-                await repository.update_user(tg_id=update.from_user.id, active=False)
-            return
-
-    # the bot has had permissions removed from a chat
-    if update.new_chat_member.user is None or not update.new_chat_member.user.is_self:
-        return
-    if update.new_chat_member.status in {
-        enums.ChatMemberStatus.MEMBER,
-        enums.ChatMemberStatus.RESTRICTED,
-    } and (
-        update.old_chat_member
-        and update.old_chat_member.status is enums.ChatMemberStatus.ADMINISTRATOR
-    ):
-        _logger.debug(
-            f"The bot has had permissions removed from: {update.chat.id}, {update.chat.title}"
-        )
-        await repository.update_group(group_id=update.chat.id, active=False)
+# reply to
 
 
 async def get_id_by_reply_to_another_chat(
@@ -922,7 +775,7 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         await msg.reply(
             text=f"{name} • `{chat_id}`" if chat_id else name,
             quote=True,
-            reply_markup=get_buttons(
+            reply_markup=utils.get_buttons(
                 chat_id=chat_id,
                 name=name,
                 lang=lang,
@@ -952,7 +805,7 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
     await msg.reply(
         text=text,
         quote=True,
-        reply_markup=get_buttons(
+        reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
             lang=lang,
@@ -961,6 +814,9 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
     )
 
     utils.create_stats(type_stats=StatsType.REPLY_TO_ANOTHER_CHAT, lang=lang)
+
+
+# business connection
 
 
 async def get_id_with_business_connection(_: Client, msg: types.Message):
@@ -976,7 +832,7 @@ async def get_id_with_business_connection(_: Client, msg: types.Message):
     # edit the message with the id
     await msg.edit(
         text=text,
-        reply_markup=get_buttons(
+        reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
             lang=lang,
@@ -1005,7 +861,7 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
             TranslationKeys.ID_BY_MANAGE_BUSINESS, lang
         ).format(from_chat_id),
         quote=True,
-        reply_markup=get_buttons(
+        reply_markup=utils.get_buttons(
             chat_id=from_chat_id,
             name=msg.text,
             lang=lang,
@@ -1015,141 +871,4 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
 
     utils.create_stats(
         type_stats=StatsType.BUSINESS_SETTINGS, lang=msg.from_user.language_code
-    )
-
-
-async def handle_business_connection(
-    client: Client,
-    update: types.BusinessConnection,
-):
-    """
-    Handle business connection and disconnection
-    """
-    tg_id = update.user.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
-
-    await repository.update_user(
-        tg_id=tg_id,
-        business_id=update.id if (update.is_enabled and update.can_reply) else None,
-    )
-
-    message_effect_id = None
-    if update.is_enabled and update.can_reply:  # user add the bot to our business
-        text = manager.get_translation(TranslationKeys.BUSINESS_CONNECTION, lang)
-        message_effect_id = 5107584321108051014  # 👍
-
-    elif update.is_enabled and not update.can_reply:  # with no permission to reply
-        text = manager.get_translation(
-            TranslationKeys.BUSINESS_CONNECTION_DISABLED, lang
-        )
-
-    else:  # user remove the bot from our business
-        text = manager.get_translation(
-            TranslationKeys.BUSINESS_CONNECTION_REMOVED, lang
-        )
-
-    await client.send_message(
-        chat_id=tg_id,
-        text=text,
-        message_effect_id=message_effect_id,
-    )
-
-    raise ContinuePropagation
-
-
-async def send_link_to_chat_by_id(_: Client, msg: types.Message):
-    """Send link to chat by id"""
-    tg_id = msg.from_user.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
-
-    try:
-        _, chat_id = msg.text.split(" ", 1)
-
-        if chat_id.startswith("link_"):
-            chat_id = chat_id[5:]
-    except ValueError:
-        await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
-        return
-
-    is_group, link, link_android, link_ios = None, None, None, None
-    if chat_id.startswith("-100"):  # supergroup or channel
-        link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
-        is_group = True
-    elif chat_id.startswith("-"):  # group
-        link = f"https://t.me/{chat_id[1:]}/1{''.join('0' for _ in range(7))}"
-        is_group = True
-    else:
-        chat_id = chat_id.replace(" ", "")
-        is_group = False
-        link_android = f"tg://openmessage?user_id={chat_id}"
-        link_ios = f"tg://user?id={chat_id}"
-
-    if is_group:
-        buttons = [
-            types.InlineKeyboardButton(
-                text="Link 🔗",
-                url=link,
-            )
-        ]
-    else:
-        buttons = [
-            types.InlineKeyboardButton(
-                text="Android 📱",
-                url=link_android,
-            ),
-            types.InlineKeyboardButton(
-                text="iOS 🔗",
-                url=link_ios,
-            ),
-        ]
-
-    await msg.reply(
-        text=manager.get_translation(TranslationKeys.LINK_TO_CHAT, lang).format(
-            chat_id
-        ),
-        reply_markup=types.InlineKeyboardMarkup([buttons]),
-        quote=True,
-    )
-
-    utils.create_stats(type_stats=StatsType.LINK, lang=msg.from_user.language_code)
-
-
-async def send_about(_: Client, msg: types.Message):
-    """Send info about the bot"""
-    tg_id = msg.from_user.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
-
-    await msg.reply_text(
-        text=manager.get_translation(TranslationKeys.INFO_ABOUT, lang),
-        quote=True,
-        link_preview_options=types.LinkPreviewOptions(
-            url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
-            show_above_text=True,
-        ),
-        reply_markup=types.InlineKeyboardMarkup(
-            [
-                [
-                    types.InlineKeyboardButton(
-                        text=manager.get_translation(TranslationKeys.BUTTON_DEV, lang),
-                        url=manager.get_translation(TranslationKeys.LINK_DEV, lang),
-                    )
-                ],
-            ]
-        ),
-    )
-
-
-async def send_privacy_policy(_: Client, msg: types.Message):
-    """Send privacy policy"""
-
-    url = "https://telegra.ph/Privacy-Policy-for-GetChatID-IL-BOT-08-01"
-    await msg.reply(
-        text=url,
-        link_preview_options=types.LinkPreviewOptions(
-            show_above_text=True,
-            prefer_large_media=True,
-        ),
     )

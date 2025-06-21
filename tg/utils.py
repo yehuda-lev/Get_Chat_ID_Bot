@@ -4,11 +4,117 @@ import asyncio
 import httpx
 from pyrogram import types, Client, raw
 
+from data import clients
 from db import repository, tables
 from locales.translation_manager import manager, TranslationKeys
 
 
 _logger = logging.getLogger(__name__)
+
+
+def get_buttons(
+    chat_id: int | None,
+    name: str | None,
+    lang: str,
+    user: repository.User | None = None,
+    inline_buttons: list[list[types.InlineKeyboardButton] | None] = None,
+    reply_markup: types.InlineKeyboardMarkup | None = None,
+    by: str | None = None,
+) -> types.InlineKeyboardMarkup | None:
+    if chat_id is None:
+        return (
+            None
+            if not inline_buttons and not reply_markup
+            else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
+        )
+
+    if (
+        user and user.feature and user.feature.copy_button
+    ):  # if user has copy button feature
+        if not inline_buttons:
+            inline_buttons = []
+        inline_buttons.append(
+            [
+                types.InlineKeyboardButton(
+                    text=name,
+                    copy_text=types.CopyTextButton(text=str(chat_id)),
+                )
+            ]
+        )
+
+    return types.InlineKeyboardMarkup(
+        [
+            *(inline_buttons if inline_buttons else []),
+            [
+                types.InlineKeyboardButton(
+                    text=(
+                        manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang)
+                        if not by
+                        else "Powered by 'Get Chat ID Bot' 🪪"
+                    ),
+                    url=f"https://t.me/{clients.bot_1.me.username}?start={f'link_{chat_id}' if not by else f'start_{by}'}",
+                )
+            ],
+        ]
+    )
+
+
+async def send_link_to_chat_by_id(_: Client, msg: types.Message):
+    """Send link to chat by id"""
+    tg_id = msg.from_user.id
+    db_user = await repository.get_user(tg_id=tg_id)
+    lang = db_user.lang
+
+    try:
+        _, chat_id = msg.text.split(" ", 1)
+
+        if chat_id.startswith("link_"):
+            chat_id = chat_id[5:]
+    except ValueError:
+        await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
+        return
+
+    is_group, link, link_android, link_ios = None, None, None, None
+    if chat_id.startswith("-100"):  # supergroup or channel
+        link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
+        is_group = True
+    elif chat_id.startswith("-"):  # group
+        link = f"https://t.me/{chat_id[1:]}/1{''.join('0' for _ in range(7))}"
+        is_group = True
+    else:
+        chat_id = chat_id.replace(" ", "")
+        is_group = False
+        link_android = f"tg://openmessage?user_id={chat_id}"
+        link_ios = f"tg://user?id={chat_id}"
+
+    if is_group:
+        buttons = [
+            types.InlineKeyboardButton(
+                text="Link 🔗",
+                url=link,
+            )
+        ]
+    else:
+        buttons = [
+            types.InlineKeyboardButton(
+                text="Android 📱",
+                url=link_android,
+            ),
+            types.InlineKeyboardButton(
+                text="iOS 🔗",
+                url=link_ios,
+            ),
+        ]
+
+    await msg.reply(
+        text=manager.get_translation(TranslationKeys.LINK_TO_CHAT, lang).format(
+            chat_id
+        ),
+        reply_markup=types.InlineKeyboardMarkup([buttons]),
+        quote=True,
+    )
+
+    create_stats(type_stats=tables.StatsType.LINK, lang=msg.from_user.language_code)
 
 
 def create_stats(type_stats: tables.StatsType, lang: str):
