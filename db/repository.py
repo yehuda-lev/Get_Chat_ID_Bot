@@ -112,21 +112,22 @@ async def create_feature(*, user_id: int):
         await session.commit()
 
 
-async def update_feature(*, user_id: int, **kwargs):
+async def update_feature(*, user_id: int, feature_id: int, **kwargs):
     """
     Update feature
     :param user_id: the user id
+    :param feature_id: the feature id (user.feature.id)
     :param kwargs: the data to update
     """
 
-    _logger.debug(f"Update feature: {user_id=}, {kwargs=}")
+    _logger.debug(f"Update feature: {feature_id=}, {kwargs=}")
 
     # delete cache
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=user_id))
 
     async with get_session() as session:
         await session.execute(
-            update(Feature).where(Feature.user_id == user_id).values(**kwargs)
+            update(Feature).where(Feature.id == feature_id).values(**kwargs)
         )
         await session.commit()
 
