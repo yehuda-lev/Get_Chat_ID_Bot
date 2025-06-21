@@ -21,7 +21,9 @@ async def welcome(_: Client, msg: types.Message):
     lang = db_user.lang
 
     # https://t.me/tgbetachat/1939059 not works for old versions
-    request_multiple_chats = 1 if not db_user.feature or not db_user.feature.multiple_chats else 10
+    request_multiple_chats = (
+        10 if not db_user.feature or db_user.feature.multiple_chats else 1
+    )
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
@@ -184,7 +186,7 @@ def get_buttons(
     if chat_id is None:
         return (
             None
-            if not inline_buttons or not reply_markup
+            if not inline_buttons and not reply_markup
             else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
         )
 
@@ -303,7 +305,7 @@ async def get_me(_: Client, msg: types.Message):
     utils.create_stats(type_stats=StatsType.ME, lang=msg.from_user.language_code)
 
 
-async def get_contact(client: Client, msg: types.Message):
+async def get_contact(_: Client, msg: types.Message):
     """Get id from contact"""
     tg_id = msg.from_user.id
     db_user = await repository.get_user(tg_id=tg_id)
@@ -332,7 +334,7 @@ async def get_contact(client: Client, msg: types.Message):
     utils.create_stats(type_stats=StatsType.CONTACT, lang=msg.from_user.language_code)
 
 
-async def get_request_peer(client: Client, msg: types.Message):
+async def get_request_peer(_: Client, msg: types.Message):
     """ "Get request peer"""
     tg_id = msg.from_user.id
     db_user = await repository.get_user(tg_id=tg_id)
@@ -364,15 +366,23 @@ async def get_request_peer(client: Client, msg: types.Message):
 
             # button copy chat id
             if db_user.feature and db_user.feature.copy_button:
-                inline_keyboard.append(
-                    [
-                        types.InlineKeyboardButton(
-                            text=user.full_name if user.full_name else "",
-                            copy_text=types.CopyTextButton(text=str(user.id)),
-                        )
-                        for user in users
-                    ]
-                )
+                title = manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang)
+                bot_username = clients.bot_1.me.username
+                for user in users:
+                    user_id = user.id
+                    inline_keyboard.append(
+                        [
+                            types.InlineKeyboardButton(
+                                text=user.full_name if user.full_name else "",
+                                copy_text=types.CopyTextButton(text=str(user_id)),
+                            ),
+                            types.InlineKeyboardButton(
+                                text=title,
+                                url=f"https://t.me/{bot_username}?start=link_{user_id}",
+                            ),
+                        ]
+                    )
+
     elif msg.chat_shared:
         request_chat = msg.chat_shared
         chats = request_chat.chats
@@ -416,15 +426,26 @@ async def get_request_peer(client: Client, msg: types.Message):
 
                 # button copy chat id
                 if db_user.feature and db_user.feature.copy_button:
-                    inline_keyboard.append(
-                        [
-                            types.InlineKeyboardButton(
-                                text=chat.title,
-                                copy_text=types.CopyTextButton(text=str(chat.id)),
-                            )
-                            for chat in chats
-                        ]
+                    title = manager.get_translation(
+                        TranslationKeys.BUTTON_GET_LINK, lang
                     )
+                    bot_username = clients.bot_1.me.username
+
+                    for chat in chats:
+                        chat_id = chat.id
+                        inline_keyboard.append(
+                            [
+                                types.InlineKeyboardButton(
+                                    text=chat.title,
+                                    copy_text=types.CopyTextButton(text=str(chat_id)),
+                                ),
+                                types.InlineKeyboardButton(
+                                    text=title,
+                                    url=f"https://t.me/{bot_username}?start=link_{chat_id}",
+                                ),
+                            ]
+                        )
+
     else:
         return
 
@@ -446,7 +467,7 @@ async def get_request_peer(client: Client, msg: types.Message):
     )
 
 
-async def get_story(client: Client, msg: types.Message):
+async def get_story(_: Client, msg: types.Message):
     """Get id from story"""
     tg_id = msg.from_user.id
     db_user = await repository.get_user(tg_id=tg_id)
