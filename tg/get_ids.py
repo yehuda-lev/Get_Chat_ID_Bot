@@ -20,6 +20,9 @@ async def welcome(_: Client, msg: types.Message):
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
 
+    # https://t.me/tgbetachat/1939059 not works for old versions
+    request_multiple_chats = 1 if not db_user.feature or not db_user.feature.multiple_chats else 10
+
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
             user.mention(user.full_name),
@@ -43,7 +46,7 @@ async def welcome(_: Client, msg: types.Message):
                         request_users=types.KeyboardButtonRequestUsers(
                             request_id=1,
                             user_is_bot=False,
-                            max_quantity=1,  # https://t.me/tgbetachat/1939059 not works
+                            max_quantity=request_multiple_chats,
                             request_name=True,
                         ),
                     ),
@@ -53,7 +56,7 @@ async def welcome(_: Client, msg: types.Message):
                         request_users=types.KeyboardButtonRequestUsers(
                             request_id=2,
                             user_is_bot=True,
-                            max_quantity=1,
+                            max_quantity=request_multiple_chats,
                             request_name=True,
                         ),
                     ),
