@@ -1,7 +1,8 @@
 import logging
 import random
+from typing import Tuple
 
-from pyrogram import Client, types, enums, errors, ContinuePropagation
+from pyrogram import Client, types, enums, errors
 
 from data import clients
 from tg import filters, utils
@@ -142,7 +143,7 @@ async def get_forward(_: Client, msg: types.Message):
     lang = db_user.lang
     inline_keyboard: list[list[types.InlineKeyboardButton] | None] = []
     forward = msg.forward_origin
-    chat_id, reply_markup = None, None
+    chat_id = None
 
     if isinstance(
         forward,
@@ -275,12 +276,13 @@ async def get_request_peer(_: Client, msg: types.Message):
             )
 
         else:  # support of multiple users
-            text = manager.get_translation(TranslationKeys.ID_USERS, lang).format(
-                "".join(
-                    f"\n`{user.id}` • {user.full_name if user.full_name else ''}"
-                    for user in users
-                )
-            )
+            text_lang = manager.get_translation(TranslationKeys.ID_USER, lang)
+            text = ""
+            for user in users:
+                text += f"{text_lang.format(
+                    user.full_name if user.full_name else '',
+                    user.id
+                )}\n"
 
             # button copy chat id
             if db_user.feature and db_user.feature.copy_button:
@@ -338,9 +340,12 @@ async def get_request_peer(_: Client, msg: types.Message):
                 ).format(name, chat_id)
 
             else:  # support of multiple chats
-                text = manager.get_translation(
-                    TranslationKeys.ID_CHANNELS_OR_GROUPS, lang
-                ).format("".join(f"\n{chat.title} • `{chat.id}`" for chat in chats))
+                text_lang = manager.get_translation(
+                    TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+                )
+                text = ""
+                for chat in chats:
+                    text += f"{text_lang.format(chat.title, chat.id)}\n"
 
                 # button copy chat id
                 if db_user.feature and db_user.feature.copy_button:
@@ -593,13 +598,13 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
 # reply to
 
 
-async def get_id_by_reply_to_another_chat(
-    lang: str, msg: types.Message
-) -> tuple[str | None, int | None, str | None]:
+parse_info = Tuple[str | None, int | None, str | None]
+
+
+def parse_reply_to_another_chat(lang: str, msg: types.Message) -> parse_info:
     """
     Get id by reply to another chat,
     if the message sent in a group than return the id and name of the group,
-    else return the text of the message.
     """
     text, chat_id, name = None, None, None
 
@@ -639,7 +644,7 @@ async def get_id_by_reply_to_another_chat(
     return text, chat_id, name
 
 
-async def get_reply_to_message(lang, msg) -> tuple[str | None, int | None, str | None]:
+def parse_reply_to_message(lang: str, msg: types.Message) -> parse_info:
     """
     Get reply to message
     """
@@ -670,9 +675,7 @@ async def get_reply_to_message(lang, msg) -> tuple[str | None, int | None, str |
     return text, chat_id, name
 
 
-async def get_id_by_reply_to_story(
-    lang, msg
-) -> tuple[str | None, int | None, str | None]:
+def parse_reply_to_story(lang: str, msg: types.Message) -> parse_info:
     """
     Get id by reply to story
     """
@@ -700,38 +703,38 @@ async def get_id_by_reply_to_story(
     return text, chat_id, name
 
 
-async def get_id_by_reply(
-    lang: str | None, msg: types.Message
-) -> tuple[str | None, int | None, str | None]:
+def parse_reply(lang: str | None, msg: types.Message) -> parse_info:
     """
     Get id by all reply types
     """
     if msg.reply_to_story:
-        return await get_id_by_reply_to_story(lang, msg)
+        return parse_reply_to_story(lang, msg)
 
     elif msg.reply_to_message:
-        return await get_reply_to_message(lang, msg)
+        return parse_reply_to_message(lang, msg)
 
     # reply to another chat
     elif msg.external_reply:
-        return await get_id_by_reply_to_another_chat(lang, msg)
+        return parse_reply_to_another_chat(lang, msg)
 
     else:
-        chat_id = msg.chat.id
-        name = msg.chat.full_name or "" if lang else msg.chat.title
+        chat = msg.chat
+        chat_id = chat.id
+        name = chat.full_name or chat.title or ""
+        text = None
         if lang:
-            return manager.get_translation(
+            text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
             ).format(name, chat_id)
 
-        return None, chat_id, name
+        return text, chat_id, name
 
 
 async def get_ids_in_the_group(client: Client, msg: types.Message):
     """
     get ids in the group
     """
-    chat_id, name, lang, db_user = None, None, None, None
+    chat_id, name, lang, db_user, text = None, None, None, None, None
     if msg.from_user:
         tg_id = msg.from_user.id
         db_user = await repository.get_user(tg_id=tg_id)
@@ -766,14 +769,14 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                 continue
 
     else:  # get reply to chat id
-        text, chat_id, name = await get_id_by_reply(lang, msg)
+        text, chat_id, name = parse_reply(lang, msg)
 
     if not name:
         return
 
     try:
         await msg.reply(
-            text=f"{name} • `{chat_id}`" if chat_id else name,
+            text=text or f"{name} • `{chat_id}`" if chat_id else name,
             quote=True,
             reply_markup=utils.get_buttons(
                 chat_id=chat_id,
@@ -797,7 +800,7 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
 
-    text, chat_id, name = await get_id_by_reply_to_another_chat(lang, msg)
+    text, chat_id, name = parse_reply_to_another_chat(lang, msg)
 
     if not text:
         return
@@ -827,7 +830,7 @@ async def get_id_with_business_connection(_: Client, msg: types.Message):
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
 
-    text, chat_id, name = await get_id_by_reply(lang, msg)
+    text, chat_id, name = parse_reply(lang, msg)
 
     # edit the message with the id
     await msg.edit(
