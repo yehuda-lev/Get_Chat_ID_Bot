@@ -70,6 +70,14 @@ HANDLERS = [
         & tg_filters.create_group(),
     ),
     handlers.MessageHandler(
+        others.settings,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="settings")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.MessageHandler(
         help.handle_callback_data_help,
         filters.private
         & ~filters.tg_business

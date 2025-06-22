@@ -77,7 +77,8 @@ async def send_alert_to_change_settings(user: repository.User):
 
     await clients.bot_1.send_message(
         chat_id=tg_id,
-        text="Change your settings if the message is not supported",
+        text=manager.get_translation(TranslationKeys.ALERT_CHANGE_SETTINGS, lang),
+        disable_notification=True,
     )
 
 
@@ -202,8 +203,10 @@ async def set_bot_commands(client: Client, langs: list[str]):
                     manager.get_translation(TranslationKeys.START_COMMAND, text_lang),
                 ),
                 types.BotCommand(
-                    "lang",
-                    manager.get_translation(TranslationKeys.LANG_COMMAND, text_lang),
+                    "settings",
+                    manager.get_translation(
+                        TranslationKeys.SETTINGS_COMMAND, text_lang
+                    ),
                 ),
                 types.BotCommand(
                     "help",

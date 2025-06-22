@@ -19,9 +19,9 @@ async def settings(_: Client, msg: types.Message) -> None:
     user = await repository.get_user(tg_id=msg.from_user.id)
     lang = user.lang
 
-    # text = manager.get_translation(TranslationKeys.SETTINGS, lang)
-    text = "settings"
-    await msg.reply(text, quote=True)
+    await msg.reply(
+        text=manager.get_translation(TranslationKeys.SETTINGS, lang), quote=True
+    )
 
 
 async def send_about(_: Client, msg: types.Message):
@@ -147,31 +147,35 @@ async def handle_feature(_: Client, msg: types.Message | types.CallbackQuery):
     inline_keyboard = [
         [
             types.InlineKeyboardButton(
-                text="Copy Button" + (" ✅" if copy_button else " ❌"),
+                text=manager.get_translation(TranslationKeys.COPY_BUTTON, lang)
+                + (" ✅" if copy_button else " ❌"),
                 callback_data="feature:copy_button"
                 + ("-on" if not copy_button else "-off"),
             ),
             types.InlineKeyboardButton(
-                text="Multiple Chats" + (" ✅" if multiple_chats else " ❌"),
+                text=manager.get_translation(TranslationKeys.MULTIPLE_CHATS, lang)
+                + (" ✅" if multiple_chats else " ❌"),
                 callback_data="feature:multiple_chats"
                 + ("-on" if not multiple_chats else "-off"),
             ),
         ],
         [
             types.InlineKeyboardButton(
-                text="Disable All Features",
+                text=manager.get_translation(
+                    TranslationKeys.DISABLE_ALL_FEATURES, lang
+                ),
                 callback_data="feature:disable_all",
             )
         ],
         [
             types.InlineKeyboardButton(
-                text="Enable All Features",
+                text=manager.get_translation(TranslationKeys.ENABLE_ALL_FEATURES, lang),
                 callback_data="feature:enable_all",
             )
         ],
         [
             types.InlineKeyboardButton(
-                text="Save Changes",
+                text=manager.get_translation(TranslationKeys.SAVE_CHANGES, lang),
                 callback_data=f"feature:save",
             )
         ],
@@ -180,8 +184,9 @@ async def handle_feature(_: Client, msg: types.Message | types.CallbackQuery):
     reply_markup = types.InlineKeyboardMarkup(inline_keyboard)
     if isinstance(msg, types.Message):
         await msg.reply(
-            text="feature settings",
+            text=manager.get_translation(TranslationKeys.FEATURE_SETTINGS, lang),
             reply_markup=reply_markup,
+            quote=True,
         )
         return
 
@@ -218,7 +223,7 @@ async def handle_feature(_: Client, msg: types.Message | types.CallbackQuery):
                 },
             )
         await msg.edit_message_text(
-            text="Feature settings saved successfully.",
+            text=manager.get_translation(TranslationKeys.SETTINGS_SAVED, lang),
             reply_markup=None,
         )
 

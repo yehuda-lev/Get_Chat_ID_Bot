@@ -75,5 +75,17 @@
     "ABOUT_COMMAND": "About the bot ℹ️",
     "LINK_COMMAND": "Get the link to the chat 🔗",
     "SEARCH_COMMAND": "Search by username 🔍",
-    "DONATE_COMMAND": "Support the bot 🙏"
+    "DONATE_COMMAND": "Support the bot 🙏",
+    "SETTINGS_COMMAND": "Bot settings ⚙️",
+    "SETTINGS": "⚙\uFE0F Bot Settings\nCustomize the bot to suit your needs – choose your language and enable or disable various features.\n\n\uD83D\uDD24 To change the interface language – send: /lang\n\uD83E\uDDE9 To manage available features – send: /feature\n❓ For the help menu – send: /help",
+    "FEATURE_SETTINGS": "⚙\uFE0F Feature Management\nSome bot features may not work properly on older versions of Telegram. For example:\n\n<blockquote expandable> The \"Copy Text\" button is not supported\n\nThe search button doesn't work when sharing with multiple users\n\nIt's not possible to share multiple bots at once </blockquote>\n\nUse the buttons below to enable or disable features as needed \uD83D\uDC47",
+    "ALERT_CHANGE_SETTINGS": "\uD83D\uDCC4 Is the message above not displaying correctly?\nSend the command /feature to adjust your display settings.\nIf everything looks fine — you can ignore this message \uD83D\uDE0A",
+    "COPY_BUTTON": "Copy Text",
+    "MULTIPLE_CHATS": "Share Multiple Chats",
+    "DISABLE_ALL_FEATURES": "Disable All Features",
+    "ENABLE_ALL_FEATURES": "Enable All Features",
+    "SAVE_CHANGES": "Save Changes",
+    "SETTINGS_SAVED": "Settings saved successfully!"
+
+
 }
