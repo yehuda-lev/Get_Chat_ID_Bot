@@ -121,8 +121,8 @@ def create_user() -> filters.Filter:
         if not user:
             try:
                 created_by = (
-                    (msg.text or msg.caption).split(" ", maxsplit=1)[1]
-                    if isinstance(msg, types.Message)
+                    msg.content.split(" ", maxsplit=1)[1]
+                    if isinstance(msg, types.Message) and msg.content
                     else None
                 )
             except IndexError:
