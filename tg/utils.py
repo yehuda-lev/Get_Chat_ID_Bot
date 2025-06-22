@@ -157,6 +157,7 @@ list_langs = [
     "hi",
     "es",
     "fr",
+    "az"
 ]
 
 
