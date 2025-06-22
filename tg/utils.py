@@ -28,19 +28,23 @@ def get_buttons(
             else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
         )
 
-    if (
-        user and user.feature and user.feature.copy_button
-    ):  # if user has copy button feature
-        if not inline_buttons:
-            inline_buttons = []
-        inline_buttons.append(
-            [
-                types.InlineKeyboardButton(
-                    text=name,
-                    copy_text=types.CopyTextButton(text=str(chat_id)),
-                )
-            ]
-        )
+    if user:
+        copy_button = None
+        if not user.feature:
+            asyncio.create_task(send_alert_to_change_settings(user=user))
+            copy_button = True
+
+        if copy_button or user.feature.copy_button:  # if user has copy button feature
+            if not inline_buttons:
+                inline_buttons = []
+            inline_buttons.append(
+                [
+                    types.InlineKeyboardButton(
+                        text=name,
+                        copy_text=types.CopyTextButton(text=str(chat_id)),
+                    )
+                ]
+            )
 
     return types.InlineKeyboardMarkup(
         [
@@ -56,6 +60,24 @@ def get_buttons(
                 )
             ],
         ]
+    )
+
+
+async def send_alert_to_change_settings(user: repository.User):
+    """
+    Send alert to user to change settings
+    """
+    tg_id = user.tg_id
+    lang = user.lang
+
+    await repository.create_feature(user_id=tg_id)
+
+    # wait for user receive the CopyButton
+    await asyncio.sleep(1)
+
+    await clients.bot_1.send_message(
+        chat_id=tg_id,
+        text="Change your settings if the message is not supported",
     )
 
 
