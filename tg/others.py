@@ -19,9 +19,10 @@ async def settings(_: Client, msg: types.Message) -> None:
     user = await repository.get_user(tg_id=msg.from_user.id)
     lang = user.lang
 
-    await msg.reply(
+    m = await msg.reply(
         text=manager.get_translation(TranslationKeys.SETTINGS, lang), quote=True
     )
+    await m.react("👨‍💻")
 
 
 async def send_about(_: Client, msg: types.Message):
