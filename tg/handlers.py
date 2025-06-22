@@ -9,6 +9,8 @@ from tg import (
     payments,
     code_runner,
     stats,
+    others,
+    utils,
 )
 
 _logger = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ HANDLERS = [
     ),
     # commands
     handlers.MessageHandler(
-        get_ids.choose_lang,
+        others.choose_lang,
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command(command="lang")
@@ -53,7 +55,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.added_to_group,
+        others.added_to_group,
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command(command="add")
@@ -68,6 +70,14 @@ HANDLERS = [
         & tg_filters.create_group(),
     ),
     handlers.MessageHandler(
+        others.settings,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command(command="settings")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.MessageHandler(
         help.handle_callback_data_help,
         filters.private
         & ~filters.tg_business
@@ -76,7 +86,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.send_about,
+        others.send_about,
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command(command="about")
@@ -92,7 +102,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.send_privacy_policy,
+        others.send_privacy_policy,
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command("privacy")
@@ -100,7 +110,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.send_link_to_chat_by_id,
+        utils.send_link_to_chat_by_id,
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command("link")
@@ -112,6 +122,14 @@ HANDLERS = [
         filters.private
         & ~filters.tg_business
         & tg_filters.start_command("search")
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.MessageHandler(
+        others.handle_feature,
+        filters.private
+        & ~filters.tg_business
+        & tg_filters.start_command("feature")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
@@ -174,7 +192,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.ChatMemberUpdatedHandler(
-        get_ids.on_remove_permission,
+        others.on_remove_permission,
     ),
     # business
     handlers.MessageHandler(
@@ -194,7 +212,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.BusinessBotConnectionHandler(
-        get_ids.handle_business_connection,
+        others.handle_business_connection,
         tg_filters.create_user(),
     ),
     # welcome
@@ -214,8 +232,14 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.CallbackQueryHandler(
-        get_ids.get_lang,
+        others.get_lang,
         filters.create(lambda _, __, cbd: cbd.data.startswith("lang"))
+        & tg_filters.is_user_spamming()
+        & tg_filters.create_user(),
+    ),
+    handlers.CallbackQueryHandler(
+        others.handle_feature,
+        filters.create(lambda _, __, cbd: cbd.data.startswith("feature"))
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),

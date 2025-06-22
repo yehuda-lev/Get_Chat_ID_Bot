@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import enum
 import logging
 import datetime
 from contextlib import asynccontextmanager
-from enum import Enum
 
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.ext.asyncio import (
@@ -40,7 +40,7 @@ async def get_session() -> AsyncSession:
         yield session
 
 
-class StatsType(Enum):
+class StatsType(enum.Enum):
     """Type of stats"""
 
     BUTTON_SHARE_CHAT = "button_share_chat"
@@ -85,6 +85,24 @@ class User(BaseTable):
     active: Mapped[bool] = mapped_column(default=True)
     admin: Mapped[bool] = mapped_column(default=False)
     groups: Mapped[list[Group]] = relationship(back_populates="added_by", lazy="joined")
+    feature: Mapped[Feature] = relationship(back_populates="user", lazy="joined")
+
+
+class Feature(BaseTable):
+    """Feature details"""
+
+    __tablename__ = "feature"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    copy_button: Mapped[bool] = mapped_column(default=True)
+    multiple_chats: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.datetime.now, onupdate=datetime.datetime.now
+    )
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), unique=True)
+    user: Mapped[User] = relationship("User", back_populates="feature")
 
 
 class Group(BaseTable):
