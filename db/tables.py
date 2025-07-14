@@ -95,7 +95,7 @@ class Feature(BaseTable):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     copy_button: Mapped[bool] = mapped_column(default=True)
-    multiple_chats: Mapped[bool] = mapped_column(default=True)
+    multiple_chats: Mapped[bool] = mapped_column(default=False)  # not working for plus messanger (?)
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
     updated_at: Mapped[datetime.datetime] = mapped_column(
         default=datetime.datetime.now, onupdate=datetime.datetime.now
