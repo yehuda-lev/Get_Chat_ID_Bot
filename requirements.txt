@@ -1,4 +1,4 @@
-pyrotgfork==2.2.12
+pyrotgfork==2.2.13
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
 aiosqlite==0.20.0
