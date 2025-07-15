@@ -96,7 +96,9 @@ async def get_user(*, tg_id: int) -> User:
 # feature
 
 
-async def create_feature(*, user_id: int):
+async def create_feature(
+    *, user_id: int, copy_button: bool = True, multiple_chats: bool = False
+):
     """
     Create feature
     :param user_id: the user id
@@ -107,7 +109,9 @@ async def create_feature(*, user_id: int):
 
     async with get_session() as session:
         user = await get_user(tg_id=user_id)
-        feature = Feature(user=user)
+        feature = Feature(
+            user=user, copy_button=copy_button, multiple_chats=multiple_chats
+        )
         session.add(feature)
         await session.commit()
 
