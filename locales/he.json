@@ -40,7 +40,7 @@
     "MENU": "🏘 תפריט ראשי",
     "INFO_MENU": "🏘 תפריט עזרה",
     "ABOUT": "ℹ️ אודות",
-    "INFO_ABOUT": "\u200Fℹ️ **פרטים על הבוט**\n\n> 👨‍💻 **יוצר הבוט:** @yehudalev.\n\nשפה: [Python](https://www.python.org/).\nספרייה: [pyrotgfork](https://telegramplayground.github.io/pyrogram/).\n\n**🖤 הבוט בקוד פתוח בגיטהאב**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n💖 **תמוך בבוט:** הבוט עזר לך? עזור לשמור עליו פעיל עם הפקודה /donate.\n\n📢 **עקוב אחרינו:** קבל עדכונים, טיפים וחדשות על ידי הצטרפות ל-@GetChatID_Updates.",
+    "INFO_ABOUT": "\u200Fℹ️ **פרטים על הבוט**\n\n> 👨‍💻 **יוצר הבוט:** @yehudalev.\n\nשפה: [Python](https://www.python.org/).\nספרייה: [kurigram](https://docs.kurigram.icu).\n\n**🖤 הבוט בקוד פתוח בגיטהאב**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n💖 **תמוך בבוט:** הבוט עזר לך? עזור לשמור עליו פעיל עם הפקודה /donate.\n\n📢 **עקוב אחרינו:** קבל עדכונים, טיפים וחדשות על ידי הצטרפות ל-@GetChatID_Updates.",
     "BUTTON_DEV": "לשליחת הודעה למתכנת 👨‍💻",
     "LINK_DEV": "https://t.me/yehudalev",
     "CHOSE_CHAT_TYPE": "בחר את סוג הצ'אט",

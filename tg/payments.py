@@ -17,8 +17,7 @@ async def ask_for_payment(_: Client, msg: types.Message):
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.ASK_AMOUNT_TO_PAY, lang),
-        quote=True,
-        message_effect_id=5159385139981059251,  # ❤️
+        effect_id=5159385139981059251,  # ❤️
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -54,12 +53,13 @@ async def ask_for_payment(_: Client, msg: types.Message):
     )
 
 
-async def send_payment(_: Client, cbd: types.CallbackQuery):
+async def send_payment(client: Client, cbd: types.CallbackQuery):
     tg_id = cbd.from_user.id
     lang = (await repository.get_user(tg_id=tg_id)).lang
     amount = int(cbd.data.split(":")[1])
 
-    await cbd.message.reply_invoice(
+    await client.send_invoice(
+        chat_id=tg_id,
         title=manager.get_translation(TranslationKeys.SUPPORT_ME, lang),
         description=manager.get_translation(
             TranslationKeys.TEXT_SUPPORT_ME, lang
@@ -96,8 +96,7 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
         text=manager.get_translation(TranslationKeys.PAYMENT_SUCCESS, lang).format(
             payment.total_amount
         ),
-        quote=True,
-        message_effect_id=5046509860389126442,  # 🎉
+        effect_id=5046509860389126442,  # 🎉
     )
 
     text_to_admin = (
@@ -112,5 +111,5 @@ async def send_thanks_for_support(client: Client, msg: types.Message):
     await client.send_message(
         chat_id=settings.admin_to_update_of_payment,
         text=text_to_admin,
-        message_effect_id=5046509860389126442,  # 🎉
+        effect_id=5046509860389126442,  # 🎉
     )

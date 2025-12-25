@@ -40,7 +40,7 @@
     "MENU": "🏘 菜单",
     "INFO_MENU": "🏘 菜单帮助",
     "ABOUT": "ℹ️ 关于",
-    "INFO_ABOUT": "ℹ️ **机器人详情**\n\n> 👨‍💻 **开发者:** @yehudalev。\n\n语言: [Python](https://www.python.org/)。\n库: [pyrotgfork](https://telegramplayground.github.io/pyrogram/)。\n\n**🖤 机器人是开源的，在 GitHub 上可用**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n 💖 **支持机器人:** 觉得这个机器人有用？请用 /donate 命令帮助我们保持服务运行。\n\n 📢 **关注我们:** 加入 @GetChatID_Updates 获取更新、提示和新闻。",
+    "INFO_ABOUT": "ℹ️ **机器人详情**\n\n> 👨‍💻 **开发者:** @yehudalev。\n\n语言: [Python](https://www.python.org/)。\n库: [kurigram](https://docs.kurigram.icu)。\n\n**🖤 机器人是开源的，在 GitHub 上可用**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n 💖 **支持机器人:** 觉得这个机器人有用？请用 /donate 命令帮助我们保持服务运行。\n\n 📢 **关注我们:** 加入 @GetChatID_Updates 获取更新、提示和新闻。",
     "BUTTON_DEV": "发送消息 👨‍💻",
     "LINK_DEV": "https://t.me/yehudalev",
     "CHOSE_CHAT_TYPE": "选择聊天类型",

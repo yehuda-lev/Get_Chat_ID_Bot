@@ -40,7 +40,7 @@
     "MENU": "🏘 menu",
     "INFO_MENU": "🏘 menu help",
     "ABOUT": "ℹ️ about",
-    "INFO_ABOUT": "ℹ️ **Bot Details**\n\n> 👨‍💻 **Created By:** @yehudalev.\n\nLanguage: [Python](https://www.python.org/).\nLibrary: [pyrotgfork](https://telegramplayground.github.io/pyrogram/).\n\n**🖤 The bot is open source on GitHub**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n \uD83D\uDC96 **Support the Bot:** Found this bot useful? Help keep it running with the /donate command.\n\n\uD83D\uDCE2 **Follow Us:** Get updates, tips, and news by joining @GetChatID_Updates.",
+    "INFO_ABOUT": "ℹ️ **Bot Details**\n\n> 👨‍💻 **Created By:** @yehudalev.\n\nLanguage: [Python](https://www.python.org/).\nLibrary: [kurigram](https://docs.kurigram.icu).\n\n**🖤 The bot is open source on GitHub**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n \uD83D\uDC96 **Support the Bot:** Found this bot useful? Help keep it running with the /donate command.\n\n\uD83D\uDCE2 **Follow Us:** Get updates, tips, and news by joining @GetChatID_Updates.",
     "BUTTON_DEV": "Send message👨‍💻",
     "LINK_DEV": "https://t.me/yehudalev",
     "CHOSE_CHAT_TYPE": "Choose chat type",

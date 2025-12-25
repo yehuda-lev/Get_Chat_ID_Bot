@@ -61,7 +61,6 @@ async def python_exec(client: Client, msg: types.Message):
     if msg.from_user and msg.from_user.id != client.me.id:  # if send command to bot
         msg_to_edit = await msg.reply_text(
             "**✨ Executing...**",
-            quote=True,
         )
     else:
         msg_to_edit = msg

@@ -41,7 +41,7 @@ def get_buttons(
                 [
                     types.InlineKeyboardButton(
                         text=name,
-                        copy_text=types.CopyTextButton(text=str(chat_id)),
+                        copy_text=str(chat_id),
                     )
                 ]
             )
@@ -134,7 +134,6 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
             chat_id
         ),
         reply_markup=types.InlineKeyboardMarkup([buttons]),
-        quote=True,
     )
 
     create_stats(type_stats=tables.StatsType.LINK, lang=msg.from_user.language_code)

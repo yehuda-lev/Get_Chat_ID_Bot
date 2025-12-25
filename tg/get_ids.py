@@ -26,7 +26,7 @@ async def welcome(_: Client, msg: types.Message):
         10 if not db_user.feature or db_user.feature.multiple_chats else 1
     )
 
-    await msg.reply_text(
+    await msg.reply(
         text=manager.get_translation(TranslationKeys.WELCOME, lang).format(
             user.mention(user.full_name),
             " ".join(
@@ -35,19 +35,17 @@ async def welcome(_: Client, msg: types.Message):
             ),
         ),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
-        message_effect_id=5046509860389126442,  # 🎉
+        effect_id=5046509860389126442,  # 🎉
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
-            input_field_placeholder=manager.get_translation(
-                TranslationKeys.CHOSE_CHAT_TYPE, lang
-            ),
+            placeholder=manager.get_translation(TranslationKeys.CHOSE_CHAT_TYPE, lang),
             keyboard=[
                 [
                     # user
                     types.KeyboardButton(
                         text=manager.get_translation(TranslationKeys.USER, lang),
                         request_users=types.KeyboardButtonRequestUsers(
-                            request_id=1,
+                            button_id=1,
                             user_is_bot=False,
                             max_quantity=request_multiple_chats,
                             request_name=True,
@@ -57,7 +55,7 @@ async def welcome(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=manager.get_translation(TranslationKeys.BOT, lang),
                         request_users=types.KeyboardButtonRequestUsers(
-                            request_id=2,
+                            button_id=2,
                             user_is_bot=True,
                             max_quantity=request_multiple_chats,
                             request_name=True,
@@ -69,7 +67,7 @@ async def welcome(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=manager.get_translation(TranslationKeys.GROUP, lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=3,
+                            button_id=3,
                             chat_is_channel=False,
                             request_title=True,
                         ),
@@ -78,7 +76,7 @@ async def welcome(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=manager.get_translation(TranslationKeys.CHANNEL, lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=4,
+                            button_id=4,
                             chat_is_channel=True,
                             request_title=True,
                         ),
@@ -96,21 +94,19 @@ async def get_chats_manager(_: Client, msg: types.Message):
     lang = db_user.lang
     text = manager.get_translation(TranslationKeys.CHAT_MANAGER, lang)
 
-    await msg.reply_text(
+    await msg.reply(
         text=text,
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
-            input_field_placeholder=manager.get_translation(
-                TranslationKeys.CHOSE_CHAT_TYPE, lang
-            ),
+            placeholder=manager.get_translation(TranslationKeys.CHOSE_CHAT_TYPE, lang),
             keyboard=[
                 [
                     # group
                     types.KeyboardButton(
                         text=manager.get_translation(TranslationKeys.GROUP, lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=3,
+                            button_id=3,
                             chat_is_channel=False,
                             request_title=True,
                             user_administrator_rights=types.ChatPrivileges(
@@ -122,7 +118,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
                     types.KeyboardButton(
                         text=manager.get_translation(TranslationKeys.CHANNEL, lang),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=4,
+                            button_id=4,
                             chat_is_channel=True,
                             request_title=True,
                             user_administrator_rights=types.ChatPrivileges(
@@ -188,7 +184,6 @@ async def get_forward(_: Client, msg: types.Message):
 
     await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
@@ -213,7 +208,6 @@ async def get_me(_: Client, msg: types.Message):
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ID_USER, lang).format(name, tg_id),
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=tg_id, name=name, lang=lang, user=db_user
         ),
@@ -244,7 +238,6 @@ async def get_contact(_: Client, msg: types.Message):
         text = manager.get_translation(TranslationKeys.NOT_HAVE_ID, lang)
     await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id, name=name, lang=lang, user=db_user
         ),
@@ -279,10 +272,9 @@ async def get_request_peer(_: Client, msg: types.Message):
             text_lang = manager.get_translation(TranslationKeys.ID_USER, lang)
             text = ""
             for user in users:
-                text += f"{text_lang.format(
-                    user.full_name if user.full_name else '',
-                    user.id
-                )}\n"
+                text += f"{
+                    text_lang.format(user.full_name if user.full_name else '', user.id)
+                }\n"
 
             # button copy chat id
             if db_user.feature and db_user.feature.copy_button:
@@ -294,7 +286,7 @@ async def get_request_peer(_: Client, msg: types.Message):
                         [
                             types.InlineKeyboardButton(
                                 text=user.full_name if user.full_name else "",
-                                copy_text=types.CopyTextButton(text=str(user_id)),
+                                copy_text=str(user_id),
                             ),
                             types.InlineKeyboardButton(
                                 text=title,
@@ -305,11 +297,9 @@ async def get_request_peer(_: Client, msg: types.Message):
 
     elif msg.chat_shared:
         request_chat = msg.chat_shared
-        chats = request_chat.chats
+        chat = request_chat.chat
 
-        if request_chat.request_id == 100:  # support of added to group
-            chat = chats[0]
-
+        if request_chat.button_id == 100:  # support of added to group
             if not await repository.get_group(group_id=chat.id):
                 await repository.create_group(
                     group_id=chat.id,
@@ -331,50 +321,17 @@ async def get_request_peer(_: Client, msg: types.Message):
             reply_markup = types.ReplyKeyboardRemove()
 
         else:
-            if len(chats) == 1:
-                chat = chats[0]
-                name = chat.title
-                chat_id = chat.id
-                text = manager.get_translation(
-                    TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-                ).format(name, chat_id)
-
-            else:  # support of multiple chats
-                text_lang = manager.get_translation(
-                    TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-                )
-                text = ""
-                for chat in chats:
-                    text += f"{text_lang.format(chat.title, chat.id)}\n"
-
-                # button copy chat id
-                if db_user.feature and db_user.feature.copy_button:
-                    title = manager.get_translation(
-                        TranslationKeys.BUTTON_GET_LINK, lang
-                    )
-                    bot_username = clients.bot_1.me.username
-
-                    for chat in chats:
-                        chat_id = chat.id
-                        inline_keyboard.append(
-                            [
-                                types.InlineKeyboardButton(
-                                    text=chat.title,
-                                    copy_text=types.CopyTextButton(text=str(chat_id)),
-                                ),
-                                types.InlineKeyboardButton(
-                                    text=title,
-                                    url=f"https://t.me/{bot_username}?start=link_{chat_id}",
-                                ),
-                            ]
-                        )
+            name = chat.title
+            chat_id = chat.id
+            text = manager.get_translation(
+                TranslationKeys.ID_CHANNEL_OR_GROUP, lang
+            ).format(name, chat_id)
 
     else:
         return
 
     await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
@@ -421,7 +378,6 @@ async def get_story(_: Client, msg: types.Message):
 
     await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id, name=name, lang=lang, user=db_user
         ),
@@ -442,7 +398,6 @@ async def get_via_bot(_: Client, msg: types.Message):
 
     await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
@@ -516,9 +471,8 @@ async def get_username_by_message(_: Client, msg: types.Message):
 
     text, chat_id, name = await get_id_by_username(text=msg.text, lang=lang)
 
-    await msg.reply_text(
+    await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id, name=name, lang=lang, user=db_user
         ),
@@ -539,7 +493,6 @@ async def ask_inline_query(_: Client, msg: types.Message):
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ASK_INLINE_QUERY, lang),
-        quote=True,
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [
@@ -777,7 +730,6 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
     try:
         await msg.reply(
             text=text or f"{name} • `{chat_id}`" if chat_id else name,
-            quote=True,
             reply_markup=utils.get_buttons(
                 chat_id=chat_id,
                 name=name,
@@ -807,7 +759,6 @@ async def get_reply_to_another_chat(_: Client, msg: types.Message):
 
     await msg.reply(
         text=text,
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=chat_id,
             name=name,
@@ -863,7 +814,6 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
         text=manager.get_translation(
             TranslationKeys.ID_BY_MANAGE_BUSINESS, lang
         ).format(from_chat_id),
-        quote=True,
         reply_markup=utils.get_buttons(
             chat_id=from_chat_id,
             name=msg.text,

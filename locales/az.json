@@ -40,7 +40,7 @@
   "MENU": "🏘 Menyu",
   "INFO_MENU": "🏘 Menyu üzrə kömək",
   "ABOUT": "ℹ️ Bot haqqında",
-  "INFO_ABOUT": "ℹ️ **Bot haqqında məlumat**\n\n> 👨‍💻 **Yaradıcı:** @yehudalev\n\nDil: [Python](https://www.python.org/)\nKitabxana: [pyrotgfork](https://telegramplayground.github.io/pyrogram/)\n\n**🖤 Açıq mənbə kodlu bot GitHub-da:**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n💖 **Dəstək olmaq istəyirsənsə**, /donate yaz\n\n📢 Yeniliklər üçün: @GetChatID_Updates",
+  "INFO_ABOUT": "ℹ️ **Bot haqqında məlumat**\n\n> 👨‍💻 **Yaradıcı:** @yehudalev\n\nDil: [Python](https://www.python.org/)\nKitabxana: [kurigram](https://docs.kurigram.icu)\n\n**🖤 Açıq mənbə kodlu bot GitHub-da:**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n💖 **Dəstək olmaq istəyirsənsə**, /donate yaz\n\n📢 Yeniliklər üçün: @GetChatID_Updates",
   "BUTTON_DEV": "Yaradıcıya yaz 👨‍💻",
   "LINK_DEV": "https://t.me/yehudalev",
   "CHOSE_CHAT_TYPE": "Söhbət növünü seç",

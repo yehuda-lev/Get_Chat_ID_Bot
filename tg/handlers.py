@@ -19,7 +19,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_forward,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.forwarded
         & (
             filters.all & ~filters.media_group
@@ -33,7 +33,7 @@ HANDLERS = [
     handlers.MessageHandler(
         others.choose_lang,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="lang")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -41,7 +41,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_me,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="me")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -49,7 +49,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_chats_manager,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="admin")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -57,7 +57,7 @@ HANDLERS = [
     handlers.MessageHandler(
         others.added_to_group,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="add")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -65,14 +65,14 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_ids_in_the_group,
         filters.group
-        & ~filters.tg_business  # not needed, but maybe in the future
+        & ~filters.business  # not needed, but maybe in the future
         & filters.command("id")
         & tg_filters.create_group(),
     ),
     handlers.MessageHandler(
         others.settings,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="settings")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -80,7 +80,7 @@ HANDLERS = [
     handlers.MessageHandler(
         help.handle_callback_data_help,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="help")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -88,7 +88,7 @@ HANDLERS = [
     handlers.MessageHandler(
         others.send_about,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="about")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -96,7 +96,7 @@ HANDLERS = [
     handlers.MessageHandler(
         payments.ask_for_payment,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="donate")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -104,7 +104,7 @@ HANDLERS = [
     handlers.MessageHandler(
         others.send_privacy_policy,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command("privacy")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -112,7 +112,7 @@ HANDLERS = [
     handlers.MessageHandler(
         utils.send_link_to_chat_by_id,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command("link")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -120,7 +120,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.ask_inline_query,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command("search")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -128,7 +128,7 @@ HANDLERS = [
     handlers.MessageHandler(
         others.handle_feature,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command("feature")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -137,7 +137,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_username_by_message,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.text
         & filters.create(tg_filters.is_username)
         & ~tg_filters.status_answer()
@@ -147,7 +147,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_contact,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.contact
         & ~tg_filters.status_answer()
         & tg_filters.is_user_spamming()
@@ -156,7 +156,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_request_peer,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.create(
             lambda _, __, msg: msg.chat_shared is not None
             or msg.users_shared is not None
@@ -168,7 +168,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_story,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.create(lambda _, __, msg: msg.story is not None)
         & ~tg_filters.status_answer()
         & tg_filters.is_user_spamming()
@@ -177,7 +177,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_via_bot,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.create(
             lambda _, client, msg: msg.via_bot and client.me.id != msg.via_bot.id
         ),
@@ -185,7 +185,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_reply_to_another_chat,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.create(lambda _, __, msg: msg.external_reply is not None)
         & ~tg_filters.status_answer()
         & tg_filters.is_user_spamming()
@@ -195,9 +195,9 @@ HANDLERS = [
         others.on_remove_permission,
     ),
     # business
-    handlers.MessageHandler(
+    handlers.BusinessMessageHandler(
         get_ids.get_id_with_business_connection,
-        filters.tg_business
+        filters.business
         & tg_filters.start_command(command="id", prefixes=[".", "/"])
         & filters.outgoing
         & tg_filters.is_user_spamming()
@@ -206,12 +206,12 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_id_by_manage_business,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="bizChat")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
-    handlers.BusinessBotConnectionHandler(
+    handlers.BusinessConnectionHandler(
         others.handle_business_connection,
         tg_filters.create_user(),
     ),
@@ -219,7 +219,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.welcome,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command(command="start")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -259,7 +259,7 @@ HANDLERS = [
     ),
     handlers.PreCheckoutQueryHandler(
         payments.confirm_payment,
-        ~filters.tg_business,
+        ~filters.business,
     ),
     handlers.MessageHandler(
         payments.send_thanks_for_support,
@@ -270,7 +270,7 @@ HANDLERS = [
         code_runner.python_exec,
         filters=(
             ~filters.me
-            & ~filters.tg_business
+            & ~filters.business
             & filters.private
             & filters.command(["py", "rpy"], prefixes="/")
             & tg_filters.is_admin()
@@ -281,7 +281,7 @@ HANDLERS = [
     handlers.MessageHandler(
         stats.ask_stats_time,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & filters.command("stats")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()
@@ -305,7 +305,7 @@ HANDLERS = [
     handlers.MessageHandler(
         admin_command.ask_for_who_to_send,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.start_command("send")
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()
@@ -314,7 +314,7 @@ HANDLERS = [
     handlers.MessageHandler(
         admin_command.delete_sent_messages,
         filters.command("delete")
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.create_user()
         & tg_filters.is_admin(),
     ),
@@ -328,7 +328,7 @@ HANDLERS = [
     handlers.MessageHandler(
         admin_command.send_broadcast,
         filters.private
-        & ~filters.tg_business
+        & ~filters.business
         & tg_filters.status_answer({"send_message_to_subscribers": True})
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()

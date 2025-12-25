@@ -40,7 +40,7 @@
     "MENU": "🏘 القائمة",
     "INFO_MENU": "🏘 مساعدة القائمة",
     "ABOUT": "ℹ️ حول",
-    "INFO_ABOUT": "‏ℹ️ **تفاصيل حول البوت**\n\n> 👨‍💻 **منشئ البوت:** @yehudalev.\n\nاللغة: [Python](https://www.python.org/).\nالمكتبة: [pyrotgfork](https://telegramplayground.github.io/pyrogram/).\n\n**🖤 البوت مفتوح المصدر على GitHub**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n💖 **ادعم البوت:** هل وجدت البوت مفيدًا؟ ساعد في استمراره من خلال الأمر /donate.\n\n📢 **تابعنا:** احصل على التحديثات والنصائح والأخبار بالانضمام إلى @GetChatID_Updates!",
+    "INFO_ABOUT": "‏ℹ️ **تفاصيل حول البوت**\n\n> 👨‍💻 **منشئ البوت:** @yehudalev.\n\nاللغة: [Python](https://www.python.org/).\nالمكتبة: [kurigram](https://docs.kurigram.icu).\n\n**🖤 البوت مفتوح المصدر على GitHub**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n💖 **ادعم البوت:** هل وجدت البوت مفيدًا؟ ساعد في استمراره من خلال الأمر /donate.\n\n📢 **تابعنا:** احصل على التحديثات والنصائح والأخبار بالانضمام إلى @GetChatID_Updates!",
     "BUTTON_DEV": "إرسال رسالة👨‍💻",
     "LINK_DEV": "https://t.me/yehudalev",
     "CHOSE_CHAT_TYPE": "اختر نوع الدردشة",

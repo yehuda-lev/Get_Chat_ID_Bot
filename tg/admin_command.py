@@ -16,7 +16,6 @@ _logger = logging.getLogger(__name__)
 async def ask_for_who_to_send(_: Client, msg: types.Message):
     await msg.reply(
         text="למי ברצונך לשלוח הודעה?",
-        quote=True,
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [

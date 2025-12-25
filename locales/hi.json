@@ -40,7 +40,7 @@
     "MENU": "🏘 मेनू",
     "INFO_MENU": "🏘 मेनू सहायता",
     "ABOUT": "ℹ️ के बारे में",
-    "INFO_ABOUT": "ℹ️ **बॉट विवरण**\n\n> 👨‍💻 **द्वारा निर्मित:** @yehudalev.\n\nभाषा: [Python](https://www.python.org/).\nलाइब्रेरी: [pyrotgfork](https://telegramplayground.github.io/pyrogram/).\n\n**🖤 बॉट ओपन सोर्स है GitHub पर**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n \uD83D\uDC96 **बॉट का समर्थन करें:** क्या यह बॉट उपयोगी लगा? इसे चालू रखने में मदद करें /donate कमांड के साथ।\n\n\uD83D\uDCE2 **हमें फॉलो करें:** अपडेट, सुझाव और समाचार प्राप्त करने के लिए @GetChatID_Updates से जुड़ें।",
+    "INFO_ABOUT": "ℹ️ **बॉट विवरण**\n\n> 👨‍💻 **द्वारा निर्मित:** @yehudalev.\n\nभाषा: [Python](https://www.python.org/).\nलाइब्रेरी: [kurigram](https://docs.kurigram.icu).\n\n**🖤 बॉट ओपन सोर्स है GitHub पर**\n> https://github.com/yehuda-lev/Get_Chat_ID_Bot\n\n \uD83D\uDC96 **बॉट का समर्थन करें:** क्या यह बॉट उपयोगी लगा? इसे चालू रखने में मदद करें /donate कमांड के साथ।\n\n\uD83D\uDCE2 **हमें फॉलो करें:** अपडेट, सुझाव और समाचार प्राप्त करने के लिए @GetChatID_Updates से जुड़ें।",
     "BUTTON_DEV": "संदेश भेजें👨‍💻",
     "LINK_DEV": "https://t.me/yehudalev",
     "CHOSE_CHAT_TYPE": "चैट प्रकार चुनें",

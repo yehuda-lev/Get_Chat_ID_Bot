@@ -1,4 +1,4 @@
-pyrotgfork==2.2.13
+https://github.com/KurimuzonAkuma/kurigram/archive/81824045f5cdd7808ed6190fcbac85287f275a42.zip  # kurigram
 PyroTgCrypto==1.2.6a0
 SQLAlchemy==2.0.32
 aiosqlite==0.20.0

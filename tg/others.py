@@ -19,9 +19,7 @@ async def settings(_: Client, msg: types.Message) -> None:
     user = await repository.get_user(tg_id=msg.from_user.id)
     lang = user.lang
 
-    m = await msg.reply(
-        text=manager.get_translation(TranslationKeys.SETTINGS, lang), quote=True
-    )
+    m = await msg.reply(text=manager.get_translation(TranslationKeys.SETTINGS, lang))
     await m.react("👨‍💻")
 
 
@@ -33,7 +31,6 @@ async def send_about(_: Client, msg: types.Message):
 
     await msg.reply_text(
         text=manager.get_translation(TranslationKeys.INFO_ABOUT, lang),
-        quote=True,
         link_preview_options=types.LinkPreviewOptions(
             url="https://github.com/yehuda-lev/Get_Chat_ID_Bot",
             show_above_text=True,
@@ -87,7 +84,6 @@ async def choose_lang(_, msg: types.Message):
                 ]
             ]
         ),
-        quote=True,
     )
 
 
@@ -187,7 +183,6 @@ async def handle_feature(_: Client, msg: types.Message | types.CallbackQuery):
         await msg.reply(
             text=manager.get_translation(TranslationKeys.FEATURE_SETTINGS, lang),
             reply_markup=reply_markup,
-            quote=True,
         )
         return
 
@@ -239,7 +234,6 @@ async def added_to_group(_: Client, msg: types.Message):
 
     await msg.reply(
         text=manager.get_translation(TranslationKeys.ADD_BOT_TO_GROUP, lang),
-        quote=True,
         reply_markup=types.ReplyKeyboardMarkup(
             [
                 [
@@ -248,7 +242,7 @@ async def added_to_group(_: Client, msg: types.Message):
                             TranslationKeys.BUTTON_ADD_BOT_TO_GROUP, lang
                         ),
                         request_chat=types.KeyboardButtonRequestChat(
-                            request_id=100,
+                            button_id=100,
                             chat_is_channel=False,
                             request_title=True,
                             request_username=True,
@@ -315,17 +309,21 @@ async def handle_business_connection(
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
 
+    can_reply = update.is_enabled and update.rights and update.rights.can_reply
+
     await repository.update_user(
         tg_id=tg_id,
-        business_id=update.id if (update.is_enabled and update.can_reply) else None,
+        business_id=update.id if can_reply else None,
     )
 
     message_effect_id = None
-    if update.is_enabled and update.can_reply:  # user add the bot to our business
+    if (
+        update.is_enabled and update.rights and update.rights.can_reply
+    ):  # user add the bot to our business
         text = manager.get_translation(TranslationKeys.BUSINESS_CONNECTION, lang)
         message_effect_id = 5107584321108051014  # 👍
 
-    elif update.is_enabled and not update.can_reply:  # with no permission to reply
+    elif can_reply:  # with no permission to reply
         text = manager.get_translation(
             TranslationKeys.BUSINESS_CONNECTION_DISABLED, lang
         )
@@ -338,7 +336,7 @@ async def handle_business_connection(
     await client.send_message(
         chat_id=tg_id,
         text=text,
-        message_effect_id=message_effect_id,
+        effect_id=message_effect_id,
     )
 
     raise ContinuePropagation
