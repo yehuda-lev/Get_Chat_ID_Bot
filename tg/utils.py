@@ -46,21 +46,19 @@ def get_buttons(
                 ]
             )
 
-    return types.InlineKeyboardMarkup(
-        [
-            *(inline_buttons if inline_buttons else []),
-            [
-                types.InlineKeyboardButton(
-                    text=(
-                        manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang)
-                        if not by
-                        else "Powered by 'Get Chat ID Bot' 🪪"
-                    ),
-                    url=f"https://t.me/{clients.bot_1.me.username}?start={f'link_{chat_id}' if not by else f'start_{by}'}",
-                )
-            ],
+    buttons_link_to_chat = get_buttons_link_to_chat(chat_id=chat_id)
+    inline_buttons.append(buttons_link_to_chat)
+
+    if by:
+        buttons = [
+            types.InlineKeyboardButton(
+                text="Powered by 'Get Chat ID Bot' 🪪",
+                url=f"https://t.me/{clients.bot_1.me.username}?start={f'start_{by}'}",
+            )
         ]
-    )
+        inline_buttons.append(buttons)
+
+    return types.InlineKeyboardMarkup(inline_buttons)
 
 
 async def send_alert_to_change_settings(user: repository.User):
@@ -94,23 +92,45 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
         if chat_id.startswith("link_"):
             chat_id = chat_id[5:]
     except ValueError:
-        await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
-        return
+        if msg.text.isdigit() or (
+            msg.text and msg.text.startswith("-") and msg.text[1:].isdigit()
+        ):
+            chat_id = msg.text
+        else:
+            await msg.reply(manager.get_translation(TranslationKeys.FORMAT_LINK, lang))
+            return
 
-    is_group, link, link_android, link_ios = None, None, None, None
+    buttons = get_buttons_link_to_chat(chat_id)
+
+    await msg.reply(
+        text=manager.get_translation(TranslationKeys.LINK_TO_CHAT, lang).format(
+            chat_id
+        ),
+        reply_markup=types.InlineKeyboardMarkup([buttons]),
+    )
+
+    create_stats(type_stats=tables.StatsType.LINK, lang=msg.from_user.language_code)
+
+
+def get_buttons_link_to_chat(chat_id: int | str) -> list[types.InlineKeyboardButton]:
+    """
+    Get buttons with link to chat by chat id
+    """
+    is_group_or_channel, link, link_android, link_ios = None, None, None, None
+    chat_id = str(chat_id)
     if chat_id.startswith("-100"):  # supergroup or channel
         link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
-        is_group = True
+        is_group_or_channel = True
     elif chat_id.startswith("-"):  # group
         link = f"https://t.me/{chat_id[1:]}/1{''.join('0' for _ in range(7))}"
-        is_group = True
+        is_group_or_channel = True
     else:
         chat_id = chat_id.replace(" ", "")
-        is_group = False
+        is_group_or_channel = False
         link_android = f"tg://openmessage?user_id={chat_id}"
         link_ios = f"https://t.me/@id{chat_id}"
 
-    if is_group:
+    if is_group_or_channel:
         buttons = [
             types.InlineKeyboardButton(
                 text="Link 🔗",
@@ -129,14 +149,7 @@ async def send_link_to_chat_by_id(_: Client, msg: types.Message):
             ),
         ]
 
-    await msg.reply(
-        text=manager.get_translation(TranslationKeys.LINK_TO_CHAT, lang).format(
-            chat_id
-        ),
-        reply_markup=types.InlineKeyboardMarkup([buttons]),
-    )
-
-    create_stats(type_stats=tables.StatsType.LINK, lang=msg.from_user.language_code)
+    return buttons
 
 
 def create_stats(type_stats: tables.StatsType, lang: str):
