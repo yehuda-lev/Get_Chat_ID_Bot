@@ -1,5 +1,5 @@
 import logging
-from pyrogram import types, Client, errors, enums, ContinuePropagation
+from pyrogram import types, Client, errors, enums, ContinuePropagation, raw
 
 from data import cache_memory
 from db import repository
@@ -267,8 +267,6 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
     """
     When the bot has had permissions removed from a chat or user blocked the bot.
     """
-    if not update.new_chat_member:
-        return
     # user blocked the bot
     if update.from_user.id == update.chat.id:
         if (
@@ -282,20 +280,49 @@ async def on_remove_permission(_: Client, update: types.ChatMemberUpdated):
                 await repository.update_user(tg_id=update.from_user.id, active=False)
             return
 
-    # the bot has had permissions removed from a chat
-    if update.new_chat_member.user is None or not update.new_chat_member.user.is_self:
-        return
-    if update.new_chat_member.status in {
-        enums.ChatMemberStatus.MEMBER,
-        enums.ChatMemberStatus.RESTRICTED,
-    } and (
-        update.old_chat_member
-        and update.old_chat_member.status is enums.ChatMemberStatus.ADMINISTRATOR
-    ):
+    is_banned, new_member_not_admin = False, False
+    if not update.new_chat_member:
+        if not update.chat.is_banned:
+            return
+        is_banned = True
+
+    else:
+        # the bot has had permissions removed from a chat
+        if (
+            update.new_chat_member.user is None
+            or not update.new_chat_member.user.is_self
+        ):
+            return
+
+        new_member_not_admin = (
+            update.new_chat_member
+            and update.new_chat_member.status
+            in {
+                enums.ChatMemberStatus.MEMBER,
+                enums.ChatMemberStatus.RESTRICTED,
+                enums.ChatMemberStatus.BANNED,
+            }
+        )
+
+    if is_banned or new_member_not_admin:
         _logger.debug(
             f"The bot has had permissions removed from: {update.chat.id}, {update.chat.title}"
         )
         await repository.update_group(group_id=update.chat.id, active=False)
+
+
+async def on_user_blocked(
+    _: Client, update: raw.types.UpdateBotStopped, users: dict, _chats: dict
+):
+    """
+    When the bot has been blocked by a user.
+    """
+    tg_id = update.user_id
+    if await repository.get_user(tg_id=tg_id):
+        _logger.debug(
+            f"The bot has been {'un' if not update.stopped else ''}stopped by the user: {tg_id}, {users[tg_id].first_name}"
+        )
+        await repository.update_user(tg_id=tg_id, active=not update.stopped)
 
 
 async def handle_business_connection(

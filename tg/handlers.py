@@ -1,5 +1,5 @@
 import logging
-from pyrogram import handlers, filters
+from pyrogram import handlers, filters, raw
 
 from tg import (
     filters as tg_filters,
@@ -158,8 +158,9 @@ HANDLERS = [
         filters.private
         & ~filters.business
         & filters.create(
-            lambda _, __, msg: msg.chat_shared is not None
-            or msg.users_shared is not None
+            lambda _, __, msg: (
+                msg.chat_shared is not None or msg.users_shared is not None
+            )
         )
         & ~tg_filters.status_answer()
         & tg_filters.is_user_spamming()
@@ -193,6 +194,10 @@ HANDLERS = [
     ),
     handlers.ChatMemberUpdatedHandler(
         others.on_remove_permission,
+    ),
+    handlers.RawUpdateHandler(
+        others.on_user_blocked,
+        filters.create(lambda _, __, u: isinstance(u, raw.types.UpdateBotStopped)),
     ),
     # business
     handlers.BusinessMessageHandler(
