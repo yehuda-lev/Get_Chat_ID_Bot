@@ -78,9 +78,12 @@ class User(BaseTable):
 
     created_at: Mapped[datetime.datetime]
     created_by: Mapped[str | None] = mapped_column(nullable=True)
-    # updated_at: Mapped[datetime.datetime] = mapped_column(
-    #     default=datetime.datetime.now, onupdate=datetime.datetime.now
-    # )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.datetime.now, onupdate=datetime.datetime.now
+    )
+    last_active: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.datetime.now
+    )
 
     active: Mapped[bool] = mapped_column(default=True)
     admin: Mapped[bool] = mapped_column(default=False)

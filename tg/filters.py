@@ -6,6 +6,7 @@ from pyrogram import types, filters, enums, Client
 
 from db import repository as db_filters
 from data import config
+from tg import others
 
 _logger = logging.getLogger(__name__)
 
@@ -140,6 +141,8 @@ def create_user() -> filters.Filter:
 
         if not user.active:
             await db_filters.update_user(tg_id=tg_id, active=True)
+
+        others.UserLastMessage.add_user_last_message(user_id=tg_id, timestamp=msg.date)
 
         return True
 

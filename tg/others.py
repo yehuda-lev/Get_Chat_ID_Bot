@@ -1,3 +1,4 @@
+import datetime
 import logging
 from pyrogram import types, Client, errors, enums, ContinuePropagation, raw
 
@@ -367,3 +368,43 @@ async def handle_business_connection(
     )
 
     raise ContinuePropagation
+
+
+class UserLastMessage:
+    _users_last_message = dict()
+    """key: user_id, value: datetime of last message"""
+
+    @classmethod
+    def add_user_last_message(cls, user_id: int, timestamp: datetime.datetime):
+        """
+        Add or update the last message time for a user.
+        """
+        cls._users_last_message[user_id] = timestamp
+
+    @classmethod
+    def get_user_last_message(cls, user_id: int) -> datetime.datetime | None:
+        """
+        Get the last message time for a user.
+        """
+        return cls._users_last_message.get(user_id)
+
+    @classmethod
+    async def update_db_users_last_message(cls):
+        """
+        Update the last message time for users in the database.
+        """
+        date_now = datetime.datetime.now(datetime.timezone.utc)
+        for user_id, timestamp in list(cls._users_last_message.items()):
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.astimezone(datetime.timezone.utc)
+
+            # if the message is less than 30 minutes old, skip it
+            if (date_now - timestamp) < datetime.timedelta(minutes=30):
+                continue
+
+            await repository.update_user(
+                tg_id=user_id,
+                last_active=timestamp,
+            )
+            # remove from dict
+            del cls._users_last_message[user_id]
