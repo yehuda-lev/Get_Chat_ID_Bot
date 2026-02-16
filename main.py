@@ -1,5 +1,4 @@
 import logging
-from logging.handlers import RotatingFileHandler
 import asyncio
 from pyrogram import raw, __version__, idle
 
@@ -8,32 +7,8 @@ from db import repository
 from data import config, clients
 
 
-# log config
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-logging.getLogger("aiosqlite").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-
-root_logger = logging.getLogger()
-root_logger.setLevel(level=logging.DEBUG)
-
-log_format = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(log_format)
-root_logger.addHandler(console_handler)
-
-file_handler = RotatingFileHandler(
-    filename="bot.log", maxBytes=20 * (2**20), backupCount=3, mode="D", encoding="utf-8"
-)
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(log_format)
-root_logger.addHandler(file_handler)
-
-
+config.setup_logging()
 _logger = logging.getLogger(__name__)
-
 settings = config.get_settings()
 
 
