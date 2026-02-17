@@ -15,6 +15,7 @@ _logger = logging.getLogger(__name__)
 
 
 async def run_exec(code: str, *args, timeout: int = None) -> str:
+    locs = {}
     exec(
         "async def __todo(client, msg, *args):\n"
         + " from pyrogram import raw\n"
@@ -38,12 +39,14 @@ async def run_exec(code: str, *args, timeout: int = None) -> str:
         + "   else:\n"
         + "     rpc = raw.functions.messages.GetMessages(id=ids)\n"
         + "   return await app.invoke(rpc, sleep_threshold=-1)\n"
-        + "".join(f"\n {_l}" for _l in code.split("\n"))
+        + "".join(f"\n {_l}" for _l in code.split("\n")),
+        globals(),
+        locs,
     )
 
     f = io.StringIO()
     with contextlib.redirect_stdout(f):
-        await asyncio.wait_for(locals()["__todo"](*args), timeout=timeout)
+        await asyncio.wait_for(locs["__todo"](*args), timeout=timeout)
 
     return f.getvalue()
 
