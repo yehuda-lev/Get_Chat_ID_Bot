@@ -64,10 +64,13 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         get_ids.get_ids_in_the_group,
-        filters.group
-        & ~filters.business  # not needed, but maybe in the future
+        ~filters.business  # not needed, but maybe in the future
         & filters.command("id")
-        & tg_filters.create_group(),
+        & ((filters.group | filters.channel) & tg_filters.create_group())
+        | (
+            filters.direct
+            & filters.create(lambda _, __, m: m.sender_chat and m.sender_chat.is_admin)
+        ),
     ),
     handlers.MessageHandler(
         others.settings,

@@ -47,7 +47,11 @@ def get_buttons(
             )
 
     buttons_link_to_chat = get_buttons_link_to_chat(chat_id=chat_id)
-    inline_buttons.append(buttons_link_to_chat)
+    inline_buttons = (
+        inline_buttons + [buttons_link_to_chat]
+        if inline_buttons
+        else [buttons_link_to_chat]
+    )
 
     if by:
         buttons = [
@@ -120,6 +124,9 @@ def get_buttons_link_to_chat(chat_id: int | str) -> list[types.InlineKeyboardBut
     chat_id = str(chat_id)
     if chat_id.startswith("-100"):  # supergroup or channel
         link = f"https://t.me/c/{chat_id[4:]}/1{''.join('0' for _ in range(7))}"
+        is_group_or_channel = True
+    elif chat_id.startswith("-207"):  # direct channel
+        link = f"https://t.me/c/1{chat_id[2:]}/1{''.join('0' for _ in range(7))}"
         is_group_or_channel = True
     elif chat_id.startswith("-"):  # group
         link = f"https://t.me/{chat_id[1:]}/1{''.join('0' for _ in range(7))}"
