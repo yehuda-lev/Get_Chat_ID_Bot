@@ -6,8 +6,7 @@ from pyrogram import types, Client, raw
 
 from data import clients
 from db import repository, tables
-from locales.translation_manager import manager, TranslationKeys
-
+from locales.translation_manager import manager, TranslationKeys, get_button_with_emoji
 
 _logger = logging.getLogger(__name__)
 
@@ -139,19 +138,22 @@ def get_buttons_link_to_chat(chat_id: int | str) -> list[types.InlineKeyboardBut
 
     if is_group_or_channel:
         buttons = [
-            types.InlineKeyboardButton(
-                text="Link 🔗",
+            get_button_with_emoji(
+                key="Link 🔗",
+                lang=None,
                 url=link,
             )
         ]
     else:
         buttons = [
-            types.InlineKeyboardButton(
-                text="Android 📱",
+            get_button_with_emoji(
+                key="Android 📱",
+                lang=None,
                 url=link_android,
             ),
-            types.InlineKeyboardButton(
-                text="iOS 🔗",
+            get_button_with_emoji(
+                key="iOS 🍏",
+                lang=None,
                 url=link_ios,
             ),
         ]

@@ -3,7 +3,7 @@ from pyrogram import types, Client, errors
 
 from data import cache_memory
 from db import repository
-from locales.translation_manager import TranslationKeys, manager
+from locales.translation_manager import TranslationKeys, manager, get_button_with_emoji
 
 
 _logger = logging.getLogger(__name__)
@@ -35,8 +35,9 @@ def get_keyboard(
 
         for item in lst:
             x.append(
-                types.InlineKeyboardButton(
-                    text=manager.get_translation(item.upper(), lang),
+                get_button_with_emoji(
+                    key=item.upper(),
+                    lang=lang,
                     callback_data=f"help:info:{keyboard_from}:{list_of_help.index(lst)}:{lst.index(item)}",
                 )
             )
@@ -113,15 +114,17 @@ def get_keyboard_menu(
     return types.InlineKeyboardMarkup(
         [
             [
-                types.InlineKeyboardButton(
-                    text=manager.get_translation(TranslationKeys.SHOW_ALL, lang),
+                get_button_with_emoji(
+                    key=TranslationKeys.SHOW_ALL,
+                    lang=lang,
                     callback_data=f"help:next:{keyboard_from}:0:0",
                 )
             ],
             *get_keyboard(keyboard_from=keyboard_from, lang=lang),
             [
-                types.InlineKeyboardButton(
-                    text=manager.get_translation(TranslationKeys.ABOUT, lang),
+                get_button_with_emoji(
+                    key=TranslationKeys.ABOUT,
+                    lang=lang,
                     callback_data=f"help:info:{keyboard_from}:about",
                 )
             ],
@@ -166,18 +169,16 @@ async def handle_callback_data_help(
                     reply_markup=types.InlineKeyboardMarkup(
                         [
                             [
-                                types.InlineKeyboardButton(
-                                    text=manager.get_translation(
-                                        TranslationKeys.BACK, lang
-                                    ),
+                                get_button_with_emoji(
+                                    key=TranslationKeys.BACK,
+                                    lang=lang,
                                     callback_data=get_back_callback_data(
                                         index_lst, index_item
                                     ),
                                 ),
-                                types.InlineKeyboardButton(
-                                    text=manager.get_translation(
-                                        TranslationKeys.NEXT, lang
-                                    ),
+                                get_button_with_emoji(
+                                    key=TranslationKeys.NEXT,
+                                    lang=lang,
                                     callback_data=get_next_callback_data(
                                         index_lst, index_item
                                     ),
@@ -185,18 +186,16 @@ async def handle_callback_data_help(
                             ],
                             # back to menu:
                             [
-                                types.InlineKeyboardButton(
-                                    text=manager.get_translation(
-                                        TranslationKeys.MENU, lang
-                                    ),
+                                get_button_with_emoji(
+                                    key=TranslationKeys.MENU,
+                                    lang=lang,
                                     callback_data=f"help:menu:{keyboad_from}:menu",
                                 )
                             ],
                             [
-                                types.InlineKeyboardButton(
-                                    text=manager.get_translation(
-                                        TranslationKeys.ABOUT, lang
-                                    ),
+                                get_button_with_emoji(
+                                    key=TranslationKeys.ABOUT,
+                                    lang=lang,
                                     callback_data=f"help:info:{keyboad_from}:about",
                                 )
                             ],
@@ -218,20 +217,18 @@ async def handle_callback_data_help(
                         reply_markup=types.InlineKeyboardMarkup(
                             [
                                 [
-                                    types.InlineKeyboardButton(
-                                        text=manager.get_translation(
-                                            TranslationKeys.BUTTON_DEV, lang
-                                        ),
+                                    get_button_with_emoji(
+                                        key=TranslationKeys.BUTTON_DEV,
+                                        lang=lang,
                                         url=manager.get_translation(
                                             TranslationKeys.LINK_DEV, lang
                                         ),
                                     )
                                 ],
                                 [
-                                    types.InlineKeyboardButton(
-                                        text=manager.get_translation(
-                                            TranslationKeys.MENU, lang
-                                        ),
+                                    get_button_with_emoji(
+                                        key=TranslationKeys.MENU,
+                                        lang=lang,
                                         callback_data=f"help:menu:{keyboad_from}:menu",
                                     )
                                 ],

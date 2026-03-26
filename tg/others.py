@@ -4,7 +4,7 @@ from pyrogram import types, Client, errors, enums, ContinuePropagation, raw
 
 from data import cache_memory
 from db import repository
-from locales.translation_manager import TranslationKeys, manager
+from locales.translation_manager import TranslationKeys, manager, get_button_with_emoji
 from tg import utils
 
 _logger = logging.getLogger(__name__)
@@ -39,8 +39,9 @@ async def send_about(_: Client, msg: types.Message):
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [
-                    types.InlineKeyboardButton(
-                        text=manager.get_translation(TranslationKeys.BUTTON_DEV, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.BUTTON_DEV,
+                        lang=lang,
                         url=manager.get_translation(TranslationKeys.LINK_DEV, lang),
                     )
                 ],
@@ -73,8 +74,9 @@ async def choose_lang(_, msg: types.Message):
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [
-                    types.InlineKeyboardButton(
-                        text=manager.get_translation(TranslationKeys.LANGUAGE, _lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.LANGUAGE,
+                        lang=_lang,
                         callback_data=f"lang:{_lang}",
                     )
                     for _lang in langs
@@ -151,30 +153,34 @@ async def handle_feature(_: Client, msg: types.Message | types.CallbackQuery):
                 + ("-on" if not copy_button else "-off"),
             ),
             types.InlineKeyboardButton(
-                text=manager.get_translation(TranslationKeys.MULTIPLE_CHATS, lang)
+                text=manager.get_translation(
+                    TranslationKeys.MULTIPLE_CHATS,
+                    lang,
+                )
                 + (" ✅" if multiple_chats else " ❌"),
                 callback_data="feature:multiple_chats"
                 + ("-on" if not multiple_chats else "-off"),
             ),
         ],
         [
-            types.InlineKeyboardButton(
-                text=manager.get_translation(
-                    TranslationKeys.DISABLE_ALL_FEATURES, lang
-                ),
+            get_button_with_emoji(
+                key=TranslationKeys.DISABLE_ALL_FEATURES,
+                lang=lang,
                 callback_data="feature:disable_all",
             )
         ],
         [
-            types.InlineKeyboardButton(
-                text=manager.get_translation(TranslationKeys.ENABLE_ALL_FEATURES, lang),
+            get_button_with_emoji(
+                key=TranslationKeys.ENABLE_ALL_FEATURES,
+                lang=lang,
                 callback_data="feature:enable_all",
             )
         ],
         [
-            types.InlineKeyboardButton(
-                text=manager.get_translation(TranslationKeys.SAVE_CHANGES, lang),
-                callback_data=f"feature:save",
+            get_button_with_emoji(
+                key=TranslationKeys.SAVE_CHANGES,
+                lang=lang,
+                callback_data="feature:save",
             )
         ],
     ]
@@ -238,10 +244,9 @@ async def added_to_group(_: Client, msg: types.Message):
         reply_markup=types.ReplyKeyboardMarkup(
             [
                 [
-                    types.KeyboardButton(
-                        text=manager.get_translation(
-                            TranslationKeys.BUTTON_ADD_BOT_TO_GROUP, lang
-                        ),
+                    get_button_with_emoji(
+                        key=TranslationKeys.BUTTON_ADD_BOT_TO_GROUP,
+                        lang=lang,
                         request_chat=types.KeyboardButtonRequestChat(
                             button_id=100,
                             chat_is_channel=False,

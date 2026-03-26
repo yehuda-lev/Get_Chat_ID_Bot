@@ -8,8 +8,7 @@ from data import clients
 from tg import filters, utils
 from db import repository
 from db.repository import StatsType
-from locales.translation_manager import manager, TranslationKeys
-
+from locales.translation_manager import manager, TranslationKeys, get_button_with_emoji
 
 _logger = logging.getLogger(__name__)
 
@@ -42,8 +41,9 @@ async def welcome(_: Client, msg: types.Message):
             keyboard=[
                 [
                     # user
-                    types.KeyboardButton(
-                        text=manager.get_translation(TranslationKeys.USER, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.USER,
+                        lang=lang,
                         request_users=types.KeyboardButtonRequestUsers(
                             button_id=1,
                             user_is_bot=False,
@@ -52,8 +52,9 @@ async def welcome(_: Client, msg: types.Message):
                         ),
                     ),
                     # bot
-                    types.KeyboardButton(
-                        text=manager.get_translation(TranslationKeys.BOT, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.BOT,
+                        lang=lang,
                         request_users=types.KeyboardButtonRequestUsers(
                             button_id=2,
                             user_is_bot=True,
@@ -64,8 +65,9 @@ async def welcome(_: Client, msg: types.Message):
                 ],
                 [
                     # group
-                    types.KeyboardButton(
-                        text=manager.get_translation(TranslationKeys.GROUP, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.GROUP,
+                        lang=lang,
                         request_chat=types.KeyboardButtonRequestChat(
                             button_id=3,
                             chat_is_channel=False,
@@ -73,8 +75,9 @@ async def welcome(_: Client, msg: types.Message):
                         ),
                     ),
                     # channel
-                    types.KeyboardButton(
-                        text=manager.get_translation(TranslationKeys.CHANNEL, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.CHANNEL,
+                        lang=lang,
                         request_chat=types.KeyboardButtonRequestChat(
                             button_id=4,
                             chat_is_channel=True,
@@ -103,8 +106,9 @@ async def get_chats_manager(_: Client, msg: types.Message):
             keyboard=[
                 [
                     # group
-                    types.KeyboardButton(
-                        text=manager.get_translation(TranslationKeys.GROUP, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.GROUP,
+                        lang=lang,
                         request_chat=types.KeyboardButtonRequestChat(
                             button_id=3,
                             chat_is_channel=False,
@@ -115,8 +119,9 @@ async def get_chats_manager(_: Client, msg: types.Message):
                         ),
                     ),
                     # channel
-                    types.KeyboardButton(
-                        text=manager.get_translation(TranslationKeys.CHANNEL, lang),
+                    get_button_with_emoji(
+                        key=TranslationKeys.CHANNEL,
+                        lang=lang,
                         request_chat=types.KeyboardButtonRequestChat(
                             button_id=4,
                             chat_is_channel=True,
@@ -174,8 +179,10 @@ async def get_forward(_: Client, msg: types.Message):
         text = manager.get_translation(TranslationKeys.ID_HIDDEN, lang).format(name)
         inline_keyboard.append(
             [
-                types.InlineKeyboardButton(
-                    text="🆘", url="https://t.me/GetChatID_Updates/29"
+                get_button_with_emoji(
+                    key="Help 🆘",
+                    lang=lang,
+                    url="https://t.me/GetChatID_Updates/29",
                 )
             ]
         )
@@ -278,8 +285,6 @@ async def get_request_peer(_: Client, msg: types.Message):
 
             # button copy chat id
             if db_user.feature and db_user.feature.copy_button:
-                title = manager.get_translation(TranslationKeys.BUTTON_GET_LINK, lang)
-                bot_username = clients.bot_1.me.username
                 for user in users:
                     user_id = user.id
                     inline_keyboard.append(
@@ -288,10 +293,7 @@ async def get_request_peer(_: Client, msg: types.Message):
                                 text=user.full_name if user.full_name else "",
                                 copy_text=str(user_id),
                             ),
-                            types.InlineKeyboardButton(
-                                text=title,
-                                url=f"https://t.me/{bot_username}?start=link_{user_id}",
-                            ),
+                            *utils.get_buttons_link_to_chat(chat_id=user_id),
                         ]
                     )
 
