@@ -142,7 +142,10 @@ def create_user() -> filters.Filter:
         if not user.active:
             await db_filters.update_user(tg_id=tg_id, active=True)
 
-        others.UserLastMessage.add_user_last_message(user_id=tg_id, timestamp=msg.date)
+        if isinstance(msg, types.Message):
+            others.UserLastMessage.add_user_last_message(
+                user_id=tg_id, timestamp=msg.date
+            )
 
         return True
 

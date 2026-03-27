@@ -75,7 +75,8 @@ async def update_user(*, tg_id: int, **kwargs):
     :param kwargs: the data to update
     """
 
-    _logger.debug(f"Update user: {tg_id=}, {kwargs=}")
+    if "last_active" not in kwargs:
+        _logger.debug(f"Update user: {tg_id=}, {kwargs=}")
     # delete cache
     cache.delete("get_user", cache_id=cache.build_cache_id(tg_id=tg_id))
 
