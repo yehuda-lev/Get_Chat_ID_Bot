@@ -1,4 +1,4 @@
-https://github.com/KurimuzonAkuma/kurigram/archive/81824045f5cdd7808ed6190fcbac85287f275a42.zip  # kurigram
+https://github.com/KurimuzonAkuma/kurigram/archive/19cbe1b6bea6d3f32be5e680e901448213a718ca.zip  # kurigram
 TgCrypto==1.2.5
 greenlet==3.3.0  # for async SQLAlchemy queries
 SQLAlchemy==2.0.45
