@@ -34,7 +34,6 @@ async def welcome(_: Client, msg: types.Message):
             ),
         ),
         link_preview_options=types.LinkPreviewOptions(is_disabled=True),
-        effect_id=5046509860389126442,  # 🎉
         reply_markup=types.ReplyKeyboardMarkup(
             resize_keyboard=True,
             placeholder=manager.get_translation(TranslationKeys.CHOSE_CHAT_TYPE, lang),
@@ -84,6 +83,23 @@ async def welcome(_: Client, msg: types.Message):
                             request_title=True,
                         ),
                     ),
+                ],
+            ],
+        ),
+    )
+
+    await msg.answer(
+        text="![🪪](tg://emoji?id=5422683699130933153)",
+        effect_id=5046509860389126442,  # 🎉
+        disable_notification=True,
+        reply_markup=types.InlineKeyboardMarkup(
+            [
+                [
+                    get_button_with_emoji(
+                        key=TranslationKeys.INFO_MENU,
+                        lang=lang,
+                        callback_data=f"help:menu:welcome:menu",
+                    )
                 ],
             ],
         ),
@@ -499,10 +515,18 @@ async def ask_inline_query(_: Client, msg: types.Message):
             [
                 [
                     types.InlineKeyboardButton(
-                        text="🔍 📥", switch_inline_query_current_chat=""
+                        text="🔍",
+                        switch_inline_query_current_chat="",
+                        icon_custom_emoji_id=5832251986635920010,
                     )
                 ],
-                [types.InlineKeyboardButton(text="🔍 📤", switch_inline_query="")],
+                [
+                    types.InlineKeyboardButton(
+                        text="🔍",
+                        switch_inline_query="",
+                        icon_custom_emoji_id=5877468380125990242,
+                    )
+                ],
             ],
         ),
     )
@@ -740,7 +764,8 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                 by="group",
             ),
         )
-    except Exception:  # noqa
+    except Exception as e:
+        _logger.error(f"Error in reply message in the group: {e}")
         await client.leave_chat(chat_id=msg.chat.id)
 
     utils.create_stats(type_stats=StatsType.ID_IN_GROUP, lang=lang)
