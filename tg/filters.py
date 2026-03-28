@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 settings = config.get_settings()
 
-user_id_to_state: dict[int:dict] = {}
+user_id_to_state: dict[int, dict] = {}
 
 
 def status_answer(params: dict = None) -> filters.Filter:
@@ -225,7 +225,13 @@ def is_user_spamming() -> filters.Filter:
     """
 
     async def func(_, __, msg: types.Message) -> bool:
-        tg_id = msg.from_user.id
+        try:
+            tg_id = msg.from_user.id
+        except AttributeError:
+            _logger.warning(
+                "Message {type(msg)} does not have from_user attribute - {msg}"
+            )
+            return False  # If the message does not have from_user, we cannot determine if it's spamming, so we return False
 
         current_time = time.time()
 
