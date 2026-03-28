@@ -19,6 +19,7 @@ def get_buttons(
     inline_buttons: list[list[types.InlineKeyboardButton] | None] = None,
     reply_markup: types.InlineKeyboardMarkup | None = None,
     by: str | None = None,
+    send_alert: bool = True,
 ) -> types.InlineKeyboardMarkup | None:
     if chat_id is None:
         return (
@@ -29,7 +30,8 @@ def get_buttons(
 
     if user:
         copy_button = None
-        if not user.feature:
+        # if user doesn't have features and send_alert is True, send alert to change settings
+        if not user.feature and send_alert:
             asyncio.create_task(send_alert_to_change_settings(user=user))
             copy_button = True
 
@@ -297,6 +299,4 @@ async def pate_code(code: str) -> str:
     else:
         paste = await paste_rs(code)
         if paste[0]:
-            return paste[1]
-        else:
             return paste[1]

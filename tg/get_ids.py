@@ -561,6 +561,7 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
                         lang=lang,
                         user=db_user,
                         by="inline_query",
+                        send_alert=False,
                     ),
                 ),
             ],
@@ -762,6 +763,7 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
                 lang=lang,
                 user=db_user,
                 by="group",
+                send_alert=False,
             ),
         )
     except Exception as e:
@@ -819,6 +821,7 @@ async def get_id_with_business_connection(_: Client, msg: types.Message):
             lang=lang,
             user=db_user,
             by="business_connection",
+            send_alert=False,
         ),
     )
 
