@@ -229,7 +229,7 @@ def is_user_spamming() -> filters.Filter:
             tg_id = msg.from_user.id
         except AttributeError:
             _logger.warning(
-                "Message {type(msg)} does not have from_user attribute - {msg}"
+                f"Message {type(msg)} does not have from_user attribute - {msg}"
             )
             return False  # If the message does not have from_user, we cannot determine if it's spamming, so we return False
 
