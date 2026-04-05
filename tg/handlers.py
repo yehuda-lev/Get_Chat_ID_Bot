@@ -114,12 +114,18 @@ HANDLERS = [
     ),
     handlers.MessageHandler(
         utils.send_link_to_chat_by_id,
-        filters.private & ~filters.business & tg_filters.start_command("link")
-        | filters.create(
-            lambda _, __, msg: (
-                msg.text
-                and msg.text.isdigit()
-                or (msg.text and msg.text.startswith("-") and msg.text[1:].isdigit())
+        filters.private
+        & ~filters.business
+        & (
+            tg_filters.start_command("link")
+            | filters.create(
+                lambda _, __, msg: (
+                    msg.text
+                    and msg.text.isdigit()
+                    or (
+                        msg.text and msg.text.startswith("-") and msg.text[1:].isdigit()
+                    )
+                )
             )
         )
         & tg_filters.is_user_spamming()
