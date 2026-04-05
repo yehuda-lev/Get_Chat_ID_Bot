@@ -31,11 +31,16 @@ def get_buttons(
     if user:
         copy_button = None
         # if user doesn't have features and send_alert is True, send alert to change settings
-        if not user.feature and send_alert:
-            asyncio.create_task(send_alert_to_change_settings(user=user))
+        if not user.feature:
+            if send_alert:
+                asyncio.create_task(send_alert_to_change_settings(user=user))
             copy_button = True
 
-        if copy_button or user.feature.copy_button:  # if user has copy button feature
+        else:
+            if copy_button or user.feature.copy_button:
+                copy_button = True
+
+        if copy_button:
             if not inline_buttons:
                 inline_buttons = []
             inline_buttons.append(
