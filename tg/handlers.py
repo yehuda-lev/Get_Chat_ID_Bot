@@ -284,7 +284,6 @@ HANDLERS = [
     ),
     handlers.PreCheckoutQueryHandler(
         payments.confirm_payment,
-        ~filters.business,
     ),
     handlers.MessageHandler(
         payments.send_thanks_for_support,
