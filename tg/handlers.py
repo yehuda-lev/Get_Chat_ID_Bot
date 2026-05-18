@@ -63,7 +63,7 @@ HANDLERS = [
         & tg_filters.create_user(),
     ),
     handlers.MessageHandler(
-        get_ids.get_ids_in_the_group,
+        get_ids.get_ids_in_the_group_and_guest_mode,
         ~filters.business  # not needed, but maybe in the future
         & filters.command("id")
         & (
@@ -77,6 +77,9 @@ HANDLERS = [
             )
         )
         & tg_filters.create_group(),
+    ),
+    handlers.GuestMessageHandler(
+        get_ids.get_ids_in_the_group_and_guest_mode,
     ),
     handlers.MessageHandler(
         others.settings,

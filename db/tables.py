@@ -48,6 +48,7 @@ class StatsType(enum.Enum):
     REPLY_TO_ANOTHER_CHAT = "reply_to_another_chat"
     SEARCH_USERNAME = "search_username"
     ID_IN_GROUP = "id_in_group"
+    ID_BY_GUEST_MODE = "id_by_guest_mode"
     SEARCH_INLINE = "search_inline"
     VIA_BOT = "via_bot"
     CONTACT = "contact"

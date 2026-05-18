@@ -710,7 +710,7 @@ def parse_reply(lang: str | None, msg: types.Message) -> parse_info:
         return text, chat_id, name
 
 
-async def get_ids_in_the_group(client: Client, msg: types.Message):
+async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message):
     """
     get ids in the group
     """
@@ -720,11 +720,22 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
         db_user = await repository.get_user(tg_id=tg_id)
         lang = db_user.lang if db_user else msg.from_user.language_code
 
+    is_guest_mode = msg.guest_query_id
+
     if filters.is_mention_users(msg):  # get is mention users
+        mention_count = 0
         for entity in msg.entities:
             if entity.type == enums.MessageEntityType.MENTION:
                 try:
                     username = msg.text[entity.offset : entity.offset + entity.length]
+                    if (
+                        username == f"@{client.me.username}"
+                        and mention_count == 0
+                        and is_guest_mode
+                    ):
+                        mention_count += 1
+                        continue
+
                     user = await client.get_chat(username, force_full=False)
                     name = user.full_name if user.full_name else ""
                     chat_id = user.id
@@ -748,29 +759,50 @@ async def get_ids_in_the_group(client: Client, msg: types.Message):
             else:
                 continue
 
-    else:  # get reply to chat id
+    if not name and not chat_id:  # get reply to chat id
         text, chat_id, name = parse_reply(lang, msg)
 
     if not name:
         return
 
-    try:
-        await msg.reply(
-            text=text or f"{name} • `{chat_id}`" if chat_id else name,
-            reply_markup=utils.get_buttons(
-                chat_id=chat_id,
-                name=name,
-                lang=lang,
-                user=db_user,
-                by="group",
-                send_alert=False,
-            ),
-        )
-    except Exception as e:
-        _logger.error(f"Error in reply message in the group: {e}")
-        await client.leave_chat(chat_id=msg.chat.id)
+    buttons = utils.get_buttons(
+        chat_id=chat_id,
+        name=name,
+        lang=lang,
+        user=db_user,
+        by="group" if not is_guest_mode else "guest_mode",
+        send_alert=False,
+    )
+    text = text or f"{name} • `{chat_id}`" if chat_id else name
 
-    utils.create_stats(type_stats=StatsType.ID_IN_GROUP, lang=lang)
+    if not is_guest_mode:
+        try:
+            await msg.reply(
+                text=text,
+                reply_markup=buttons,
+            )
+        except Exception as e:
+            _logger.error(f"Error in reply message in the group: {e}")
+            await client.leave_chat(chat_id=msg.chat.id)
+
+        utils.create_stats(type_stats=StatsType.ID_IN_GROUP, lang=lang)
+
+    else:
+        try:
+            await client.answer_guest_query(
+                guest_query_id=msg.guest_query_id,
+                result=types.InlineQueryResultArticle(
+                    title=text,
+                    input_message_content=types.InputTextMessageContent(
+                        message_text=text,
+                    ),
+                    reply_markup=buttons,
+                ),
+            )
+        except Exception as e:
+            _logger.error(f"Error in answer to guest query: {e}")
+
+        utils.create_stats(type_stats=StatsType.ID_BY_GUEST_MODE, lang=lang)
 
 
 async def get_reply_to_another_chat(_: Client, msg: types.Message):
