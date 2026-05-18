@@ -729,7 +729,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
                 try:
                     username = msg.text[entity.offset : entity.offset + entity.length]
                     if (
-                        username == f"@{client.me.username}"
+                        username.lower() == f"@{client.me.username}".lower()
                         and mention_count == 0
                         and is_guest_mode
                     ):
