@@ -80,6 +80,15 @@ HANDLERS = [
     ),
     handlers.GuestMessageHandler(
         get_ids.get_ids_in_the_group_and_guest_mode,
+        filters.create(
+            lambda _, __, m: (
+                not (
+                    m.reply_to_message
+                    and m.reply_to_message.from_user
+                    and m.reply_to_message.from_user.is_self
+                )
+            )
+        ),
     ),
     handlers.MessageHandler(
         others.settings,
