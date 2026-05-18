@@ -550,7 +550,7 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
         await query.answer(
             results=[
                 types.InlineQueryResultArticle(
-                    title="Get Chat ID",
+                    title=f"{name} • `{chat_id}`",
                     id="1",
                     input_message_content=types.InputTextMessageContent(
                         message_text=text,
