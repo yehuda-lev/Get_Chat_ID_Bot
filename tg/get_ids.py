@@ -794,7 +794,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
 
         stats_type = (
             StatsType.ID_IN_GROUP
-            if not is_guest_mode
+            if not receiver_user_id_for_ephemeral_command
             else StatsType.ID_FOR_EPHEMERAL_COMMAND
         )
         utils.create_stats(type_stats=stats_type, lang=lang)
