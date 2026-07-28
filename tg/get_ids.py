@@ -787,6 +787,9 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
                 text=text,
                 reply_markup=buttons,
                 receiver_user_id=receiver_user_id_for_ephemeral_command,
+                reply_parameters=types.ReplyParameters(
+                    ephemeral_message_id=msg.ephemeral_message_id,
+                ) if msg.ephemeral_message_id else None,
             )
         except Exception as e:
             _logger.error(f"Error in reply message in the group: {e}")
