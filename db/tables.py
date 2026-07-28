@@ -49,6 +49,7 @@ class StatsType(enum.Enum):
     SEARCH_USERNAME = "search_username"
     ID_IN_GROUP = "id_in_group"
     ID_BY_GUEST_MODE = "id_by_guest_mode"
+    ID_FOR_EPHEMERAL_COMMAND = "id_for_ephemeral_command"
     SEARCH_INLINE = "search_inline"
     VIA_BOT = "via_bot"
     CONTACT = "contact"

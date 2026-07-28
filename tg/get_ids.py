@@ -714,7 +714,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
     """
     get ids in the group
     """
-    chat_id, name, lang, db_user, text = None, None, None, None, None
+    chat_id, name, lang, db_user, text, tg_id = None, None, None, None, None, None
     if msg.from_user:
         tg_id = msg.from_user.id
         db_user = await repository.get_user(tg_id=tg_id)
@@ -776,16 +776,28 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
     text = text or f"{name} • `{chat_id}`" if chat_id else name
 
     if not is_guest_mode:
+        receiver_user_id_for_ephemeral_command = (
+            (tg_id if tg_id else (msg.sender_chat.id if msg.sender_chat else None))
+            if msg.ephemeral_message_id
+            else None
+        )
+
         try:
             await msg.reply(
                 text=text,
                 reply_markup=buttons,
+                receiver_user_id=receiver_user_id_for_ephemeral_command,
             )
         except Exception as e:
             _logger.error(f"Error in reply message in the group: {e}")
             await client.leave_chat(chat_id=msg.chat.id)
 
-        utils.create_stats(type_stats=StatsType.ID_IN_GROUP, lang=lang)
+        stats_type = (
+            StatsType.ID_IN_GROUP
+            if not is_guest_mode
+            else StatsType.ID_FOR_EPHEMERAL_COMMAND
+        )
+        utils.create_stats(type_stats=stats_type, lang=lang)
 
     else:
         try:

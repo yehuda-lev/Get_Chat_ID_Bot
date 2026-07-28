@@ -65,7 +65,7 @@ HANDLERS = [
     handlers.MessageHandler(
         get_ids.get_ids_in_the_group_and_guest_mode,
         ~filters.business  # not needed, but maybe in the future
-        & filters.command("id")
+        & filters.command(["id", "id_secret"])
         & (
             filters.group
             | filters.channel
