@@ -216,6 +216,8 @@ async def get_users_count(
     language_code: str | None = None,
     created_start: datetime.datetime | None = None,
     created_end: datetime.datetime | None = None,
+    last_active_start: datetime.datetime | None = None,
+    last_active_end: datetime.datetime | None = None,
 ) -> int:
     """
     Get the number of users based on filters.
@@ -229,6 +231,8 @@ async def get_users_count(
             .where((User.language_code == language_code) if language_code else True)
             .where((User.created_at >= created_start) if created_start else True)
             .where((User.created_at <= created_end) if created_end else True)
+            .where((User.last_active >= last_active_start) if last_active_start else True)
+            .where((User.last_active <= last_active_end) if last_active_end else True)
         )
         return await session.scalar(query)
 
@@ -250,6 +254,60 @@ async def get_groups_count(
             .where((Group.created_at <= created_end) if created_end else True)
         )
         return await session.scalar(query)
+
+
+# stats aggregation
+
+
+async def get_stats_counts_by_type(
+    *,
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
+) -> list[tuple[str, int]]:
+    async with get_session() as session:
+        query = (
+            select(Stats.type, func.count(Stats.id))
+            .where((Stats.created_at >= start_date) if start_date else True)
+            .where((Stats.created_at <= end_date) if end_date else True)
+            .group_by(Stats.type)
+            .order_by(func.count(Stats.id).desc())
+        )
+        result = await session.execute(query)
+        return result.fetchall()
+
+
+async def get_stats_counts_by_lang(
+    *,
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
+) -> list[tuple[str | None, int]]:
+    async with get_session() as session:
+        query = (
+            select(Stats.lang, func.count(Stats.id))
+            .where((Stats.created_at >= start_date) if start_date else True)
+            .where((Stats.created_at <= end_date) if end_date else True)
+            .group_by(Stats.lang)
+            .order_by(func.count(Stats.id).desc())
+        )
+        result = await session.execute(query)
+        return result.fetchall()
+
+
+async def get_stats_counts_by_day(
+    *,
+    start_date: datetime.datetime | None = None,
+    end_date: datetime.datetime | None = None,
+) -> list[tuple[str, int]]:
+    async with get_session() as session:
+        query = (
+            select(func.date(Stats.created_at), func.count(Stats.id))
+            .where((Stats.created_at >= start_date) if start_date else True)
+            .where((Stats.created_at <= end_date) if end_date else True)
+            .group_by(func.date(Stats.created_at))
+            .order_by(func.date(Stats.created_at))
+        )
+        result = await session.execute(query)
+        return result.fetchall()
 
 
 # data

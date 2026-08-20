@@ -324,15 +324,8 @@ HANDLERS = [
         & tg_filters.is_admin(),
     ),
     handlers.CallbackQueryHandler(
-        stats.ask_stats_language,
-        filters.create(lambda _, __, msg: msg.data.startswith("ask_stats"))
-        & tg_filters.is_user_spamming()
-        & tg_filters.create_user()
-        & tg_filters.is_admin(),
-    ),
-    handlers.CallbackQueryHandler(
         stats.get_stats,
-        filters.create(lambda _, __, msg: msg.data.startswith("get_stats"))
+        filters.create(lambda _, __, msg: msg.data.startswith("stats:"))
         & tg_filters.is_user_spamming()
         & tg_filters.create_user()
         & tg_filters.is_admin(),

@@ -4,115 +4,71 @@ import datetime
 from pyrogram import Client, filters, types
 
 from db import repository
+from tg.stats_dashboard import (
+    DashboardCallbackAction,
+    DashboardPeriod,
+    DashboardSection,
+    build_dashboard_keyboard,
+    build_dashboard_page,
+    cycle_dashboard_section,
+    parse_dashboard_callback_data,
+    render_dashboard_page,
+)
 
 
 _logger = logging.getLogger(__name__)
 
 
 async def ask_stats_time(_: Client, message: types.Message):
-    """
-    Ask the user for the stats time
-    """
-    dict_buttons_data = {
-        "ask_stats:all": "סטטיסטיקות על כל הזמן",
-        "ask_stats:day": "סטטיסטיקות על היום",
-        "ask_stats:week": "סטטיסטיקות על השבוע",
-        "ask_stats:month": "סטטיסטיקות על החודש",
-        "ask_stats:two_months": "סטטיסטיקות על חודשיים",
-    }
-
-    buttons = [
-        [types.InlineKeyboardButton(text=text, callback_data=callback_data)]
-        for callback_data, text in dict_buttons_data.items()
-    ]
-
-    keyboard = types.InlineKeyboardMarkup(buttons)
-
+    """Show the dashboard entry point."""
+    page = await build_dashboard_page(
+        section=DashboardSection.OVERVIEW,
+        period=DashboardPeriod.WEEK,
+    )
     await message.reply_text(
-        "בחר את הסטטיסטיקות שתרצה לקבל",
-        reply_markup=keyboard,
+        render_dashboard_page(page),
+        reply_markup=build_dashboard_keyboard(
+            section=page.section,
+            period=page.period,
+        ),
     )
 
 
 async def ask_stats_language(_: Client, query: types.CallbackQuery):
-    """
-    Ask the user for the stats language
-    """
-
-    time = query.data.split(":")[1]
-
-    dict_buttons_data = {
-        f"get_stats:{time}:all": "כל השפות",
-        f"get_stats:{time}:en": "אנגלית",
-        f"get_stats:{time}:he": "עברית",
-        f"get_stats:{time}:ru": "רוסית",
-        f"get_stats:{time}:ar": "ערבית",
-        f"get_stats:{time}:zh-hans": "סינית",
-        f"get_stats:{time}:id": "אינדונזית",
-        f"get_stats:{time}:uz": "אוזבקית",
-        f"get_stats:{time}:tr": "טורקית",
-        f"get_stats:{time}:pt-br": "פורטוגזית",
-        f"get_stats:{time}:uk": "אוקראינית",
-        f"get_stats:{time}:es": "ספרדית",
-        f"get_stats:{time}:fr": "צרפתית",
-        f"get_stats:{time}:de": "גרמנית",
-        f"get_stats:{time}:fa": "פרסית",
-        f"get_stats:{time}:it": "איטלקית",
-        f"get_stats:{time}:pl": "פולנית",
-        f"get_stats:{time}:vi": "וייטנאמית",
-    }
-
-    buttons = [
-        [types.InlineKeyboardButton(text=text, callback_data=callback_data)]
-        for callback_data, text in dict_buttons_data.items()
-    ]
-
-    keyboard = types.InlineKeyboardMarkup(buttons)
-
-    await query.message.reply(
-        "בחר את השפה שתרצה לקבל את הסטטיסטיקות",
-        reply_markup=keyboard,
-    )
+    """Backward-compatible callback entry point for the dashboard."""
+    await get_stats(_, query)
 
 
 async def get_stats(_: Client, query: types.CallbackQuery):
-    """
-    Get the stats
-    """
+    """Render and refresh the dashboard based on callback data."""
+    parsed = parse_dashboard_callback_data(query.data)
 
-    time, language_code = query.data.split(":")[1:]
-    language_code = language_code if language_code != "all" else None
-    statr_date, end_date = None, None
-
-    if time == "all":
-        start_date = None
-        end_date = None
+    if parsed.action == DashboardCallbackAction.CYCLE:
+        section = cycle_dashboard_section(parsed.section, parsed.step)
+        period = parsed.period
     else:
-        start_date = datetime.datetime.now().replace(
-            hour=0, minute=0, second=0, microsecond=0
+        section = parsed.section
+        period = parsed.period
+
+    page = await build_dashboard_page(section=section, period=period)
+    try:
+        await query.edit_message_text(
+            text=render_dashboard_page(page),
+            reply_markup=build_dashboard_keyboard(
+                section=page.section,
+                period=page.period,
+            ),
         )
-        if time == "day":
-            end_date = start_date + datetime.timedelta(days=1)
-        elif time == "week":
-            end_date = start_date + datetime.timedelta(days=7)
-        elif time == "month":
-            end_date = start_date + datetime.timedelta(days=30)
-        elif time == "two_months":
-            end_date = start_date + datetime.timedelta(days=60)
-
-    text_stats_bot = await stats_of_the_bot(start_date, end_date, language_code)
-    text_data_stats_bot = await data_stats_of_the_bot(
-        start_date, end_date, language_code
-    )
-
-    text = (
-        f"**סטטיסטיקות על הבוט**\n\n"
-        f"סטטיסטיקות לפי תאריכים: {start_date} - {end_date}\n\n"
-        f"סטטיסטיקות לפי שפה: {language_code}\n\n"
-        f"{text_stats_bot}\n\n{text_data_stats_bot}"
-    )
-
-    await query.message.reply(text)
+    except Exception as exc:
+        _logger.debug("Failed to edit dashboard message: %s", exc)
+        await query.message.reply_text(
+            render_dashboard_page(page),
+            reply_markup=build_dashboard_keyboard(
+                section=page.section,
+                period=page.period,
+            ),
+        )
+    await query.answer()
 
 
 async def stats_of_the_bot(
