@@ -1,13 +1,21 @@
 import io
+import asyncio
 import logging
 import random
 import string
-import tempfile
 import time
+from pathlib import Path
+
 from pyrogram import Client, types, errors
 
 from db import repository
 from tg import filters
+from tg.broadcast import (
+    BroadcastStateError,
+    broadcast_recipients,
+    build_broadcast_log_file,
+    get_broadcast_scope,
+)
 
 
 _logger = logging.getLogger(__name__)
@@ -62,27 +70,26 @@ async def asq_message_for_subscribe(_: Client, msg: types.CallbackQuery):
 
 async def send_broadcast(_: Client, msg: types.Message):
     tg_id = msg.from_user.id
-    send_to: str = filters.user_id_to_state.get(tg_id).get("data")
+    state = filters.user_id_to_state.get(tg_id)
+    try:
+        send_to = get_broadcast_scope(state)
+    except BroadcastStateError:
+        _logger.warning("Broadcast requested without an active state for %s", tg_id)
+        await msg.reply("לא נמצא מצב שליחה פעיל. נסה להתחיל מחדש עם `/send`")
+        return
+    finally:
+        filters.remove_listener_by_tg_id(tg_id=tg_id)
 
-    filters.user_id_to_state.pop(tg_id)
-
-    # users, chats = None, None
-    match send_to:
-        case "users":
-            users = await repository.get_all_users_active()
-            chats = None
-        case "groups":
-            chats = await repository.get_all_groups_active()
-            users = None
-        case _:
-            return
+    recipients: list[object]
+    recipient_kind: str
+    if send_to == "users":
+        recipients = await repository.get_all_users_active()
+        recipient_kind = "user"
+    else:
+        recipients = await repository.get_all_groups_active()
+        recipient_kind = "group"
 
     log_obj = io.StringIO()
-
-    sent = 0
-    failed = 0
-    count = 0
-    count_edit = 0
 
     while True:
         sent_id = "".join(random.choices(string.ascii_letters + string.digits, k=10))
@@ -90,125 +97,131 @@ async def send_broadcast(_: Client, msg: types.Message):
             break
 
     await msg.reply(
-        text=f"**📣 מתחיל שליחה ל:** {len((chats if chats is not None else users))} צ'אטים\nאנא המתן...\n"
-        f"> מזהה השליחה: `{sent_id}` ניתן להשתמש בו בכדי למחוק את ההודעות שנשלחו עם הפקודה `/delete {sent_id}`",
+        text=(
+            f"**📣 מתחיל שליחה ל:** {len(recipients)} צ'אטים\nאנא המתן...\n"
+            f"> מזהה השליחה: `{sent_id}` ניתן להשתמש בו בכדי למחוק את ההודעות שנשלחו עם הפקודה `/delete {sent_id}`"
+        ),
     )
-    progress = await msg.reply(text=f"**ההודעה נשלחת ל:** {sent} צ'אטים")
+    progress = await msg.reply(text="**ההודעה נשלחת ל:** 0 צ'אטים")
 
-    if users is not None:  # send to users
-        for user in users:
-            if count > 40:
-                count = 0
-                time.sleep(3)
-            try:
-                if msg.forward_origin:
-                    msg_sent = await msg.forward(chat_id=user.tg_id)
-                else:
-                    msg_sent = await msg.copy(chat_id=user.tg_id)
-                sent += 1
+    async def deliver(recipient: object) -> bool:
+        recipient_chat_id = recipient.tg_id if recipient_kind == "user" else recipient.group_id
+        try:
+            if msg.forward_origin:
+                msg_sent = await msg.forward(chat_id=recipient_chat_id)
+            else:
+                msg_sent = await msg.copy(chat_id=recipient_chat_id)
 
-                await repository.create_message_sent(
-                    sent_id=sent_id, chat_id=user.tg_id, message_id=msg_sent.id
-                )
+            await repository.create_message_sent(
+                sent_id=sent_id,
+                chat_id=recipient_chat_id,
+                message_id=msg_sent.id,
+            )
 
-                if count_edit + 10 == sent:
-                    count_edit += 10
-                    await progress.edit_text(
-                        text=f"**ההודעה נשלחה ל:** {sent} צ'אטים",
-                    )
-
+            if recipient_kind == "user":
                 text_log = (
-                    f"sent to user: {user.tg_id}, name: {user.name}, "
-                    f"language_code: {user.language_code}, username: {user.username}\n"
+                    f"sent to user: {recipient.tg_id}, name: {recipient.name}, "
+                    f"language_code: {recipient.language_code}, username: {recipient.username}\n"
                 )
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                count += 1
-                time.sleep(
-                    0.05
-                )  # 20 messages per second (Limit: 30 messages per second)
-
-            except errors.FloodWait as e:
-                _logger.error(f"FloodWait: {e.value}")
-                time.sleep(e.value)
-
-            except errors.InputUserDeactivated:
-                await repository.update_user(tg_id=user.tg_id, active=False)
+            else:
                 text_log = (
-                    f"user {user.tg_id}, name: {user.name} "
-                    f"language_code: {user.language_code}, username: {user.username} is Deactivated\n"
-                )
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                failed += 1
-                continue
-
-            except errors.UserIsBlocked:
-                await repository.update_user(tg_id=user.tg_id, active=False)
-                text_log = f"user {user.tg_id}, name: {user.name} language_code: {user.language_code}, username: {user.username} Blocked your bot\n"
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                failed += 1
-                continue
-
-            except errors.PeerIdInvalid:
-                await repository.update_user(tg_id=user.tg_id, active=False)
-                text_log = f"user {user.tg_id}, name: {user.name} language_code: {user.language_code}, username: {user.username} IdInvalid\n"
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                failed += 1
-                continue
-
-            except errors.BadRequest as e:
-                await repository.update_user(tg_id=user.tg_id, active=False)
-                text_log = f"BadRequest: {e} : user {user.tg_id}, name: {user.name} language_code: {user.language_code}, username: {user.username}"
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                failed += 1
-                continue
-
-    if chats is not None:  # send to chats
-        for chat in chats:
-            if count > 40:
-                count = 0
-                time.sleep(3)
-            try:
-                if msg.forward_origin:
-                    msg_sent = await msg.forward(chat_id=chat.group_id)
-                else:
-                    msg_sent = await msg.copy(chat_id=chat.group_id)
-                sent += 1
-
-                await repository.create_message_sent(
-                    sent_id=sent_id, chat_id=chat.group_id, message_id=msg_sent.id
+                    f"sent to group: {recipient.group_id}, name: {recipient.name}, "
+                    f"username: {recipient.username}\n"
                 )
 
-                if count_edit + 10 == sent:
-                    count_edit += 10
-                    await progress.edit_text(
-                        text=f"**ההודעה נשלחה ל:** {sent} צ'אטים",
-                    )
+            log_obj.write(text_log)
+            _logger.debug(text_log)
+            return True
 
-                text_log = f"sent to user: {chat.group_id}, name: {chat.name} username: {chat.username}\n"
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                count += 1
-                time.sleep(
-                    0.05
-                )  # 20 messages per second (Limit: 30 messages per second)
+        except errors.FloodWait as e:
+            _logger.error("FloodWait while broadcasting to %s: %s", recipient_chat_id, e.value)
+            await progress.edit_text(
+                text=f"**ההודעה מושהית בגלל FloodWait:** {e.value} שניות",
+            )
+            await asyncio.sleep(e.value)
+            return False
 
-            except errors.FloodWait as e:
-                _logger.error(f"FloodWait: {e.value}")
-                time.sleep(e.value)
+        except errors.InputUserDeactivated:
+            if recipient_kind == "user":
+                await repository.update_user(tg_id=recipient.tg_id, active=False)
+                text_log = (
+                    f"user {recipient.tg_id}, name: {recipient.name} "
+                    f"language_code: {recipient.language_code}, username: {recipient.username} is Deactivated\n"
+                )
+            else:
+                await repository.update_group(group_id=recipient.group_id, active=False)
+                text_log = (
+                    f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} is Deactivated\n"
+                )
+            log_obj.write(text_log)
+            _logger.debug(text_log)
+            return False
 
-            except errors.BadRequest as e:
-                await repository.update_group(group_id=chat.group_id, active=False)
-                text_log = f"BadRequest: {e}, chat_id: {chat.group_id}, name: {chat.name}, username: {chat.username}"
-                log_obj.write(text_log)
-                _logger.debug(text_log)
-                failed += 1
-                continue
+        except errors.UserIsBlocked:
+            if recipient_kind == "user":
+                await repository.update_user(tg_id=recipient.tg_id, active=False)
+                text_log = (
+                    f"user {recipient.tg_id}, name: {recipient.name} "
+                    f"language_code: {recipient.language_code}, username: {recipient.username} Blocked your bot\n"
+                )
+            else:
+                await repository.update_group(group_id=recipient.group_id, active=False)
+                text_log = (
+                    f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} Blocked your bot\n"
+                )
+            log_obj.write(text_log)
+            _logger.debug(text_log)
+            return False
 
+        except errors.PeerIdInvalid:
+            if recipient_kind == "user":
+                await repository.update_user(tg_id=recipient.tg_id, active=False)
+                text_log = (
+                    f"user {recipient.tg_id}, name: {recipient.name} "
+                    f"language_code: {recipient.language_code}, username: {recipient.username} IdInvalid\n"
+                )
+            else:
+                await repository.update_group(group_id=recipient.group_id, active=False)
+                text_log = (
+                    f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} IdInvalid\n"
+                )
+            log_obj.write(text_log)
+            _logger.debug(text_log)
+            return False
+
+        except errors.BadRequest as e:
+            if recipient_kind == "user":
+                await repository.update_user(tg_id=recipient.tg_id, active=False)
+                text_log = (
+                    f"BadRequest: {e} : user {recipient.tg_id}, name: {recipient.name} "
+                    f"language_code: {recipient.language_code}, username: {recipient.username}\n"
+                )
+            else:
+                await repository.update_group(group_id=recipient.group_id, active=False)
+                text_log = (
+                    f"BadRequest: {e} : group {recipient.group_id}, name: {recipient.name}, username: {recipient.username}\n"
+                )
+            log_obj.write(text_log)
+            _logger.debug(text_log)
+            return False
+
+    async def update_progress(recipient: object, sent_count: int):
+        if sent_count % 10 == 0:
+            await progress.edit_text(
+                text=f"**ההודעה נשלחה ל:** {sent_count} צ'אטים",
+            )
+
+    sent, failed = await broadcast_recipients(
+        recipients,
+        deliver,
+        on_success=update_progress,
+    )
+
+    text_log = f"\n\nSent: {sent}, Failed: {failed}\n Sent_id: {sent_id}\n\n"
+    log_obj.write(text_log)
+    _logger.debug(text_log)
+
+    log_file_path = build_broadcast_log_file(log_obj.getvalue())
     text_done = (
         f"📣 השליחה הושלמה\n\n🔹ההודעה נשלחה ל: {sent} צ'אטים\n"
         f"🔹 ההודעה נכשלה ב: {failed} צ'אטים"
@@ -218,21 +231,13 @@ async def send_broadcast(_: Client, msg: types.Message):
         f"\nניתן למחוק את ההודעות על ידי שליחת הפקודה `/delete {sent_id}`"
     )
 
-    text_log = f"\n\nSent: {sent}, Failed: {failed}\n Sent_id: {sent_id}\n\n"
-    log_obj.write(text_log)
-    _logger.debug(text_log)
-
-    with tempfile.TemporaryFile(delete=False) as temp_file:
-        # write log to file
-        temp_file.write(log_obj.getvalue().encode())
-        temp_file.flush()
-        temp_file_path = temp_file.name
-
-        try:
-            await msg.reply_document(document=temp_file_path, caption=text_done)
-        except Exception as e:
-            _logger.exception(e)
-            await msg.reply(f"```py\n{e}```")
+    try:
+        await msg.reply_document(document=log_file_path, caption=text_done)
+    except Exception as e:
+        _logger.exception(e)
+        await msg.reply(f"```py\n{e}```")
+    finally:
+        Path(log_file_path).unlink(missing_ok=True)
 
 
 async def delete_sent_messages(client: Client, msg: types.Message):
