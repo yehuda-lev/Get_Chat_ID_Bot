@@ -11,10 +11,13 @@ from pyrogram import Client, types, errors
 from db import repository
 from tg import filters
 from tg.broadcast import (
+    BroadcastCommandError,
     BroadcastStateError,
+    delete_broadcast_messages,
     broadcast_recipients,
     build_broadcast_log_file,
     get_broadcast_scope,
+    parse_delete_sent_id,
 )
 
 
@@ -246,8 +249,8 @@ async def delete_sent_messages(client: Client, msg: types.Message):
     when the user sends the command /delete
     """
     try:
-        sent_id = msg.text.split(" ")[1]
-    except IndexError:
+        sent_id = parse_delete_sent_id(msg.text)
+    except BroadcastCommandError:
         await msg.reply("לא נמצא מזהה של ההודעות שנשלחו")
         return
 
@@ -258,28 +261,43 @@ async def delete_sent_messages(client: Client, msg: types.Message):
     sent_messages = await repository.get_messages_sent(sent_id=sent_id)
     await msg.reply(f"מוחק {len(sent_messages)} הודעות שנשלחו")
 
-    count = 0
-    delete = 0
-    for sent_message in sent_messages:
-        if count > 40:
-            count = 0
-            time.sleep(3)
+    progress = await msg.reply("נמחקו 0 הודעות")
 
+    async def update_progress_text(text: str):
         try:
-            await client.delete_messages(
-                chat_id=sent_message.chat_id, message_ids=sent_message.message_id
-            )
-            count += 1
-            time.sleep(0.05)  # 20 messages per second (Limit: 30 messages per second)
-            delete += 1
+            await progress.edit_text(text)
+        except AttributeError:
+            await msg.reply(text)
 
+    async def delete_message(chat_id: int, message_id: int) -> bool:
+        try:
+            await client.delete_messages(chat_id=chat_id, message_ids=message_id)
+            return True
         except errors.FloodWait as e:
-            _logger.error(f"FloodWait: {e.value}")
-            time.sleep(e.value)
-
+            _logger.error("FloodWait while deleting broadcast messages: %s", e.value)
+            await asyncio.sleep(e.value)
+            return False
         except Exception as e:
             _logger.error(
-                f"Error: {e}, chat_id: {sent_message.chat_id}, message_id: {sent_message.message_id}"
+                "Error deleting broadcast message: %s, chat_id: %s, message_id: %s",
+                e,
+                chat_id,
+                message_id,
             )
+            return False
 
-    await msg.reply(f"נמחקו {delete} הודעות")
+    async def delete_row(message_sent_id: int):
+        await repository.delete_message_sent(message_sent_id=message_sent_id)
+
+    async def on_progress(deleted: int, failed: int):
+        if (deleted + failed) % 10 == 0:
+            await update_progress_text(f"נמחקו {deleted} הודעות, נכשלו {failed} הודעות")
+
+    deleted, failed = await delete_broadcast_messages(
+        sent_messages,
+        delete_message,
+        delete_row=delete_row,
+        on_progress=on_progress,
+    )
+
+    await update_progress_text(f"נמחקו {deleted} הודעות, נכשלו {failed} הודעות")

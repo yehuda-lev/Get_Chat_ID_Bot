@@ -366,6 +366,17 @@ async def get_messages_sent(*, sent_id: str) -> list[MessageSent]:
         return result.scalars().all()
 
 
+async def delete_message_sent(*, message_sent_id: int):
+    """
+    Delete a single message_sent row by its primary key.
+    """
+    async with get_session() as session:
+        await session.execute(
+            MessageSent.__table__.delete().where(MessageSent.id == message_sent_id)
+        )
+        await session.commit()
+
+
 async def is_message_sent_exists(*, sent_id: str) -> bool:
     """
     Check if a message sent record exists.
