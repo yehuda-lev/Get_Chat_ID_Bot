@@ -1,3 +1,4 @@
+import html
 import logging
 import re
 import time
@@ -87,20 +88,6 @@ def start_command(command: str, prefixes: str | list = "/") -> filters.Filter:
     )
 
 
-def is_mention_users(msg: types.Message) -> bool:
-    """
-    Check if the message contains a mention
-    """
-    if msg.entities:
-        return any(
-            x
-            for x in msg.entities
-            if x.type == enums.MessageEntityType.MENTION
-            or x.type == enums.MessageEntityType.TEXT_MENTION
-        )
-    return False
-
-
 def create_user() -> filters.Filter:
     async def func(
         _,
@@ -179,28 +166,70 @@ def is_admin() -> filters.Filter:
     return filters.create(func, name="IsAdmin")
 
 
-def get_username(text) -> str | None:
+def get_usernames_and_ids(
+    text: str, check_if_exists: bool = False
+) -> tuple[set[str], dict[int, str]] | bool:
     """
-    Check if is a username
+    Get all usernames and ids from text/rich message
+    Args:
+        text: the text to check
+        check_if_exists: if True, return True if any username or id exists, else return all usernames and ids
     """
-    username_regex = r"(?:@|t\.me\/|https:\/\/t\.me\/)([a-zA-Z][a-zA-Z0-9_]{2,})"
 
-    match = re.search(username_regex, text)
-    if match:
-        return match.group(1)
-    else:
-        return None
+    pattern = re.compile(
+        # 1. HTML Tags (<a> or <tg-button>)
+        r'<(?:a|tg-button)[^>]*?(?:href|url)=["\']tg://user\?id=(?P<html_id>\d+)["\'][^>]*?>(?P<html_name>.*?)</(?:a|tg-button)>|'
+        # 2. Markdown Links: [Name](tg://user?id=123)
+        r"\[(?P<md_name>[^\]]+)\]\(tg://user\?id=(?P<md_id>\d+)\)|"
+        # 3. Raw IDs (Fallback if not inside a tag/markdown link)
+        r"tg://user\?id=(?P<raw_id>\d+)|"
+        # 4. Usernames with prefixes (@, t.me/, etc.)
+        r"(?:@|(?:https?://)?(?:t\.me|telegram\.me|telegram\.dog)/|tg://resolve\?domain=)(?P<username_pre>[a-zA-Z][a-zA-Z0-9_]{2,})|"
+        # 5. Usernames with suffixes (.t.me, etc.)
+        r"(?P<username_suf>[a-zA-Z][a-zA-Z0-9_]{2,})\.(?:t\.me|telegram\.me|telegram\.dog)"
+    )
+
+    if check_if_exists:
+        return bool(re.search(pattern, text))
+
+    usernames = set()  # unique usernames
+    user_ids = {}  # unique user ids with names
+
+    for match in pattern.finditer(text):
+        groups = match.groupdict()
+
+        if groups.get("html_id"):
+            user_id = groups["html_id"]
+            name = groups["html_name"]
+            user_ids[user_id] = html.unescape(name)
+
+        elif groups.get("md_id"):
+            user_id = groups["md_id"]
+            name = groups["md_name"]
+            user_ids[user_id] = html.unescape(name)
+
+        elif groups.get("raw_id"):
+            user_id = groups["raw_id"]
+            user_ids[user_id] = "❔"  # No name available
+
+        elif groups.get("username_pre"):
+            usernames.add(groups["username_pre"])
+        elif groups.get("username_suf"):
+            usernames.add(groups["username_suf"])
+
+    return usernames, user_ids
 
 
-def is_username(_, __, msg: types.Message | types.InlineQuery) -> bool:
+def is_username_or_ids(_, __, msg: types.Message | types.InlineQuery) -> bool:
     """
     Check if the message is a username by regex
     """
     if isinstance(msg, types.InlineQuery):
         text = msg.query
     else:
-        text = msg.text
-    return get_username(text) is not None
+        text = (msg.text or msg.caption or msg.rich_message).markdown
+
+    return get_usernames_and_ids(text, check_if_exists=True)
 
 
 list_of_media_group = []

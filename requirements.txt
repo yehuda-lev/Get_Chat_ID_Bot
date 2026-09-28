@@ -1,8 +1,8 @@
-https://github.com/KurimuzonAkuma/kurigram/archive/710479d6a7857debf2dac64609d67730626ebcb3.zip  # kurigram
+https://github.com/kurigram-org/kurigram/archive/10d9b5bf4bd72e3a8112052f7d5f4b1a33837449.zip  # kurigram, https://github.com/kurigram-org/kurigram/pull/523
 TgCrypto==1.2.5
-greenlet==3.3.0  # for async SQLAlchemy queries
-SQLAlchemy==2.0.45
+greenlet==3.5.6  # for async SQLAlchemy queries
+SQLAlchemy==2.1.1
 aiosqlite==0.22.1
-pydantic-settings==2.12.0
+pydantic-settings==2.15.0
 httpx==0.28.1
 schedule==1.2.2

@@ -170,8 +170,12 @@ HANDLERS = [
         get_ids.get_username_by_message,
         filters.private
         & ~filters.business
-        & filters.text
-        & filters.create(tg_filters.is_username)
+        & (
+            filters.text
+            | filters.caption
+            | filters.create(lambda _, __, msg: msg.rich_message is not None)
+        )
+        & filters.create(tg_filters.is_username_or_ids)
         & ~tg_filters.status_answer()
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
@@ -283,7 +287,7 @@ HANDLERS = [
     # inline query
     handlers.InlineQueryHandler(
         get_ids.get_username_by_inline_query,
-        filters.create(tg_filters.is_username)
+        filters.create(tg_filters.is_username_or_ids)
         & tg_filters.is_user_spamming()
         & tg_filters.create_user(),
     ),
