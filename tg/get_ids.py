@@ -48,6 +48,7 @@ async def welcome(_: Client, msg: types.Message):
                             user_is_bot=False,
                             max_quantity=request_multiple_chats,
                             request_name=True,
+                            request_username=True,
                         ),
                     ),
                     # bot
@@ -59,6 +60,7 @@ async def welcome(_: Client, msg: types.Message):
                             user_is_bot=True,
                             max_quantity=request_multiple_chats,
                             request_name=True,
+                            request_username=True,
                         ),
                     ),
                 ],
@@ -71,6 +73,7 @@ async def welcome(_: Client, msg: types.Message):
                             button_id=3,
                             chat_is_channel=False,
                             request_title=True,
+                            request_username=True,
                         ),
                     ),
                     # channel
@@ -81,6 +84,7 @@ async def welcome(_: Client, msg: types.Message):
                             button_id=4,
                             chat_is_channel=True,
                             request_title=True,
+                            request_username=True,
                         ),
                     ),
                 ],
@@ -129,6 +133,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
                             button_id=3,
                             chat_is_channel=False,
                             request_title=True,
+                            request_username=True,
                             user_administrator_rights=types.ChatPrivileges(
                                 can_manage_chat=True
                             ),
@@ -142,6 +147,7 @@ async def get_chats_manager(_: Client, msg: types.Message):
                             button_id=4,
                             chat_is_channel=True,
                             request_title=True,
+                            request_username=True,
                             user_administrator_rights=types.ChatPrivileges(
                                 can_manage_chat=True
                             ),
@@ -170,8 +176,9 @@ async def get_forward(_: Client, msg: types.Message):
             chat = forward.sender_user
             chat_id = chat.id
             name = chat.full_name if chat.full_name else ""
+            format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                name,
+                format_name,
                 chat_id,
             )
         else:
@@ -182,10 +189,11 @@ async def get_forward(_: Client, msg: types.Message):
             )
             chat_id = chat.id
             name = chat.title if chat.title else ""
+            format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
             ).format(
-                name,
+                format_name,
                 chat_id,
             )
 
@@ -228,9 +236,12 @@ async def get_me(_: Client, msg: types.Message):
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
     name = user.full_name if user.full_name else ""
+    format_name = f"[{name}](t.me/{user.username})" if user.username else name
 
     await msg.reply(
-        text=manager.get_translation(TranslationKeys.ID_USER, lang).format(name, tg_id),
+        text=manager.get_translation(TranslationKeys.ID_USER, lang).format(
+            format_name, tg_id
+        ),
         reply_markup=utils.get_buttons(
             chat_id=tg_id, name=name, lang=lang, user=db_user
         ),
@@ -248,12 +259,14 @@ async def get_contact(_: Client, msg: types.Message):
 
     if msg.contact.user_id:
         contact = msg.contact
+        chat_id = contact.user_id
         name = contact.first_name + (
             (" " + contact.last_name) if contact.last_name else ""
         )
-        chat_id = contact.user_id
+        format_name = f"[{name}](t.me/{contact.username})" if contact.username else name
+
         text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            name,
+            format_name,
             chat_id,
         )
 
@@ -283,11 +296,11 @@ async def get_request_peer(_: Client, msg: types.Message):
         users = msg.users_shared.users
         if len(users) == 1:
             user = users[0]
-            name = user.full_name if user.full_name else ""
             chat_id = user.id
-
+            name = user.full_name if user.full_name else ""
+            format_name = f"[{name}](t.me/{user.username})" if user.username else name
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                name,
+                format_name,
                 chat_id,
             )
 
@@ -295,9 +308,11 @@ async def get_request_peer(_: Client, msg: types.Message):
             text_lang = manager.get_translation(TranslationKeys.ID_USER, lang)
             text = ""
             for user in users:
-                text += f"{
-                    text_lang.format(user.full_name if user.full_name else '', user.id)
-                }\n"
+                name = user.full_name if user.full_name else ""
+                format_name = (
+                    f"[{name}](t.me/{user.username})" if user.username else name
+                )
+                text += f"{text_lang.format(format_name, user.id)}\n"
 
             # button copy chat id
             if db_user.feature and db_user.feature.copy_button:
@@ -340,10 +355,11 @@ async def get_request_peer(_: Client, msg: types.Message):
 
         else:
             name = chat.title
+            format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
             chat_id = chat.id
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-            ).format(name, chat_id)
+            ).format(format_name, chat_id)
 
     else:
         return
@@ -378,8 +394,9 @@ async def get_story(_: Client, msg: types.Message):
         enums.ChatType.BOT,  # bot (when it's possible to upload story with bot)
     ]:
         name = chat.full_name if chat.full_name else ""
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
         text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            name,
+            format_name,
             chat_id,
         )
     elif chat.type in [
@@ -388,9 +405,10 @@ async def get_story(_: Client, msg: types.Message):
         enums.ChatType.GROUP,  # group
     ]:
         name = chat.title
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
         text = manager.get_translation(
             TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-        ).format(name, chat_id)
+        ).format(format_name, chat_id)
     else:
         return
 
@@ -409,10 +427,15 @@ async def get_via_bot(_: Client, msg: types.Message):
 
     tg_id = msg.from_user.id
     name = msg.via_bot.first_name
+    format_name = (
+        f"[{name}](t.me/{msg.via_bot.username})" if msg.via_bot.username else name
+    )
     chat_id = msg.via_bot.id
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
-    text = manager.get_translation(TranslationKeys.ID_USER, lang).format(name, chat_id)
+    text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
+        format_name, chat_id
+    )
 
     await msg.reply(
         text=text,
@@ -438,7 +461,7 @@ async def get_users_from_text(text: str, lang: str) -> tuple[str, dict[int, str]
         chat_id: the id of the chat, can be None.
     """
     usernames, user_ids = filters.get_usernames_and_ids(text=text)
-    chat, chat_id, name = None, None, None
+    chat, chat_id, name, username = None, None, None, None
 
     if usernames:
         username = list(usernames)[0]  # Limit to just one username to avoid flood
@@ -463,8 +486,9 @@ async def get_users_from_text(text: str, lang: str) -> tuple[str, dict[int, str]
     if isinstance(chat, types.Chat):
         name = chat.title if chat.title else chat.full_name if chat.full_name else ""
         chat_id = chat.id
-
         user_ids = {chat_id: name, **user_ids}
+
+        name = f"[{name}](t.me/{username})"  # override name to include the username link if available
 
         if chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
@@ -572,7 +596,7 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
         await query.answer(
             results=[
                 types.InlineQueryResultArticle(
-                    title=f"{chat_id} • `{chat_id}`",
+                    title=f"{name} • `{chat_id}`",
                     id="1",
                     input_message_content=types.InputTextMessageContent(
                         message_text=text,
@@ -614,29 +638,32 @@ def parse_reply_to_another_chat(lang: str, msg: types.Message) -> parse_info:
 
     if isinstance(reply_to, types.MessageOriginUser):  # user
         user = reply_to.sender_user
-        name = user.full_name
         chat_id = user.id
+        name = user.full_name
+        format_name = f"[{name}](t.me/{user.username})" if user.username else name
         if lang:
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                name,
+                format_name,
                 chat_id,
             )
     elif isinstance(reply_to, types.MessageOriginChat):  # group
         group = reply_to.sender_chat
-        name = group.title
         chat_id = group.id
+        name = group.title
+        format_name = f"[{name}](t.me/{group.username})" if group.username else name
         if lang:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-            ).format(name, chat_id)
+            ).format(format_name, chat_id)
     elif isinstance(reply_to, types.MessageOriginChannel):  # channel
         channel = reply_to.chat
-        name = channel.title
         chat_id = channel.id
+        name = channel.title
+        format_name = f"[{name}](t.me/{channel.username})" if channel.username else name
         if lang:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-            ).format(name, chat_id)
+            ).format(format_name, chat_id)
     elif isinstance(reply_to, types.MessageOriginHiddenUser):
         # The user hides the forwarding of a message from him or Deleted Account
         name = reply_to.sender_user_name
@@ -661,18 +688,20 @@ def parse_reply_to_message(lang: str, msg: types.Message) -> parse_info:
             if not chat.is_deleted
             else "Deleted Account"
         )
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
         if lang:
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                name, chat_id
+                format_name, chat_id
             )
     elif msg.reply_to_message.sender_chat:
         chat = msg.reply_to_message.sender_chat
         chat_id = chat.id
         name = chat.title
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
         if lang:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-            ).format(name, chat_id)
+            ).format(format_name, chat_id)
 
     return text, chat_id, name
 
@@ -684,23 +713,28 @@ def parse_reply_to_story(lang: str, msg: types.Message) -> parse_info:
     text, chat_id, name = None, None, None
     story = msg.reply_to_story
     if story.chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
-        chat_id = story.chat.id
-        name = story.chat.full_name if story.chat.full_name else ""
+        chat = story.chat
+        chat_id = chat.id
+        name = chat.full_name if chat.full_name else ""
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
+
         if lang:
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-                name, chat_id
+                format_name, chat_id
             )
     elif story.chat.type in (
         enums.ChatType.CHANNEL,
         enums.ChatType.GROUP,
         enums.ChatType.SUPERGROUP,
     ):
-        chat_id = story.chat.id
-        name = story.chat.title
+        chat = story.chat
+        chat_id = chat.id
+        name = chat.title
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
         if lang:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-            ).format(name, chat_id)
+            ).format(format_name, chat_id)
 
     return text, chat_id, name
 
@@ -723,11 +757,13 @@ def parse_reply(lang: str | None, msg: types.Message) -> parse_info:
         chat = msg.chat
         chat_id = chat.id
         name = chat.full_name or chat.title or ""
+        format_name = f"[{name}](t.me/{chat.username})" if chat.username else name
+
         text = None
         if lang:
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
-            ).format(name, chat_id)
+            ).format(format_name, chat_id)
 
         return text, chat_id, name
 
@@ -883,7 +919,7 @@ async def get_id_by_manage_business(_: Client, msg: types.Message):
         ).format(from_chat_id),
         reply_markup=utils.get_buttons(
             chat_id=from_chat_id,
-            name=msg.text,
+            name=from_chat_id,
             lang=lang,
             user=db_user,
         ),

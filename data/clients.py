@@ -1,5 +1,5 @@
 import logging
-from pyrogram import Client
+from pyrogram import Client, types
 
 from data import config
 
@@ -12,6 +12,7 @@ bot_1 = Client(
     api_id=settings.telegram_api_id,
     api_hash=settings.telegram_api_hash,
     bot_token=settings.telegram_bot_token,
+    link_preview_options=types.LinkPreviewOptions(is_disabled=True),
 )
 
 bot_2 = Client(
@@ -19,4 +20,5 @@ bot_2 = Client(
     api_id=settings.telegram_api_id,
     api_hash=settings.telegram_api_hash,
     bot_token=settings.telegram_bot_token_2,
+    link_preview_options=types.LinkPreviewOptions(is_disabled=True),
 )
