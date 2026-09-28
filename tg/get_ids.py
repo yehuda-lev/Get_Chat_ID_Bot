@@ -521,6 +521,7 @@ async def extract_users_from_message(client: Client, msg: types.Message):
         name=list(user_ids.values()),
         lang=lang,
         user=db_user,
+        send_alert=msg.chat is not None and msg.chat.type == enums.ChatType.PRIVATE,
         by=(
             "guest_mode"
             if msg.guest_query_id
@@ -550,9 +551,7 @@ async def extract_users_from_message(client: Client, msg: types.Message):
             reply_markup=buttons,
         )
 
-    utils.create_stats(
-        type_stats=StatsType.SEARCH_USERNAME, lang=msg.from_user.language_code
-    )
+    utils.create_stats(type_stats=StatsType.SEARCH_USERNAME, lang=lang)
 
 
 async def ask_inline_query(_: Client, msg: types.Message):
@@ -790,6 +789,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
         db_user = await repository.get_user(tg_id=tg_id)
         lang = db_user.lang if db_user else msg.from_user.language_code
 
+    lang = lang or "en"
     is_guest_mode = msg.guest_query_id
 
     content = filters.get_message_content(msg, client.me.username)
@@ -803,7 +803,9 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
             _logger.error(f"Error in reply message in the group: {e}")
             await client.leave_chat(chat_id=msg.chat.id)
 
-        stats_type = StatsType.ID_IN_GROUP
+        stats_type = (
+            StatsType.ID_BY_GUEST_MODE if is_guest_mode else StatsType.ID_IN_GROUP
+        )
         utils.create_stats(type_stats=stats_type, lang=lang)
         return
 
@@ -821,7 +823,10 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
         by="group" if not is_guest_mode else "guest_mode",
         send_alert=False,
     )
-    text = text or f"{name} • `{chat_id}`" if chat_id else name
+    if not text:
+        text = utils.format_chat_name(name)
+        if chat_id:
+            text += f" • `{chat_id}`"
 
     if not is_guest_mode:
         try:
@@ -835,7 +840,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
 
         stats_type = (
             StatsType.ID_IN_GROUP
-            if not is_guest_mode
+            if not msg.ephemeral_message_id
             else StatsType.ID_FOR_EPHEMERAL_COMMAND
         )
         utils.create_stats(type_stats=stats_type, lang=lang)
