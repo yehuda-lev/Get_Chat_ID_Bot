@@ -263,10 +263,9 @@ async def get_contact(_: Client, msg: types.Message):
         name = contact.first_name + (
             (" " + contact.last_name) if contact.last_name else ""
         )
-        format_name = f"[{name}](t.me/{contact.username})" if contact.username else name
 
         text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
-            format_name,
+            name,
             chat_id,
         )
 
@@ -509,9 +508,13 @@ async def get_users_from_text(text: str, lang: str) -> tuple[str, dict[int, str]
 
 async def extract_users_from_message(client: Client, msg: types.Message):
     """Get id from username or link by message"""
-    tg_id = msg.from_user.id
-    db_user = await repository.get_user(tg_id=tg_id)
-    lang = db_user.lang
+
+    lang, db_user = None, None
+    if msg.from_user:
+        tg_id = msg.from_user.id
+        db_user = await repository.get_user(tg_id=tg_id)
+        lang = db_user.lang if db_user else msg.from_user.language_code
+    lang = lang or "en"
 
     content = (msg.text or msg.caption or msg.rich_message).markdown
     text, user_ids = await get_users_from_text(text=content, lang=lang)
@@ -521,6 +524,16 @@ async def extract_users_from_message(client: Client, msg: types.Message):
         name=list(user_ids.values()),
         lang=lang,
         user=db_user,
+        by=(
+            "guest_mode"
+            if msg.guest_query_id
+            else "group"
+            if (
+                msg.chat
+                and msg.chat.type in (enums.ChatType.GROUP, enums.ChatType.SUPERGROUP)
+            )
+            else None
+        ),
     )
 
     if msg.guest_query_id:
