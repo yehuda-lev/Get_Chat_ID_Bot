@@ -307,7 +307,7 @@ async def get_request_peer(_: Client, msg: types.Message):
                         [
                             types.InlineKeyboardButton(
                                 text=user.full_name if user.full_name else "",
-                                copy_text=str(user_id),
+                                copy_text=types.CopyTextButton(text=str(user_id)),
                             ),
                             *utils.get_buttons_link_to_chat(chat_id=user_id),
                         ]
@@ -430,41 +430,42 @@ async def get_via_bot(_: Client, msg: types.Message):
 # search username
 
 
-async def get_id_by_username(
-    text: str, lang: str
-) -> tuple[str, int | None, str | None]:
+async def get_users_from_text(text: str, lang: str) -> tuple[str, dict[int, str]]:
     """
-    Get id by username
+    Get usernames and ids from text, and get the chat id and name if possible.
     Returns:
         text: the text to send.
         chat_id: the id of the chat, can be None.
     """
-    username = filters.get_username(text=text)
-    chat_id, name = None, None
+    usernames, user_ids = filters.get_usernames_and_ids(text=text)
+    chat, chat_id, name = None, None, None
 
-    client_search: Client = random.choice((clients.bot_1, clients.bot_2))
-    try:
-        chat = await client_search.get_chat(username, force_full=False)
-    except errors.BadRequest:  # username not found
-        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
-        return text, chat_id, name
-
-    except errors.FloodWait:
-        if client_search.name == clients.bot_1.name:
-            client_search = clients.bot_2
-        else:
-            client_search = clients.bot_1
-
+    if usernames:
+        username = list(usernames)[0]  # Limit to just one username to avoid flood
+        client_search: Client = random.choice((clients.bot_1, clients.bot_2))
         try:
             chat = await client_search.get_chat(username, force_full=False)
-        except Exception as e:  # noqa
-            _logger.error(f"Error in get_chat with {client_search.name}: {e}")
+        except errors.BadRequest:  # username not found
             text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
-            return text, chat_id, name
+
+        except errors.FloodWait:
+            if client_search.name == clients.bot_1.name:
+                client_search = clients.bot_2
+            else:
+                client_search = clients.bot_1
+
+            try:
+                chat = await client_search.get_chat(username, force_full=False)
+            except Exception as e:  # noqa
+                _logger.error(f"Error in get_chat with {client_search.name}: {e}")
+                text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     if isinstance(chat, types.Chat):
         name = chat.title if chat.title else chat.full_name if chat.full_name else ""
         chat_id = chat.id
+
+        user_ids = {chat_id: name, **user_ids}
+
         if chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
             text = manager.get_translation(TranslationKeys.ID_USER, lang).format(
                 name, chat_id
@@ -476,25 +477,44 @@ async def get_id_by_username(
             ).format(name, chat_id)
 
     else:
-        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+        if not text:
+            text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
-    return text, chat_id, name
+    return text, user_ids
 
 
-async def get_username_by_message(_: Client, msg: types.Message):
+async def extract_users_from_message(client: Client, msg: types.Message):
     """Get id from username or link by message"""
     tg_id = msg.from_user.id
     db_user = await repository.get_user(tg_id=tg_id)
     lang = db_user.lang
 
-    text, chat_id, name = await get_id_by_username(text=msg.text, lang=lang)
+    content = (msg.text or msg.caption or msg.rich_message).markdown
+    text, user_ids = await get_users_from_text(text=content, lang=lang)
 
-    await msg.reply(
-        text=text,
-        reply_markup=utils.get_buttons(
-            chat_id=chat_id, name=name, lang=lang, user=db_user
-        ),
+    buttons = utils.get_buttons(
+        chat_id=list(user_ids.keys()),
+        name=list(user_ids.values()),
+        lang=lang,
+        user=db_user,
     )
+
+    if msg.guest_query_id:
+        await client.answer_guest_query(
+            guest_query_id=msg.guest_query_id,
+            result=types.InlineQueryResultArticle(
+                title=text,
+                input_message_content=types.InputTextMessageContent(
+                    message_text=text,
+                ),
+                reply_markup=buttons,
+            ),
+        )
+    else:
+        await msg.reply(
+            text=text,
+            reply_markup=buttons,
+        )
 
     utils.create_stats(
         type_stats=StatsType.SEARCH_USERNAME, lang=msg.from_user.language_code
@@ -544,13 +564,15 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
     db_user = await repository.get_user(tg_id=query.from_user.id)
     lang = db_user.lang
 
-    text, chat_id, name = await get_id_by_username(text=query.query, lang=lang)
+    text, user_ids = await get_users_from_text(text=query.query, lang=lang)
+    chat_id = list(user_ids.keys())[0] if user_ids else None
+    name = list(user_ids.values())[0] if user_ids else None
 
     try:
         await query.answer(
             results=[
                 types.InlineQueryResultArticle(
-                    title=f"{name} • `{chat_id}`",
+                    title=f"{chat_id} • `{chat_id}`",
                     id="1",
                     input_message_content=types.InputTextMessageContent(
                         message_text=text,
@@ -722,42 +744,20 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
 
     is_guest_mode = msg.guest_query_id
 
-    if filters.is_mention_users(msg):  # get is mention users
-        mention_count = 0
-        for entity in msg.entities:
-            if entity.type == enums.MessageEntityType.MENTION:
-                try:
-                    username = msg.text[entity.offset : entity.offset + entity.length]
-                    if (
-                        username.lower() == f"@{client.me.username}".lower()
-                        and mention_count == 0
-                        and is_guest_mode
-                    ):
-                        mention_count += 1
-                        continue
+    content = (msg.text or msg.caption or msg.rich_message).markdown
 
-                    user = await client.get_chat(username, force_full=False)
-                    name = user.full_name if user.full_name else ""
-                    chat_id = user.id
-                except errors.BadRequest:
-                    break
-                except errors.FloodWait:
-                    _logger.error("Error in get_chat in the group")
-                    return
-                else:
-                    break
-            elif entity.type == enums.MessageEntityType.TEXT_MENTION:
-                chat_id = entity.user.id
-                name = (
-                    entity.user.full_name
-                    if entity.user.full_name
-                    else ""
-                    if not entity.user.is_deleted
-                    else "Deleted Account"
-                )
-                break
-            else:
-                continue
+    if filters.get_usernames_and_ids(
+        text=content, check_if_exists=True
+    ):  # get is mention users
+        try:
+            await extract_users_from_message(client, msg)
+        except Exception as e:
+            _logger.error(f"Error in reply message in the group: {e}")
+            await client.leave_chat(chat_id=msg.chat.id)
+
+        stats_type = StatsType.ID_IN_GROUP
+        utils.create_stats(type_stats=stats_type, lang=lang)
+        return
 
     if not name and not chat_id:  # get reply to chat id
         text, chat_id, name = parse_reply(lang, msg)
@@ -776,20 +776,10 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
     text = text or f"{name} • `{chat_id}`" if chat_id else name
 
     if not is_guest_mode:
-        receiver_user_id_for_ephemeral_command = (
-            (tg_id if tg_id else (msg.sender_chat.id if msg.sender_chat else None))
-            if msg.ephemeral_message_id
-            else None
-        )
-
         try:
             await msg.reply(
                 text=text,
                 reply_markup=buttons,
-                receiver_user_id=receiver_user_id_for_ephemeral_command,
-                reply_parameters=types.ReplyParameters(
-                    ephemeral_message_id=msg.ephemeral_message_id,
-                ) if msg.ephemeral_message_id else None,
             )
         except Exception as e:
             _logger.error(f"Error in reply message in the group: {e}")
@@ -797,7 +787,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
 
         stats_type = (
             StatsType.ID_IN_GROUP
-            if not receiver_user_id_for_ephemeral_command
+            if not is_guest_mode
             else StatsType.ID_FOR_EPHEMERAL_COMMAND
         )
         utils.create_stats(type_stats=stats_type, lang=lang)

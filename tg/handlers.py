@@ -167,7 +167,7 @@ HANDLERS = [
     ),
     # other
     handlers.MessageHandler(
-        get_ids.get_username_by_message,
+        get_ids.extract_users_from_message,
         filters.private
         & ~filters.business
         & (

@@ -12,8 +12,8 @@ _logger = logging.getLogger(__name__)
 
 
 def get_buttons(
-    chat_id: int | None,
-    name: str | None,
+    chat_id: int | list[int] | None,
+    name: str | list[str] | None,
     lang: str,
     user: repository.User | None = None,
     inline_buttons: list[list[types.InlineKeyboardButton] | None] = None,
@@ -43,21 +43,37 @@ def get_buttons(
         if copy_button:
             if not inline_buttons:
                 inline_buttons = []
-            inline_buttons.append(
-                [
-                    types.InlineKeyboardButton(
-                        text=name,
-                        copy_text=str(chat_id),
-                    )
-                ]
-            )
 
-    buttons_link_to_chat = get_buttons_link_to_chat(chat_id=chat_id)
-    inline_buttons = (
-        inline_buttons + [buttons_link_to_chat]
-        if inline_buttons
-        else [buttons_link_to_chat]
-    )
+            if isinstance(chat_id, list) and isinstance(name, list):
+                for c_id, n in zip(chat_id, name):
+                    inline_buttons.append(
+                        [
+                            types.InlineKeyboardButton(
+                                text=n,
+                                copy_text=types.CopyTextButton(text=str(c_id)),
+                            ),
+                            *get_buttons_link_to_chat(chat_id=c_id),
+                        ],
+                    )
+
+            else:
+                inline_buttons.append(
+                    [
+                        types.InlineKeyboardButton(
+                            text=name,
+                            copy_text=types.CopyTextButton(text=str(chat_id)),
+                        ),
+                    ]
+                )
+                inline_buttons.append(get_buttons_link_to_chat(chat_id=chat_id))
+
+        else:
+            buttons_link_to_chat = get_buttons_link_to_chat(chat_id=chat_id)
+            inline_buttons = (
+                inline_buttons + [buttons_link_to_chat]
+                if inline_buttons
+                else [buttons_link_to_chat]
+            )
 
     if by:
         buttons = [
