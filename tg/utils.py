@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import html
 
 import httpx
 from pyrogram import types, Client, raw
@@ -9,6 +10,18 @@ from db import repository, tables
 from locales.translation_manager import manager, TranslationKeys, get_button_with_emoji
 
 _logger = logging.getLogger(__name__)
+
+
+def format_chat_name(name: str, username: str | None = None) -> str:
+    """Escape display names for the default combined Markdown/HTML parser."""
+    name = html.escape(name or "")
+    # Markdown runs before HTML: character references keep names literal in both.
+    for character in "*_~`|[]-":
+        name = name.replace(character, f"&#{ord(character)};")
+    if username:
+        username = html.escape(username.lstrip("@"), quote=True).replace("_", "&#95;")
+        return f'<a href="https://t.me/{username}">{name}</a>'
+    return name
 
 
 def get_buttons(
