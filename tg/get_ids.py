@@ -452,15 +452,15 @@ async def get_via_bot(_: Client, msg: types.Message):
 # search username
 
 
-async def get_users_from_text(text: str, lang: str) -> tuple[str, dict[int, str]]:
+async def get_users_from_text(content: str, lang: str) -> tuple[str, dict[int, str]]:
     """
     Get usernames and ids from text, and get the chat id and name if possible.
     Returns:
-        text: the text to send.
+        content: the text to extract usernames and ids from.
         chat_id: the id of the chat, can be None.
     """
-    usernames, user_ids = filters.get_usernames_and_ids(text=text)
-    chat, chat_id, name, username = None, None, None, None
+    usernames, user_ids = filters.get_usernames_and_ids(text=content)
+    chat, chat_id, name, username, text = None, None, None, None, None
 
     if usernames:
         username = list(usernames)[0]  # Limit to just one username to avoid flood
@@ -500,8 +500,7 @@ async def get_users_from_text(text: str, lang: str) -> tuple[str, dict[int, str]
             ).format(name, chat_id)
 
     else:
-        if not text:
-            text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     return text, user_ids
 
@@ -517,7 +516,7 @@ async def extract_users_from_message(client: Client, msg: types.Message):
     lang = lang or "en"
 
     content = (msg.text or msg.caption or msg.rich_message).markdown
-    text, user_ids = await get_users_from_text(text=content, lang=lang)
+    text, user_ids = await get_users_from_text(content=content, lang=lang)
 
     buttons = utils.get_buttons(
         chat_id=list(user_ids.keys()),
@@ -601,7 +600,7 @@ async def get_username_by_inline_query(_: Client, query: types.InlineQuery):
     db_user = await repository.get_user(tg_id=query.from_user.id)
     lang = db_user.lang
 
-    text, user_ids = await get_users_from_text(text=query.query, lang=lang)
+    text, user_ids = await get_users_from_text(content=query.query, lang=lang)
     chat_id = list(user_ids.keys())[0] if user_ids else None
     name = list(user_ids.values())[0] if user_ids else None
 
