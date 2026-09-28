@@ -34,59 +34,47 @@ def get_buttons(
     by: str | None = None,
     send_alert: bool = True,
 ) -> types.InlineKeyboardMarkup | None:
-    if chat_id is None:
+    if chat_id is None or chat_id == []:
         return (
             None
             if not inline_buttons and not reply_markup
             else reply_markup or types.InlineKeyboardMarkup(inline_buttons)
         )
 
+    inline_buttons = list(inline_buttons or [])
+    copy_button = True
     if user:
-        copy_button = None
         # if user doesn't have features and send_alert is True, send alert to change settings
         if not user.feature:
             if send_alert:
                 asyncio.create_task(send_alert_to_change_settings(user=user))
-            copy_button = True
-
         else:
-            if copy_button or user.feature.copy_button:
-                copy_button = True
+            copy_button = user.feature.copy_button is not False
 
+    if isinstance(chat_id, list):
+        # Additional extracted IDs are shown only when copy buttons are enabled.
         if copy_button:
-            if not inline_buttons:
-                inline_buttons = []
-
-            if isinstance(chat_id, list) and isinstance(name, list):
-                for c_id, n in zip(chat_id, name):
-                    inline_buttons.append(
-                        [
-                            types.InlineKeyboardButton(
-                                text=n,
-                                copy_text=types.CopyTextButton(text=str(c_id)),
-                            ),
-                            *get_buttons_link_to_chat(chat_id=c_id),
-                        ],
+            names = name if isinstance(name, list) else [name] * len(chat_id)  # make sure names is a list
+            for c_id, label in zip(chat_id, names):
+                row = [
+                    types.InlineKeyboardButton(
+                        text=label or str(c_id),
+                        copy_text=types.CopyTextButton(text=str(c_id)),
                     )
-
-            else:
-                inline_buttons.append(
-                    [
-                        types.InlineKeyboardButton(
-                            text=name,
-                            copy_text=types.CopyTextButton(text=str(chat_id)),
-                        ),
-                    ]
-                )
-                inline_buttons.append(get_buttons_link_to_chat(chat_id=chat_id))
-
-        else:
-            buttons_link_to_chat = get_buttons_link_to_chat(chat_id=chat_id)
-            inline_buttons = (
-                inline_buttons + [buttons_link_to_chat]
-                if inline_buttons
-                else [buttons_link_to_chat]
+                ]
+                row.extend(get_buttons_link_to_chat(c_id))
+                inline_buttons.append(row)
+    else:
+        if copy_button:
+            inline_buttons.append(
+                [
+                    types.InlineKeyboardButton(
+                        text=str(name or chat_id),
+                        copy_text=types.CopyTextButton(text=str(chat_id)),
+                    )
+                ]
             )
+        inline_buttons.append(get_buttons_link_to_chat(chat_id))
 
     if by:
         buttons = [
@@ -97,7 +85,9 @@ def get_buttons(
         ]
         inline_buttons.append(buttons)
 
-    return types.InlineKeyboardMarkup(inline_buttons)
+    return (
+        types.InlineKeyboardMarkup(inline_buttons) if inline_buttons else reply_markup
+    )
 
 
 async def send_alert_to_change_settings(user: repository.User):
