@@ -132,9 +132,15 @@ def test_send_broadcast_without_state_replies_and_exits(monkeypatch):
     async def fail_if_called(*args, **kwargs):  # pragma: no cover
         raise AssertionError("repository should not be queried")
 
-    monkeypatch.setattr("tg.admin_command.repository.get_all_users_active", fail_if_called)
-    monkeypatch.setattr("tg.admin_command.repository.get_all_groups_active", fail_if_called)
-    monkeypatch.setattr("tg.admin_command.repository.is_message_sent_exists", fail_if_called)
+    monkeypatch.setattr(
+        "tg.admin_command.repository.get_all_users_active", fail_if_called
+    )
+    monkeypatch.setattr(
+        "tg.admin_command.repository.get_all_groups_active", fail_if_called
+    )
+    monkeypatch.setattr(
+        "tg.admin_command.repository.is_message_sent_exists", fail_if_called
+    )
 
     asyncio.run(send_broadcast(None, fake_msg))
 
@@ -182,7 +188,9 @@ def test_delete_sent_messages_deletes_rows_and_reports_progress(monkeypatch):
         deleted_rows.append(message_sent_id)
 
     monkeypatch.setattr("tg.admin_command.repository.is_message_sent_exists", exists)
-    monkeypatch.setattr("tg.admin_command.repository.get_messages_sent", get_messages_sent)
+    monkeypatch.setattr(
+        "tg.admin_command.repository.get_messages_sent", get_messages_sent
+    )
     monkeypatch.setattr("tg.admin_command.repository.delete_message_sent", delete_row)
 
     asyncio.run(delete_sent_messages(fake_client, fake_msg))

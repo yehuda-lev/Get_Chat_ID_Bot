@@ -4,6 +4,10 @@ venv
 *pycache*
 *.env
 *.txt
+!requirements-dev.txt
 *.json
 *.sqlite
 *.log
+.venv/
+.pytest_cache/
+.ruff_cache/

@@ -1,7 +1,7 @@
 import logging
 import datetime
 
-from pyrogram import Client, filters, types
+from pyrogram import Client, types
 
 from db import repository
 from tg.stats_dashboard import (

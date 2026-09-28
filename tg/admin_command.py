@@ -108,7 +108,9 @@ async def send_broadcast(_: Client, msg: types.Message):
     progress = await msg.reply(text="**ההודעה נשלחת ל:** 0 צ'אטים")
 
     async def deliver(recipient: object) -> bool:
-        recipient_chat_id = recipient.tg_id if recipient_kind == "user" else recipient.group_id
+        recipient_chat_id = (
+            recipient.tg_id if recipient_kind == "user" else recipient.group_id
+        )
         try:
             if msg.forward_origin:
                 msg_sent = await msg.forward(chat_id=recipient_chat_id)
@@ -137,7 +139,9 @@ async def send_broadcast(_: Client, msg: types.Message):
             return True
 
         except errors.FloodWait as e:
-            _logger.error("FloodWait while broadcasting to %s: %s", recipient_chat_id, e.value)
+            _logger.error(
+                "FloodWait while broadcasting to %s: %s", recipient_chat_id, e.value
+            )
             await progress.edit_text(
                 text=f"**ההודעה מושהית בגלל FloodWait:** {e.value} שניות",
             )
@@ -153,9 +157,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 )
             else:
                 await repository.update_group(group_id=recipient.group_id, active=False)
-                text_log = (
-                    f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} is Deactivated\n"
-                )
+                text_log = f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} is Deactivated\n"
             log_obj.write(text_log)
             _logger.debug(text_log)
             return False
@@ -169,9 +171,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 )
             else:
                 await repository.update_group(group_id=recipient.group_id, active=False)
-                text_log = (
-                    f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} Blocked your bot\n"
-                )
+                text_log = f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} Blocked your bot\n"
             log_obj.write(text_log)
             _logger.debug(text_log)
             return False
@@ -185,9 +185,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 )
             else:
                 await repository.update_group(group_id=recipient.group_id, active=False)
-                text_log = (
-                    f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} IdInvalid\n"
-                )
+                text_log = f"group {recipient.group_id}, name: {recipient.name}, username: {recipient.username} IdInvalid\n"
             log_obj.write(text_log)
             _logger.debug(text_log)
             return False
@@ -201,9 +199,7 @@ async def send_broadcast(_: Client, msg: types.Message):
                 )
             else:
                 await repository.update_group(group_id=recipient.group_id, active=False)
-                text_log = (
-                    f"BadRequest: {e} : group {recipient.group_id}, name: {recipient.name}, username: {recipient.username}\n"
-                )
+                text_log = f"BadRequest: {e} : group {recipient.group_id}, name: {recipient.name}, username: {recipient.username}\n"
             log_obj.write(text_log)
             _logger.debug(text_log)
             return False

@@ -5,9 +5,51 @@ Thank you for considering contributing to this project! We appreciate your effor
 ---
 
 ## 🚀 Quick Links
+- [Code Quality and Tests](#code-quality-and-tests)
 - [Contributing a New Language](#-contributing-a-new-language)
 - [Contributing New Features](#-contributing-new-features)
 - [Getting Help](#-getting-help)
+
+---
+
+## Code Quality and Tests
+
+Use Python 3.13, matching the bot's Docker image and CI. After activating your
+virtual environment, install the development tools and the local Git hook:
+
+```bash
+python -m pip install -r requirements.txt -r requirements-dev.txt
+pre-commit install
+```
+
+Every commit checks staged Python files with Ruff. It automatically applies safe
+lint fixes and formatting. If files change, review them, stage them again, and
+retry the commit. Commit message wording is unrestricted.
+
+Use `logging` instead of debug `print` or `pprint` calls in bot code. Prints and
+debugger statements fail lint; prints are never automatically deleted. The
+translation CLI's installation instructions are an intentional exception.
+
+Run the hooks against all tracked files before opening a pull request:
+
+```bash
+pre-commit run --all-files
+```
+
+Run tests with the configured project environment:
+
+```bash
+python -m pytest -q
+```
+
+The CI workflow runs Ruff and pytest on pushes and pull requests, using dummy
+Telegram settings in a fresh checkout. It does not start the bot. New test files
+must be committed to run on GitHub. Local scratch tests that are not committed
+can still be discovered by a local pytest run.
+
+To prevent merging when checks fail, require the `Ruff` and `Pytest` status checks
+in the repository's branch protection or ruleset settings. A workflow reports
+failures but does not enforce that repository policy on its own.
 
 ---
 
@@ -128,4 +170,3 @@ If you have any questions, feel free to join our [Telegram support group](https:
 ## 📜 License
 
 By contributing to this project, you agree that your contributions will be licensed under the same license as the project. Please see the `LICENSE` file in the repository for details.
-

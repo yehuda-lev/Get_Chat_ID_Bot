@@ -227,11 +227,13 @@ async def get_users_count(
             select(func.count(User.id))
             .where((User.active == active) if active else True)
             .where((User.admin == admin) if admin else True)
-            .where((User.business_id != None) if business else True)
+            .where(User.business_id.is_not(None) if business else True)
             .where((User.language_code == language_code) if language_code else True)
             .where((User.created_at >= created_start) if created_start else True)
             .where((User.created_at <= created_end) if created_end else True)
-            .where((User.last_active >= last_active_start) if last_active_start else True)
+            .where(
+                (User.last_active >= last_active_start) if last_active_start else True
+            )
             .where((User.last_active <= last_active_end) if last_active_end else True)
         )
         return await session.scalar(query)

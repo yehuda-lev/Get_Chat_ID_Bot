@@ -341,9 +341,7 @@ async def build_dashboard_page(
     start, end = get_period_bounds(period, now=now)
     previous_start, previous_end = get_previous_bounds(start, end)
 
-    stats_by_type = await repo.get_stats_counts_by_type(
-        start_date=start, end_date=end
-    )
+    stats_by_type = await repo.get_stats_counts_by_type(start_date=start, end_date=end)
     stats_total = sum(count for _, count in stats_by_type)
     previous_stats_total = 0
     if previous_start and previous_end:
@@ -354,9 +352,7 @@ async def build_dashboard_page(
         previous_stats_total = sum(count for _, count in previous_stats_by_type)
 
     top_sources = sorted(stats_by_type, key=lambda item: item[1], reverse=True)[:5]
-    stats_by_lang = await repo.get_stats_counts_by_lang(
-        start_date=start, end_date=end
-    )
+    stats_by_lang = await repo.get_stats_counts_by_lang(start_date=start, end_date=end)
     top_langs = sorted(stats_by_lang, key=lambda item: item[1], reverse=True)[:5]
     stats_by_day = await repo.get_stats_counts_by_day(start_date=start, end_date=end)
 
@@ -410,10 +406,7 @@ async def build_dashboard_page(
         metrics = [
             ("רצף פעילות", sparkline or "אין עדיין נתונים"),
         ]
-        metrics.extend(
-            (day, _format_count(count))
-            for day, count in stats_by_day[-7:]
-        )
+        metrics.extend((day, _format_count(count)) for day, count in stats_by_day[-7:])
         insights = []
         if stats_by_day:
             insights.append(
@@ -423,8 +416,7 @@ async def build_dashboard_page(
     elif section == DashboardSection.LANGUAGES:
         headline = "השפות הבולטות בתקופה"
         metrics = [
-            (_format_language(lang), _format_count(count))
-            for lang, count in top_langs
+            (_format_language(lang), _format_count(count)) for lang, count in top_langs
         ]
         insights = [
             f"{_format_language(lang)} אחראית ל-{_format_count(count)} אירועים"
@@ -439,12 +431,14 @@ async def build_dashboard_page(
             ("משתמשים פעילים", _format_count(users_active)),
             ("קבוצות חדשות", _format_count(groups_new)),
             ("קבוצות פעילות", _format_count(groups_active)),
-            ("סה\"כ משתמשים", _format_count(users_total)),
-            ("סה\"כ קבוצות", _format_count(groups_total)),
+            ('סה"כ משתמשים', _format_count(users_total)),
+            ('סה"כ קבוצות', _format_count(groups_total)),
         ]
         insights = []
         if stats_total:
-            insights.append(f"הממוצע היומי הוא {_format_count(round(stats_total / max(len(stats_by_day), 1)))}")
+            insights.append(
+                f"הממוצע היומי הוא {_format_count(round(stats_total / max(len(stats_by_day), 1)))}"
+            )
         if top_sources:
             insights.append(f"המקור המוביל הוא {_label_stat_type(top_sources[0][0])}")
         if top_langs:

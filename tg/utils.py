@@ -54,7 +54,9 @@ def get_buttons(
     if isinstance(chat_id, list):
         # Additional extracted IDs are shown only when copy buttons are enabled.
         if copy_button:
-            names = name if isinstance(name, list) else [name] * len(chat_id)  # make sure names is a list
+            names = (
+                name if isinstance(name, list) else [name] * len(chat_id)
+            )  # make sure names is a list
             for c_id, label in zip(chat_id, names):
                 row = [
                     types.InlineKeyboardButton(

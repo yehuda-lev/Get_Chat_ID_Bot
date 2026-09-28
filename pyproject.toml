@@ -1,0 +1,16 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+# Syntax/name errors, unused imports, debug prints, and debugger statements.
+select = ["E4", "E7", "E9", "F", "T20", "T100"]
+# A print may be intentional output; flag it rather than deleting it.
+unfixable = ["T20"]
+
+[tool.ruff.lint.per-file-ignores]
+"locales/generate.py" = ["T201"]  # CLI dependency-installation instructions.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"

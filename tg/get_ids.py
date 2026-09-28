@@ -459,7 +459,9 @@ async def get_users_from_text(
     identify the attempted username; without one, use the generic fallback.
     """
     usernames, user_ids = filters.get_usernames_and_ids(text=content)
-    username = usernames[0] if usernames else None  # Limit to just one username to avoid flood.
+    username = (
+        usernames[0] if usernames else None
+    )  # Limit to just one username to avoid flood.
     chat = None
 
     # define the text to return if no chat is found
