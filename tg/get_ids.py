@@ -805,9 +805,13 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
     ):  # get is mention users
         try:
             await extract_users_from_message(client, msg)
-        except Exception as e:
-            _logger.error(f"Error in reply message in the group: {e}")
+        except errors.RPCError as e:
+            _logger.error(f"Telegram error in reply message in the group: {e}")
             await client.leave_chat(chat_id=msg.chat.id)
+            return
+        except Exception:
+            _logger.exception("Error processing reply message in the group")
+            return
 
         stats_type = (
             StatsType.ID_BY_GUEST_MODE if is_guest_mode else StatsType.ID_IN_GROUP
@@ -840,9 +844,13 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
                 text=text,
                 reply_markup=buttons,
             )
-        except Exception as e:
-            _logger.error(f"Error in reply message in the group: {e}")
+        except errors.RPCError as e:
+            _logger.error(f"Telegram error in reply message in the group: {e}")
             await client.leave_chat(chat_id=msg.chat.id)
+            return
+        except Exception:
+            _logger.exception("Error processing reply message in the group")
+            return
 
         stats_type = (
             StatsType.ID_IN_GROUP
