@@ -13,6 +13,7 @@
     "DONE": "已选择的语言是 {}",
     "NOT_HAVE_ID": "❌ 您发送的联系人没有 ID",
     "CAN_NOT_GET_THE_ID": "❌ 无法获取此聊天的 ID",
+    "CAN_NOT_GET_USERNAME_ID": "❌ 无法获取 {username} 的 ID",
     "CHAT_MANAGER": "👮 点击下方按钮可以查看您管理的所有群组和频道，并获取其 ID",
     "REQUEST_CHAT": "📤 请求聊天",
     "INFO_REQUEST_CHAT": "**📤 请求聊天**\n\n点击下方按钮并分享您想获取 ID 的聊天。\n- 机器人将返回您所分享聊天的 ID。",

@@ -450,23 +450,32 @@ async def get_via_bot(_: Client, msg: types.Message):
 # search username
 
 
-async def get_users_from_text(content: str, lang: str) -> tuple[str, dict[int, str]]:
-    """
-    Get usernames and ids from text, and get the chat id and name if possible.
-    Returns:
-        content: the text to extract usernames and ids from.
-        chat_id: the id of the chat, can be None.
+async def get_users_from_text(
+    content: str, lang: str, *, include_unresolved_username: bool = True
+) -> tuple[str, dict[int, str]]:
+    """Resolve the first username and return display text plus IDs for buttons.
+
+    Additional embedded IDs stay out of the text. On lookup failure, optionally
+    identify the attempted username; without one, use the generic fallback.
     """
     usernames, user_ids = filters.get_usernames_and_ids(text=content)
-    chat, chat_id, name, username, text = None, None, None, None, None
+    username = usernames[0] if usernames else None  # Limit to just one username to avoid flood.
+    chat = None
 
-    if usernames:
-        username = list(usernames)[0]  # Limit to just one username to avoid flood
+    # define the text to return if no chat is found
+    if username and include_unresolved_username:
+        text = manager.get_translation(
+            TranslationKeys.CAN_NOT_GET_USERNAME_ID, lang
+        ).format(username=utils.format_chat_name(f"@{username}"))
+    else:
+        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+
+    if username:
         client_search: Client = random.choice((clients.bot_1, clients.bot_2))
         try:
             chat = await client_search.get_chat(username, force_full=False)
         except errors.BadRequest:  # username not found
-            text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
+            pass
 
         except errors.FloodWait:
             if client_search.name == clients.bot_1.name:
@@ -478,11 +487,11 @@ async def get_users_from_text(content: str, lang: str) -> tuple[str, dict[int, s
                 chat = await client_search.get_chat(username, force_full=False)
             except Exception as e:  # noqa
                 _logger.error(f"Error in get_chat with {client_search.name}: {e}")
-                text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     if isinstance(chat, types.Chat):
         name = chat.title if chat.title else chat.full_name if chat.full_name else ""
         chat_id = chat.id
+        user_ids.pop(chat_id, None)
         user_ids = {chat_id: name, **user_ids}
 
         name = utils.format_chat_name(name, username)
@@ -496,9 +505,6 @@ async def get_users_from_text(content: str, lang: str) -> tuple[str, dict[int, s
             text = manager.get_translation(
                 TranslationKeys.ID_CHANNEL_OR_GROUP, lang
             ).format(name, chat_id)
-
-    else:
-        text = manager.get_translation(TranslationKeys.CAN_NOT_GET_THE_ID, lang)
 
     return text, user_ids
 

@@ -13,6 +13,7 @@
   "DONE": "Seçilmiş dil: {}",
   "NOT_HAVE_ID": "❌ Göndərdiyin kontaktın ID-si yoxdur",
   "CAN_NOT_GET_THE_ID": "❌ Bu söhbətin ID-sini almaq mümkün deyil",
+    "CAN_NOT_GET_USERNAME_ID": "❌ {username} üçün ID əldə etmək mümkün olmadı",
   "CHAT_MANAGER": "👮 Aşağıdakı düymələrə klikləyərək admin olduğun qrup və kanalları görə və onların ID-lərini ala bilərsən",
   "REQUEST_CHAT": "📤 Söhbəti paylaş",
   "INFO_REQUEST_CHAT": "**📤 Söhbəti paylaş**\n\nAşağıdakı düymələrə kliklə və ID-sini öyrənmək istədiyin söhbəti paylaş.\n- Bot sənə həmin söhbətin ID-sini göndərəcək.",

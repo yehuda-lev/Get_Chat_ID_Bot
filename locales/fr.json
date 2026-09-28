@@ -13,6 +13,7 @@
     "DONE": "La langue sélectionnée est {}",
     "NOT_HAVE_ID": "❌ Le contact que vous avez envoyé n'a pas d'identifiant",
     "CAN_NOT_GET_THE_ID": "❌ Il n'est pas possible d'obtenir l'ID de ce chat",
+    "CAN_NOT_GET_USERNAME_ID": "❌ Impossible d’obtenir l’identifiant de {username}",
     "CHAT_MANAGER": "👮 En cliquant sur les boutons ci-dessous, vous pouvez voir tous les groupes et chaînes que vous gérez et obtenir leur identifiant",
     "REQUEST_CHAT": "📤 Chat de demande",
     "INFO_REQUEST_CHAT": "**📤 demander un chat**\n\nCliquez sur les boutons ci-dessous et partagez le chat dont vous souhaitez savoir l'identification.\n- En réponse, le bot renverra l'ID du chat que vous avez partagé",
