@@ -3,7 +3,7 @@ import logging
 import re
 import time
 
-from pyrogram import types, filters, enums, Client
+from pyrogram import types, filters, Client
 
 from db import repository as db_filters
 from data import config
@@ -168,7 +168,7 @@ def is_admin() -> filters.Filter:
 
 def get_usernames_and_ids(
     text: str, check_if_exists: bool = False
-) -> tuple[set[str], dict[int, str]] | bool:
+) -> tuple[list[str], dict[int, str]] | bool:
     """
     Get all usernames and ids from text/rich message
     Args:
@@ -192,32 +192,51 @@ def get_usernames_and_ids(
     if check_if_exists:
         return bool(re.search(pattern, text))
 
-    usernames = set()  # unique usernames
+    usernames = {}  # insertion order, deduplicated case-insensitively
     user_ids = {}  # unique user ids with names
 
     for match in pattern.finditer(text):
         groups = match.groupdict()
 
         if groups.get("html_id"):
-            user_id = groups["html_id"]
+            user_id = int(groups["html_id"])
             name = groups["html_name"]
             user_ids[user_id] = html.unescape(name)
 
         elif groups.get("md_id"):
-            user_id = groups["md_id"]
+            user_id = int(groups["md_id"])
             name = groups["md_name"]
             user_ids[user_id] = html.unescape(name)
 
         elif groups.get("raw_id"):
-            user_id = groups["raw_id"]
-            user_ids[user_id] = "❔"  # No name available
+            user_id = int(groups["raw_id"])
+            user_ids.setdefault(user_id, "❔")  # Preserve an existing display name
 
         elif groups.get("username_pre"):
-            usernames.add(groups["username_pre"])
+            usernames.setdefault(groups["username_pre"].lower(), None)
         elif groups.get("username_suf"):
-            usernames.add(groups["username_suf"])
+            usernames.setdefault(groups["username_suf"].lower(), None)
 
-    return usernames, user_ids
+    return list(usernames), user_ids
+
+
+def get_message_content(msg: types.Message, bot_username: str | None = None) -> str:
+    """Read message content, excluding only the current bot's invocation."""
+    content = msg.text or msg.caption or msg.rich_message
+    text = content.markdown if content else ""
+    if not bot_username:
+        return text
+
+    username = re.escape(bot_username)
+    if msg.guest_query_id:
+        text = re.sub(rf"^\s*@{username}\b\s*", "", text, count=1, flags=re.I)
+    return re.sub(
+        rf"^(\s*/(?:id|id_secret))@{username}\b",
+        r"\1",
+        text,
+        count=1,
+        flags=re.I,
+    )
 
 
 def is_username_or_ids(_, __, msg: types.Message | types.InlineQuery) -> bool:
@@ -227,7 +246,7 @@ def is_username_or_ids(_, __, msg: types.Message | types.InlineQuery) -> bool:
     if isinstance(msg, types.InlineQuery):
         text = msg.query
     else:
-        text = (msg.text or msg.caption or msg.rich_message).markdown
+        text = get_message_content(msg)
 
     return get_usernames_and_ids(text, check_if_exists=True)
 

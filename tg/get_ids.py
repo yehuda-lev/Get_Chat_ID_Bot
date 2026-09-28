@@ -513,7 +513,7 @@ async def extract_users_from_message(client: Client, msg: types.Message):
         lang = db_user.lang if db_user else msg.from_user.language_code
     lang = lang or "en"
 
-    content = (msg.text or msg.caption or msg.rich_message).markdown
+    content = filters.get_message_content(msg, client.me.username)
     text, user_ids = await get_users_from_text(content=content, lang=lang)
 
     buttons = utils.get_buttons(
@@ -792,7 +792,7 @@ async def get_ids_in_the_group_and_guest_mode(client: Client, msg: types.Message
 
     is_guest_mode = msg.guest_query_id
 
-    content = (msg.text or msg.caption or msg.rich_message).markdown
+    content = filters.get_message_content(msg, client.me.username)
 
     if filters.get_usernames_and_ids(
         text=content, check_if_exists=True
