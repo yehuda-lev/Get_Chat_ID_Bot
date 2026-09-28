@@ -1,9 +1,22 @@
+default_install_hook_types: [pre-commit, pre-push]
+
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.11
     hooks:
       - id: ruff-check
+        stages: [pre-commit]
         args: [--fix]
         types_or: [python, pyi]
       - id: ruff-format
+        stages: [pre-commit]
         types_or: [python, pyi]
+  - repo: local
+    hooks:
+      - id: check-push
+        name: Ruff and pytest before push
+        entry: python scripts/check_push.py
+        language: python
+        stages: [pre-push]
+        always_run: true
+        pass_filenames: false

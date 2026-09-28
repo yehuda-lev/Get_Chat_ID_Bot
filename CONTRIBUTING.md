@@ -15,7 +15,7 @@ Thank you for considering contributing to this project! We appreciate your effor
 ## Code Quality and Tests
 
 Use Python 3.13, matching the bot's Docker image and CI. After activating your
-virtual environment, install the development tools and the local Git hook:
+virtual environment (`.venv` or `venv`), install the tools and both local Git hooks:
 
 ```bash
 python -m pip install -r requirements.txt -r requirements-dev.txt
@@ -26,6 +26,12 @@ Every commit checks staged Python files with Ruff. It automatically applies safe
 lint fixes and formatting. If files change, review them, stage them again, and
 retry the commit. Commit message wording is unrestricted.
 
+Every push runs Ruff (including formatting checks) and pytest before Git sends
+the commits. Any failure blocks the push. The checks use the project's virtual
+environment and export the commit being pushed to a temporary directory with
+dummy Telegram settings. Uncommitted edits, local scratch tests, and the local
+database are not used. Push-time checks never rewrite an existing commit.
+
 Use `logging` instead of debug `print` or `pprint` calls in bot code. Prints and
 debugger statements fail lint; prints are never automatically deleted. The
 translation CLI's installation instructions are an intentional exception.
@@ -34,6 +40,7 @@ Run the hooks against all tracked files before opening a pull request:
 
 ```bash
 pre-commit run --all-files
+pre-commit run --hook-stage pre-push --all-files
 ```
 
 Run tests with the configured project environment:
@@ -50,6 +57,8 @@ can still be discovered by a local pytest run.
 To prevent merging when checks fail, require the `Ruff` and `Pytest` status checks
 in the repository's branch protection or ruleset settings. A workflow reports
 failures but does not enforce that repository policy on its own.
+Local hooks must be installed in each clone and can be bypassed, so they do not
+replace protected branches when checks must be enforced for every contributor.
 
 ---
 
